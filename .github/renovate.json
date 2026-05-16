@@ -1,0 +1,106 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "schedule:weekly",
+    ":semanticPrefixChore(deps)",
+    ":rebaseStalePrs"
+  ],
+  "timezone": "Europe/Zurich",
+  "automerge": false,
+  "dependencyDashboard": true,
+  "configMigration": true,
+  "rangeStrategy": "bump",
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2,
+  "enabledManagers": ["npm", "dockerfile", "docker-compose", "github-actions"],
+  "lockFileMaintenance": {
+    "enabled": true
+  },
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["dependencies", "security"]
+  },
+  "packageRules": [
+    {
+      "groupName": "Payload CMS",
+      "matchPackageNames": ["payload", "@payloadcms/**"]
+    },
+    {
+      "groupName": "React Router",
+      "matchPackageNames": ["react-router", "@react-router/**"]
+    },
+    {
+      "groupName": "Next.js",
+      "matchPackageNames": ["next", "eslint-config-next", "@next/**"]
+    },
+    {
+      "groupName": "React",
+      "matchPackageNames": [
+        "react",
+        "react-dom",
+        "@types/react",
+        "@types/react-dom"
+      ]
+    },
+    {
+      "groupName": "Storybook",
+      "matchPackageNames": ["storybook", "@storybook/**", "chromatic"]
+    },
+    {
+      "groupName": "Vite and Vitest",
+      "matchPackageNames": [
+        "vite",
+        "vitest",
+        "@vitejs/**",
+        "vite-tsconfig-paths",
+        "vite-plugin-turbosnap"
+      ]
+    },
+    {
+      "groupName": "Tailwind CSS",
+      "matchPackageNames": [
+        "tailwindcss",
+        "@tailwindcss/**",
+        "@tailwindcss/forms",
+        "prettier-plugin-tailwindcss"
+      ]
+    },
+    {
+      "groupName": "Linting",
+      "matchPackageNames": [
+        "eslint",
+        "@eslint/**",
+        "typescript-eslint",
+        "eslint-plugin-react",
+        "globals"
+      ]
+    },
+    {
+      "groupName": "TypeScript",
+      "matchPackageNames": ["typescript", "@types/node"]
+    },
+    {
+      "groupName": "Testing",
+      "matchPackageNames": ["@testing-library/**", "jsdom", "@playwright/test"]
+    },
+    {
+      "groupName": "i18n",
+      "matchPackageNames": [
+        "i18next",
+        "i18next-*",
+        "react-i18next",
+        "remix-i18next"
+      ]
+    },
+    {
+      "groupName": "fxmk packages",
+      "matchPackageNames": ["@fxmk/**"]
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true,
+      "labels": ["dependencies", "major"]
+    }
+  ]
+}
