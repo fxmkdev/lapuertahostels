@@ -1,4 +1,5 @@
 import type { Decorator, Preview } from "@storybook/react";
+import { MINIMAL_VIEWPORTS } from "storybook/viewport";
 import { createRoutesStub } from "react-router";
 import "../app/global.css";
 import i18n from "./i18next";
@@ -6,33 +7,6 @@ import { ThemeProvider } from "../app/themes";
 
 import { allModes } from "./modes";
 import { I18nextProvider } from "react-i18next";
-
-const MINIMAL_VIEWPORTS = {
-  mobile1: {
-    name: "Small mobile",
-    styles: {
-      width: "320px",
-      height: "568px",
-    },
-    type: "mobile",
-  },
-  mobile2: {
-    name: "Large mobile",
-    styles: {
-      width: "414px",
-      height: "896px",
-    },
-    type: "mobile",
-  },
-  tablet: {
-    name: "Tablet",
-    styles: {
-      width: "834px",
-      height: "1112px",
-    },
-    type: "tablet",
-  },
-} as const;
 
 const withReactRouter: Decorator = (Story) => {
   const ReactRouterStub = createRoutesStub([
@@ -89,7 +63,7 @@ const preview: Preview = {
       },
     },
     viewport: {
-      viewports: {
+      options: {
         ...MINIMAL_VIEWPORTS,
         desktop: {
           name: "Desktop",
