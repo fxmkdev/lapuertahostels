@@ -1,14 +1,23 @@
 import globals from "globals";
 import pluginJs from "@eslint/js";
 import tseslint from "typescript-eslint";
-import pluginReact from "eslint-plugin-react";
-import { includeIgnoreFile } from "@eslint/compat";
+import react from "eslint-plugin-react";
+import { fixupPluginRules, includeIgnoreFile } from "@eslint/compat";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const gitignorePath = path.resolve(__dirname, ".gitignore");
+const pluginReact = fixupPluginRules(react);
+const reactRecommendedConfig = {
+  ...react.configs.flat.recommended,
+  plugins: { react: pluginReact },
+};
+const reactJsxRuntimeConfig = {
+  ...react.configs.flat["jsx-runtime"],
+  plugins: { react: pluginReact },
+};
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
@@ -18,6 +27,6 @@ export default [
   { languageOptions: { globals: { ...globals.browser, ...globals.node } } },
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
-  pluginReact.configs.flat.recommended,
-  pluginReact.configs.flat["jsx-runtime"],
+  reactRecommendedConfig,
+  reactJsxRuntimeConfig,
 ];

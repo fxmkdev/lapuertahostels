@@ -1,4 +1,4 @@
-import { allModes } from ".storybook/modes";
+import { allModes } from "../../.storybook/modes";
 import { Input } from "./input";
 import { Meta, StoryObj } from "@storybook/react";
 

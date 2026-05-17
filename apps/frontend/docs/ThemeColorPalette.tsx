@@ -1,4 +1,4 @@
-import { ColorPalette, ColorItem } from "@storybook/blocks";
+import { ColorPalette, ColorItem } from "@storybook/addon-docs/blocks";
 
 // explicitly mention all color variables to ensure they are included in the Tailwind build
 const colors = {

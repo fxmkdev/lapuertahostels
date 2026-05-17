@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
 import { Footer } from "./footer";
-import { allModes } from ".storybook/modes";
+import { allModes } from "../../.storybook/modes";
 import {
   brand,
   customLink,
