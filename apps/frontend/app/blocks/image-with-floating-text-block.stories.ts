@@ -3,7 +3,7 @@ import {
   ImageWithFloatingTextBlock,
   ImageWithFloatingTextBlockProps,
 } from "./image-with-floating-text-block";
-import { allModes } from ".storybook/modes";
+import { allModes } from "../../.storybook/modes";
 import { bold, paragraph, richTextRoot, text } from "@fxmk/common";
 
 const meta = {

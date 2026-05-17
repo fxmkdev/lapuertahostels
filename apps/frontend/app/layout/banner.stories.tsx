@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
 import { Banner } from "./banner";
-import { allModes } from ".storybook/modes";
+import { allModes } from "../../.storybook/modes";
 import { callToAction2 } from "~/common/cms-data.builders";
 
 const meta = {

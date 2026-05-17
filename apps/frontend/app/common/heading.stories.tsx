@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 
 import { Heading, HeadingHighlight } from "./heading";
 import { cn } from "./cn";
-import { allModes } from ".storybook/modes";
+import { allModes } from "../../.storybook/modes";
 import { themesByBrand } from "~/themes";
 import { BrandId } from "~/brands";
 

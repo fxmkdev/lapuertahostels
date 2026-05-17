@@ -1,10 +1,10 @@
 import type { Decorator, Preview } from "@storybook/react";
+import { MINIMAL_VIEWPORTS } from "storybook/viewport";
 import { createRoutesStub } from "react-router";
 import "../app/global.css";
 import i18n from "./i18next";
 import { ThemeProvider } from "../app/themes";
 
-import { MINIMAL_VIEWPORTS } from "@storybook/addon-viewport";
 import { allModes } from "./modes";
 import { I18nextProvider } from "react-i18next";
 
@@ -63,7 +63,7 @@ const preview: Preview = {
       },
     },
     viewport: {
-      viewports: {
+      options: {
         ...MINIMAL_VIEWPORTS,
         desktop: {
           name: "Desktop",
