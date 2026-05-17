@@ -50,7 +50,8 @@ need to be strictly Conventional Commit formatted.
 
 ## Runtime and Typings Policy
 
-- Keep `@types/node` on the Node 22 line until a runtime migration is scheduled.
+- Keep `@types/node` on the Node 24 line until the next runtime migration is
+  scheduled.
 
 ## Review Comment Workflow
 
