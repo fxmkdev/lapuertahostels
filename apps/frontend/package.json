@@ -40,6 +40,7 @@
     "remix-i18next": "^7.2.1"
   },
   "devDependencies": {
+    "@eslint-react/eslint-plugin": "5.8.0",
     "@eslint/compat": "^2.1.0",
     "@eslint/js": "^10.0.1",
     "@react-router/dev": "^7.15.1",
@@ -57,7 +58,6 @@
     "@vitejs/plugin-react": "^6.0.2",
     "chromatic": "^16.10.1",
     "eslint": "^10.4.0",
-    "eslint-plugin-react": "^7.37.5",
     "globals": "^16.3.0",
     "jsdom": "^26.1.0",
     "prettier": "3.5.3",

@@ -7,6 +7,7 @@
     "overrides": {
       "axios": "1.15.2",
       "@eslint/plugin-kit": "0.3.5",
+      "@tanstack/devtools-vite": "0.7.0",
       "defu": "6.1.7",
       "diff": "5.2.2",
       "flatted": "3.4.2",
