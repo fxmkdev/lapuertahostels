@@ -39,8 +39,8 @@ importers:
   apps/cms:
     dependencies:
       '@fxmk/cms-plugin':
-        specifier: 0.5.0
-        version: 0.5.0(284cfccbfe429c18aebaebed06fcd638)
+        specifier: 0.5.2
+        version: 0.5.2(3e343427ce0c3718c059faee0ead37f0)
       '@payloadcms/db-mongodb':
         specifier: ^3.84.1
         version: 3.84.1(payload@3.84.1(graphql@16.10.0)(typescript@5.8.3))
@@ -103,8 +103,8 @@ importers:
   apps/frontend:
     dependencies:
       '@fxmk/common':
-        specifier: 0.5.0
-        version: 0.5.0
+        specifier: 0.5.2
+        version: 0.5.2
       '@headlessui/react':
         specifier: ^2.2.4
         version: 2.2.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -272,8 +272,8 @@ importers:
   tests/e2e:
     devDependencies:
       '@fxmk/common':
-        specifier: 0.5.0
-        version: 0.5.0
+        specifier: 0.5.2
+        version: 0.5.2
       '@lapuertahostels/payload-types':
         specifier: workspace:../../libs/payload-types
         version: link:../../libs/payload-types
@@ -1192,23 +1192,23 @@ packages:
   '@floating-ui/utils@0.2.11':
     resolution: {integrity: sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==}
 
-  '@fxmk/cms-plugin@0.5.0':
-    resolution: {integrity: sha512-4+YScp8KOWi1FYLxP5Rh+Ind+xIwYKJY/lz+quf4O5S8kqENcELKVt9hDTuW//FxYSi/k8bq1f+gxXymQEt/4g==}
-    engines: {node: ^18.20.2 || >=20.9.0, pnpm: ^9 || ^10}
+  '@fxmk/cms-plugin@0.5.2':
+    resolution: {integrity: sha512-jlVPqpZTeRbqtfWblTr8bHFXMynmtGXCeQVsnynNNk/XcDd2Wz6DDqcJlZNDWc5DVvtVvENIKf2kMXBaZHg4Bw==}
+    engines: {node: '>=24.0.0', pnpm: ^9 || ^10}
     peerDependencies:
-      '@payloadcms/db-mongodb': ^3.52.0
-      '@payloadcms/richtext-lexical': ^3.52.0
-      '@payloadcms/storage-s3': ^3.52.0
-      '@payloadcms/ui': ^3.52.0
+      '@payloadcms/db-mongodb': ^3.84.1
+      '@payloadcms/richtext-lexical': ^3.84.1
+      '@payloadcms/storage-s3': ^3.84.1
+      '@payloadcms/ui': ^3.84.1
       bson: ^6.10.4
       jsdom: 26.1.0
-      next: 15.4.4
-      payload: ^3.52.0
+      next: '>=16.2.2 <17.0.0'
+      payload: ^3.84.1
       react: ^18 || ^19
       react-dom: ^18 || ^19
 
-  '@fxmk/common@0.5.0':
-    resolution: {integrity: sha512-EQa7jwPJYdNR2bALjGI8LhMx1Sj3N7kkiNxM6JUXt2kUCXvE1Jc4/HxxTnSYEjqVyZaTMjaP5txZYOsWKgeGUw==}
+  '@fxmk/common@0.5.2':
+    resolution: {integrity: sha512-lihJCfQ3vUq4+eEQRue3B/pxTRSwSnWxLOQEBwEL+nl3Hq0OI4Js9pA6smUMXcxggwOiDatmUpWFRBNyhYmVHA==}
 
   '@fxmk/releaser@0.5.4':
     resolution: {integrity: sha512-xSFlL59FyN+kOeRRRHUJqCE4tbM2/vMS2SK9fjdh9UH69ct3vPIw+mU5Is6wNdRPhHVcP/HVAVljugwEbsHiqQ==}
@@ -3874,9 +3874,9 @@ packages:
   deep-is@0.1.4:
     resolution: {integrity: sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==}
 
-  deepl-node@1.19.0:
-    resolution: {integrity: sha512-icg7dw/IXxsEZ4rf441XBWUpMKYyqa3JfLFbiFEj07f+2SNRseHwoDCJeA6CxYgQdIuX1jy2ShPvY2DAlzXSQw==}
-    engines: {node: '>=12.0'}
+  deepl-node@1.27.0:
+    resolution: {integrity: sha512-OEiprFdxqr7aS0+gmv8vsZLBLoDarBppG1zkTWUlrAvPoYdwSWKFWjcZgr9XSV3FWlPy8g10WdJjWkxDn9P56w==}
+    engines: {node: '>=14.17'}
 
   deepmerge@4.3.1:
     resolution: {integrity: sha512-3sUqbMEc77XqpdNO7FRyRog+eW3ph+GYCbj+rK+uYyRMuwsVy0rMiVtPn+QJlKFvWP/1PYpapqYn0Me2knFn+A==}
@@ -5488,12 +5488,12 @@ packages:
     resolution: {integrity: sha512-YgBpdJHPyQ2UE5x+hlSXcnejzAvD0b22U2OuAP+8OnlJT+PjWPxtgmGqKKc+RgTM63U9gN0YzrYc71R2WT/hTA==}
     engines: {node: '>=18'}
 
-  openai@5.12.2:
-    resolution: {integrity: sha512-xqzHHQch5Tws5PcKR2xsZGX9xtch+JQFz5zb14dGqlshmmDAFBFEWmeIpf7wVqWV+w7Emj7jRgkNJakyKE0tYQ==}
+  openai@6.38.0:
+    resolution: {integrity: sha512-AoMplt2UalrpgUDMh3L09QWjNRlgJPipclQvA6sYAaeF6nHNBMgmikAZGmcYLn8on4d9sQY9Q8bOLfrBS7Lc8g==}
     hasBin: true
     peerDependencies:
       ws: ^8.18.0
-      zod: ^3.23.8
+      zod: ^3.25 || ^4.0
     peerDependenciesMeta:
       ws:
         optional: true
@@ -7914,7 +7914,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.11': {}
 
-  '@fxmk/cms-plugin@0.5.0(284cfccbfe429c18aebaebed06fcd638)':
+  '@fxmk/cms-plugin@0.5.2(3e343427ce0c3718c059faee0ead37f0)':
     dependencies:
       '@payloadcms/db-mongodb': 3.84.1(payload@3.84.1(graphql@16.10.0)(typescript@5.8.3))
       '@payloadcms/richtext-lexical': 3.84.1(@faceless-ui/modal@3.0.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@faceless-ui/scroll-info@2.0.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@payloadcms/next@3.84.1(@types/react@19.1.8)(graphql@16.10.0)(monaco-editor@0.52.2)(next@16.2.6(@playwright/test@1.60.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.77.4))(payload@3.84.1(graphql@16.10.0)(typescript@5.8.3))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3))(@types/react@19.1.8)(monaco-editor@0.52.2)(next@16.2.6(@playwright/test@1.60.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.77.4))(payload@3.84.1(graphql@16.10.0)(typescript@5.8.3))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3)(yjs@13.6.23)
@@ -7922,19 +7922,19 @@ snapshots:
       '@payloadcms/translations': 3.84.1
       '@payloadcms/ui': 3.84.1(@types/react@19.1.8)(monaco-editor@0.52.2)(next@16.2.6(@playwright/test@1.60.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.77.4))(payload@3.84.1(graphql@16.10.0)(typescript@5.8.3))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3)
       bson: 6.10.4
-      deepl-node: 1.19.0
+      deepl-node: 1.27.0
       jsdom: 26.1.0
       next: 16.2.6(@playwright/test@1.60.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.77.4)
-      openai: 5.12.2(ws@8.20.1)(zod@4.4.3)
+      openai: 6.38.0(ws@8.20.1)(zod@4.4.3)
       payload: 3.84.1(graphql@16.10.0)(typescript@5.8.3)
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
+      zod: 4.4.3
     transitivePeerDependencies:
       - debug
       - ws
-      - zod
 
-  '@fxmk/common@0.5.0': {}
+  '@fxmk/common@0.5.2': {}
 
   '@fxmk/releaser@0.5.4':
     dependencies:
@@ -10626,14 +10626,13 @@ snapshots:
 
   deep-is@0.1.4: {}
 
-  deepl-node@1.19.0:
+  deepl-node@1.27.0:
     dependencies:
       '@types/node': 24.12.4
       adm-zip: 0.5.16
       axios: 1.15.2
       form-data: 3.0.4
       loglevel: 1.9.2
-      uuid: 8.3.2
     transitivePeerDependencies:
       - debug
 
@@ -12613,7 +12612,7 @@ snapshots:
       is-inside-container: 1.0.0
       wsl-utils: 0.1.0
 
-  openai@5.12.2(ws@8.20.1)(zod@4.4.3):
+  openai@6.38.0(ws@8.20.1)(zod@4.4.3):
     optionalDependencies:
       ws: 8.20.1
       zod: 4.4.3
