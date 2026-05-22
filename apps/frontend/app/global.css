@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@plugin '@tailwindcss/forms';
+@plugin "@tailwindcss/forms";
 
 @theme {
   --color-*: initial;

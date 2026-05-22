@@ -40,7 +40,9 @@ export function AccommodationSelectorBlock({
           </RichTextParagraph>
         </div>
         <div className="mx-auto mt-8 grid max-w-7xl grid-rows-2 gap-16 px-0 md:mt-14 md:grid-cols-2 md:grid-rows-none md:gap-8 md:px-8">
-          {cards?.map((card) => <AccommodationCard key={card.id} {...card} />)}
+          {cards?.map((card) => (
+            <AccommodationCard key={card.id} {...card} />
+          ))}
         </div>
       </div>
     </div>
