@@ -57,7 +57,7 @@
     "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
-    "chromatic": "^16.10.1",
+    "chromatic": "^17.0.0",
     "eslint": "^10.4.0",
     "globals": "^16.3.0",
     "jsdom": "^29.1.1",
