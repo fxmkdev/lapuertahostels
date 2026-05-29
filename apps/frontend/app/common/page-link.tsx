@@ -1,4 +1,4 @@
-import { Brand, NewLink } from "@lapuertahostels/payload-types";
+import { NewLink } from "@lapuertahostels/payload-types";
 import { Link, LinkProps } from "./link";
 import { PropsWithChildren } from "react";
 import { gracefully, isObject } from "./utils";
@@ -6,7 +6,7 @@ import { buildLocalizedRelativeUrl } from "./routing";
 import { useTranslation } from "react-i18next";
 
 export type PageLinkProps = {
-  link?: NonNullable<Brand["navLinks"]>[number]["link"] | null;
+  link?: NewLink | null;
 } & Omit<PropsWithChildren<LinkProps>, "to">;
 
 export function PageLink({ link, ...props }: PageLinkProps) {

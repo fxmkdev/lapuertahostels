@@ -1,12 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { Page } from "./page";
 import { ThemeProvider } from "~/themes";
-import {
-  brand,
-  callToAction,
-  internalLink,
-  media,
-} from "~/common/cms-data.builders";
+import { callToAction, internalLink, media } from "~/common/cms-data.builders";
 import { createId } from "@paralleldrive/cuid2";
 import { bold, paragraph, richTextRoot, text } from "@fxmk/common";
 import { Brand, Page as PageItem } from "@lapuertahostels/payload-types";
@@ -137,11 +132,9 @@ export const Puerta: Story = {
           cards: [
             {
               id: createId(),
-              brand: brand({
-                id: "aqua",
-                name: "Puerta Aqua",
-                homeLink: internalLink("/aqua"),
-              }),
+              title: "Puerta Aqua",
+              link: internalLink("/aqua"),
+              color: "aqua",
               image: media("Frente.jpg"),
               description: richTextRoot(
                 paragraph(
@@ -153,11 +146,9 @@ export const Puerta: Story = {
             },
             {
               id: createId(),
-              brand: brand({
-                id: "azul",
-                name: "La Puerta Azul",
-                homeLink: internalLink("/azul"),
-              }),
+              title: "La Puerta Azul",
+              link: internalLink("/azul"),
+              color: "azul",
               image: media("10.jpg"),
               description: richTextRoot(
                 paragraph(
