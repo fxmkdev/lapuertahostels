@@ -69,7 +69,7 @@ export const RoomListBlock: Block = {
             }),
           ],
         },
-        callToActionField(),
+        callToActionField({ optional: true }),
       ],
       admin: {
         components: {

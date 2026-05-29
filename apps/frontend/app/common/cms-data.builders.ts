@@ -64,6 +64,7 @@ export function requiredCallToAction(
   variant?: CallToAction["variant"],
 ): RequiredCallToAction {
   return {
+    show: true,
     label,
     link: customLink("http://example.com/"),
     variant: variant ?? "secondary",
