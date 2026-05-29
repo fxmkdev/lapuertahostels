@@ -58,3 +58,13 @@ export const Default: Story = {
     cta: requiredCallToAction("Reserve Now"),
   },
 };
+
+export const WithoutCallToAction: Story = {
+  args: {
+    ...Default.args,
+    cta: {
+      ...requiredCallToAction("Reserve Now"),
+      show: false,
+    },
+  },
+};

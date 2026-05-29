@@ -67,7 +67,10 @@ export const Default: Story = {
             image: media("IMG_6814-Mejorado.jpg"),
           },
         ],
-        cta: requiredCallToAction("Reserve Now"),
+        cta: {
+          ...requiredCallToAction("Reserve Now"),
+          show: false,
+        },
       },
       {
         heading: "Standard Room",
