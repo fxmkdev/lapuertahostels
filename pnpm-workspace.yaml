@@ -7,7 +7,7 @@ nodeVersion: 24.12.0
 injectWorkspacePackages: true
 
 overrides:
-  axios: 1.15.2
+  axios: 1.16.0
   "@eslint/plugin-kit": 0.3.5
   "@tanstack/devtools-vite": 0.7.0
   defu: 6.1.7
@@ -22,6 +22,8 @@ overrides:
   "picomatch@2.3.1": 2.3.2
   "picomatch@4": 4.0.4
   "postcss@8.4.31": 8.5.14
+  qs: 6.15.2
+  "react-d3-tree>uuid": 11.1.1
   tar: 7.5.15
   "uuid@11.1.0": 11.1.1
   ws: 8.20.1
