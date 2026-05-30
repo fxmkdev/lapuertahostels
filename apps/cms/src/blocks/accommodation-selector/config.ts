@@ -5,6 +5,7 @@ import {
   moreOptionsField,
   elementIdField,
   imageField,
+  linkField,
 } from "@fxmk/cms-plugin";
 
 export const AccommodationSelectorBlock: Block = {
@@ -40,20 +41,37 @@ export const AccommodationSelectorBlock: Block = {
         },
       },
       type: "array",
-      minRows: 2,
-      maxRows: 2,
+      minRows: 1,
       required: true,
       fields: [
-        {
-          name: "brand",
-          label: {
-            en: "Brand",
-            es: "Marca",
-          },
-          type: "relationship",
-          relationTo: "brands",
-          filterOptions: { id: { not_equals: "puerta" } },
+        textField({
+          name: "title",
+          label: { en: "Title", es: "Título" },
           required: true,
+        }),
+        linkField(),
+        {
+          name: "color",
+          label: {
+            en: "Color",
+            es: "Color",
+          },
+          type: "select",
+          required: true,
+          options: [
+            {
+              label: "Puerta",
+              value: "puerta",
+            },
+            {
+              label: "Aqua",
+              value: "aqua",
+            },
+            {
+              label: "Azul",
+              value: "azul",
+            },
+          ],
         },
         imageField(),
         richTextField({
@@ -67,8 +85,8 @@ export const AccommodationSelectorBlock: Block = {
       admin: {
         initCollapsed: true,
         description: {
-          en: "Each card represents an accommodation brand. You can change their order and update their image and description here.",
-          es: "Cada tarjeta representa una marca de alojamiento. Puedes cambiar su orden y actualizar su imagen y descripción aquí.",
+          en: "Each card represents a linked accommodation page. You can change their order, target, color, image, and description here.",
+          es: "Cada tarjeta representa una página de alojamiento enlazada. Puedes cambiar su orden, destino, color, imagen y descripción aquí.",
         },
       },
     },

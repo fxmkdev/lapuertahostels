@@ -5,6 +5,7 @@ import * as migration_20250719_221257_migration from "./20250719_221257_migratio
 import * as migration_20250724_194253_languages from "./20250724_194253_languages";
 import * as migration_20250817_133906_migration from "./20250817_133906_migration";
 import * as migration_20260529_000000_optional_room_cta from "./20260529_000000_optional_room_cta";
+import * as migration_20260529_224952_accommodation_selector_card_links from "./20260529_224952_accommodation_selector_card_links";
 
 export const migrations = [
   {
@@ -41,5 +42,10 @@ export const migrations = [
     up: migration_20260529_000000_optional_room_cta.up,
     down: migration_20260529_000000_optional_room_cta.down,
     name: "20260529_000000_optional_room_cta",
+  },
+  {
+    up: migration_20260529_224952_accommodation_selector_card_links.up,
+    down: migration_20260529_224952_accommodation_selector_card_links.down,
+    name: "20260529_224952_accommodation_selector_card_links",
   },
 ];
