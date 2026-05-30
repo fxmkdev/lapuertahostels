@@ -1,4 +1,4 @@
-import { NewLink } from "@lapuertahostels/payload-types";
+import { Brand, NewLink } from "@lapuertahostels/payload-types";
 import { Link, LinkProps } from "./link";
 import { PropsWithChildren } from "react";
 import { gracefully, isObject } from "./utils";
@@ -31,4 +31,14 @@ export function getPageLinkHref(linkData: PageLinkData, locale: string) {
         `${gracefully(linkData.doc, "pathname") ?? ""}${linkData.queryString ? `?${linkData.queryString}` : ""}${linkData.fragment ? `#${linkData.fragment}` : ""}`,
       )
     : (linkData.url ?? "about:blank");
+}
+
+export function getBrandHomeHref(brand: Brand, locale: string) {
+  if (typeof brand.rootPath === "string" && brand.rootPath.trim()) {
+    return buildLocalizedRelativeUrl(locale, brand.rootPath);
+  }
+
+  return isObject(brand.homeLink)
+    ? getPageLinkHref(brand.homeLink, locale)
+    : "about:blank";
 }

@@ -18,6 +18,7 @@ type Story = StoryObj<typeof meta>;
 const puertaBrand = brand({
   id: "puerta",
   homeLink: internalLink("/"),
+  rootPath: "/",
   logo: media("logo-puerta-simple.png"),
   name: "La Puerta Hostels",
 });

@@ -7,6 +7,8 @@ import {
 } from "../common/cms";
 
 setup("setting up CMS", async ({}) => {
+  await initializeLocale();
+
   const puertaBrand = await getPuertaBrand();
   if (!puertaBrand) {
     console.log("Puerta brand not found, creating it");
@@ -14,6 +16,5 @@ setup("setting up CMS", async ({}) => {
     await createPuertaBrand();
   }
 
-  await initializeLocale();
   await mockUiLabelTranslations();
 });
