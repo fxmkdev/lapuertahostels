@@ -1,5 +1,6 @@
 import { createId } from "@paralleldrive/cuid2";
 import fs from "fs/promises";
+import { MongoClient, ObjectId } from "mongodb";
 import path from "path";
 import {
   Brand,
@@ -9,20 +10,85 @@ import {
   Settings,
 } from "@lapuertahostels/payload-types";
 
+type BrandSeedDocument = {
+  _id: string;
+  createdAt: string;
+  footer: { linkGroups: [] };
+  id: string;
+  logo: ObjectId;
+  name: string;
+  rootPath: Localized<string>;
+  updatedAt: string;
+};
+
+type Localized<T> = {
+  en: T;
+  es: T;
+};
+
+type PageSeedDocument = Omit<
+  Partial<Page>,
+  "createdAt" | "id" | "pathname" | "title" | "updatedAt"
+> & {
+  _id: ObjectId;
+  createdAt: string;
+  pathname: Localized<string>;
+  title: Localized<string>;
+  updatedAt: string;
+};
+
 export async function createPage(data: Partial<Page> = {}) {
   const testPagePathname = `/e2e/${createId()}`;
+  const now = new Date().toISOString();
+  const pageId = new ObjectId();
+  const title = data.title ?? "Default Title";
 
   data = {
+    ...data,
     pathname: testPagePathname,
     brand: "puerta",
-    ...data,
+    title,
+    hero: withArrayRowIds(data.hero),
+    content: withArrayRowIds(data.content),
   };
 
-  if (!data.title) {
-    data.title = "Default Title";
-  }
+  await withCmsDatabase(async (client) => {
+    const database = client.db();
 
-  return await create("pages", data);
+    const { id: _, pathname: __, title: ___, ...documentData } = data;
+    // The page block arrays are not localized fields in the CMS schema.
+    // Only nested localized values, such as rich text, need locale wrappers.
+    const localizedDocumentData = castMediaRelationshipIds(
+      localizeRichTextFields(documentData),
+    ) as Omit<
+      PageSeedDocument,
+      "_id" | "createdAt" | "pathname" | "title" | "updatedAt"
+    >;
+
+    await database.collection<PageSeedDocument>("pages").insertOne({
+      _id: pageId,
+      ...localizedDocumentData,
+      createdAt: now,
+      pathname: {
+        en: testPagePathname,
+        es: testPagePathname,
+      },
+      title: {
+        en: title,
+        es: title,
+      },
+      updatedAt: now,
+    });
+  });
+
+  return {
+    ...data,
+    createdAt: now,
+    id: pageId.toHexString(),
+    pathname: testPagePathname,
+    title,
+    updatedAt: now,
+  } as Page;
 }
 
 export async function getPuertaBrand() {
@@ -40,13 +106,30 @@ export async function getMedia(filename: string) {
 
 export async function createPuertaBrand() {
   const media = await getOrCreateMedia("logo-puerta-simple.png", "image/png");
+  const now = new Date().toISOString();
 
-  await create("brands", {
-    id: "puerta",
-    name: "La Puerta Hostels",
-    logo: media.id,
-    footer: { linkGroups: [] },
-  } as Omit<Brand, "updatedAt" | "createdAt">);
+  await withCmsDatabase(async (client) => {
+    const database = client.db();
+
+    await database.collection<BrandSeedDocument>("brands").updateOne(
+      { _id: "puerta" },
+      {
+        $setOnInsert: {
+          _id: "puerta",
+          createdAt: now,
+          id: "puerta",
+        },
+        $set: {
+          footer: { linkGroups: [] },
+          logo: toObjectId(media.id),
+          name: "La Puerta Hostels",
+          rootPath: localizeForAllLocales("/"),
+          updatedAt: now,
+        },
+      },
+      { upsert: true },
+    );
+  });
 }
 
 export async function mockUiLabelTranslations() {
@@ -190,6 +273,102 @@ async function createMedia(filename: string, mimeType: string, alt?: string) {
 
 export async function get(path: string) {
   return fetchCms(path);
+}
+
+async function withCmsDatabase<T>(
+  callback: (client: MongoClient) => Promise<T>,
+) {
+  const client = new MongoClient(getCmsDatabaseUri());
+
+  try {
+    await client.connect();
+
+    return await callback(client);
+  } finally {
+    await client.close();
+  }
+}
+
+function getCmsDatabaseUri() {
+  return (
+    process.env.CMS_DATABASE_URI ??
+    process.env.DATABASE_URI ??
+    "mongodb://localhost:27017/website-cms"
+  );
+}
+
+function localizeForAllLocales<T>(value: T): Localized<T> {
+  return {
+    en: value,
+    es: value,
+  };
+}
+
+function withArrayRowIds<T extends { id?: string | null }>(
+  rows: T[] | null | undefined,
+) {
+  return rows?.map((row) => ({ ...row, id: row.id ?? createId() })) ?? rows;
+}
+
+function localizeRichTextFields(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(localizeRichTextFields);
+  }
+
+  if (!isRecord(value)) {
+    return value;
+  }
+
+  if (isLexicalRichText(value)) {
+    return localizeForAllLocales(value);
+  }
+
+  return Object.fromEntries(
+    Object.entries(value).map(([key, childValue]) => [
+      key,
+      localizeRichTextFields(childValue),
+    ]),
+  );
+}
+
+function castMediaRelationshipIds(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(castMediaRelationshipIds);
+  }
+
+  if (!isRecord(value)) {
+    return value;
+  }
+
+  return Object.fromEntries(
+    Object.entries(value).map(([key, childValue]) => {
+      if (isMediaRelationshipKey(key) && typeof childValue === "string") {
+        return [key, toObjectId(childValue)];
+      }
+
+      return [key, castMediaRelationshipIds(childValue)];
+    }),
+  );
+}
+
+function isMediaRelationshipKey(key: string) {
+  return key === "image" || key === "logo";
+}
+
+function toObjectId(value: string) {
+  if (!ObjectId.isValid(value)) {
+    throw new Error(`Expected a Mongo ObjectId string, got "${value}"`);
+  }
+
+  return new ObjectId(value);
+}
+
+function isLexicalRichText(value: Record<string, unknown>) {
+  return isRecord(value.root);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 async function fetchCms(path: string, init?: RequestInit) {
