@@ -19,6 +19,7 @@ const puertaBrand = brand({
   name: "La Puerta Hostels",
   logo: media("logo-puerta-simple.png"),
   homeLink: internalLink("/"),
+  rootPath: "/",
   navLinks: [
     {
       label: "Puerta Aqua",
