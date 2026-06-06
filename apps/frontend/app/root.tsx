@@ -207,7 +207,7 @@ export default function App() {
           }
           region={settings.maps?.region || undefined}
         >
-          <ThemeProvider brandId={brand.id as BrandId}>
+          <ThemeProvider themeColor={brand.themeColor}>
             {settings.maintenanceScreen?.show && isAuthorized && (
               <PreviewBar adminLocale={adminLocale!} />
             )}

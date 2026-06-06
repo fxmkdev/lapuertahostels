@@ -63,7 +63,7 @@ export function GlobalErrorBoundary() {
         <AnalyticsScript analyticsDomain={analyticsDomain} />
       </head>
       <body className="bg-white text-neutral-900 antialiased">
-        <ThemeProvider brandId="puerta">
+        <ThemeProvider themeColor={brand.themeColor}>
           <Header
             brand={brand}
             allBrands={allBrands}
@@ -135,7 +135,7 @@ function MaintenanceErrorScreen({ settings }: { settings: Settings }) {
         <Links />
       </head>
       <body className="bg-white text-neutral-900 antialiased">
-        <ThemeProvider brandId="puerta">
+        <ThemeProvider themeColor="puerta">
           <MaintenanceScreen {...settings.maintenanceScreen!} />
           <Scripts />
         </ThemeProvider>

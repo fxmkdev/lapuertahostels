@@ -11,7 +11,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@fxmk/common": "0.8.1",
+    "@fxmk/common": "0.9.0",
     "@lapuertahostels/payload-types": "workspace:../../libs/payload-types",
     "@paralleldrive/cuid2": "^3.3.0",
     "@playwright/test": "^1.60.0",
