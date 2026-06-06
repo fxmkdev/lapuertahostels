@@ -4,6 +4,10 @@ import { MigrateDownArgs, MigrateUpArgs } from "@payloadcms/db-mongodb";
 type DataRecord = Record<string, unknown>;
 
 export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
+  // Keep the plugin helper as the migration audit source, but do the write
+  // through Mongo: the helper uses Payload updates, which re-run root-path
+  // overlap validation and reject the existing "/" root brand while sibling
+  // brands like "/aqua" and "/azul" are present.
   const helperResult = await migrateBrandHomeLinksToRootPaths({
     dryRun: true,
     payload,
@@ -113,6 +117,10 @@ function getHomePageId(homeLink: unknown) {
 function getRelationshipId(value: unknown) {
   if (typeof value === "number" || typeof value === "string") {
     return value;
+  }
+
+  if (isRecord(value) && "value" in value) {
+    return getRelationshipId(value.value);
   }
 
   if (isRecord(value) && ("id" in value || "_id" in value)) {
