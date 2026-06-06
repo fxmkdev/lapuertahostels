@@ -24,6 +24,7 @@ const puertaBrand = brand({
   id: "puerta",
   name: "La Puerta Hostels",
   homeLink: internalLink("/"),
+  rootPath: "/",
   navLinks: [
     {
       label: "Accommodations",

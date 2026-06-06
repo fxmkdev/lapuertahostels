@@ -2,8 +2,10 @@ import { Transition } from "@headlessui/react";
 import { ReactNode } from "react";
 import { BrandLogo } from "~/common/brand-logo";
 import { cn } from "~/common/cn";
-import { PageLink } from "~/common/page-link";
+import { getBrandHomeHref } from "~/common/page-link";
 import { Brand } from "@lapuertahostels/payload-types";
+import { Link } from "~/common/link";
+import { useTranslation } from "react-i18next";
 
 export type NavbarBrandLogoProps = {
   brand: Brand;
@@ -16,11 +18,14 @@ export function NavbarBrandLogo({
   brand,
   className,
 }: NavbarBrandLogoProps) {
+  const { i18n } = useTranslation();
+
   function getComponent(children: ReactNode) {
-    return brand.homeLink ? (
-      <PageLink link={brand.homeLink}>{children}</PageLink>
+    const href = getBrandHomeHref(brand, i18n.language);
+    return href !== "about:blank" ? (
+      <Link to={href}>{children}</Link>
     ) : (
-      <div>{children}</div>
+      <span>{children}</span>
     );
   }
   return (

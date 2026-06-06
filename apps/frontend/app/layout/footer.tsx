@@ -4,11 +4,12 @@ import { RichTextObject } from "@fxmk/common";
 import { useTranslation } from "react-i18next";
 import { socials } from "~/common/socials";
 import { useTheme } from "~/themes";
-import { PageLink } from "~/common/page-link";
+import { getBrandHomeHref, PageLink } from "~/common/page-link";
 import { Input } from "~/common/input";
 import { ReactNode } from "react";
 import { isEmptyRichText, RichText } from "~/common/rich-text";
 import { Brand, Footer as FooterType } from "@lapuertahostels/payload-types";
+import { Link } from "~/common/link";
 
 type FooterProps = {
   content: FooterType;
@@ -17,17 +18,18 @@ type FooterProps = {
 };
 
 export function Footer({ content, brand, allBrands }: FooterProps) {
-  const { t } = useTranslation();
+  const { i18n, t } = useTranslation();
   const theme = useTheme();
   const puertaBrand = allBrands.find((b) => b.id === "puerta");
   if (!puertaBrand) throw new Error("Puerta brand not found");
 
   function getComponent(children: ReactNode) {
     if (!puertaBrand) throw new Error("Puerta brand not found");
-    return puertaBrand.homeLink ? (
-      <PageLink link={puertaBrand.homeLink}>{children}</PageLink>
+    const href = getBrandHomeHref(puertaBrand, i18n.language);
+    return href !== "about:blank" ? (
+      <Link to={href}>{children}</Link>
     ) : (
-      <div>{children}</div>
+      <span>{children}</span>
     );
   }
   return (
