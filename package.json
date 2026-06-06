@@ -4,7 +4,7 @@
     "node": "24"
   },
   "devDependencies": {
-    "prettier": "3.8.3",
-    "@fxmk/releaser": "0.5.4"
+    "@fxmk/releaser": "0.5.5",
+    "prettier": "3.8.3"
   }
 }
