@@ -29,7 +29,7 @@ export function Footer({ content, brand, allBrands }: FooterProps) {
     return href !== "about:blank" ? (
       <Link to={href}>{children}</Link>
     ) : (
-      <div>{children}</div>
+      <span>{children}</span>
     );
   }
   return (
