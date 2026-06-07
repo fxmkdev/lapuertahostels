@@ -1,7 +1,6 @@
 import { Brand } from "@lapuertahostels/payload-types";
-import { type BrandId } from "../brands";
 import { cn } from "./cn";
-import { themesByBrand } from "~/themes";
+import { getTheme } from "~/themes";
 import { MediaImage } from "./media";
 
 export type BrandLogoProps = {
@@ -17,7 +16,7 @@ export function BrandLogo({
   type = "with-wordmark",
   className,
 }: BrandLogoProps) {
-  const theme = themesByBrand[brand.id as BrandId];
+  const theme = getTheme(brand.themeColor);
   return (
     <span
       className={cn(

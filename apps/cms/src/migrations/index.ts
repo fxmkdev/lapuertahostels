@@ -7,6 +7,7 @@ import * as migration_20250817_133906_migration from "./20250817_133906_migratio
 import * as migration_20260529_000000_optional_room_cta from "./20260529_000000_optional_room_cta";
 import * as migration_20260529_224952_accommodation_selector_card_links from "./20260529_224952_accommodation_selector_card_links";
 import * as migration_20260606_194625_migrate_brand_root_paths from "./20260606_194625_migrate_brand_root_paths";
+import * as migration_20260606_210000_migrate_brand_theme_colors from "./20260606_210000_migrate_brand_theme_colors";
 
 export const migrations = [
   {
@@ -53,5 +54,10 @@ export const migrations = [
     up: migration_20260606_194625_migrate_brand_root_paths.up,
     down: migration_20260606_194625_migrate_brand_root_paths.down,
     name: "20260606_194625_migrate_brand_root_paths",
+  },
+  {
+    up: migration_20260606_210000_migrate_brand_theme_colors.up,
+    down: migration_20260606_210000_migrate_brand_theme_colors.down,
+    name: "20260606_210000_migrate_brand_theme_colors",
   },
 ];

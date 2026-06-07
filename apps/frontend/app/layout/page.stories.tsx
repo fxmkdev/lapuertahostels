@@ -23,7 +23,7 @@ export const Puerta: Story = {
   decorators: [
     // override the brand context, this is a Puerta-only component
     (Story) => (
-      <ThemeProvider brandId="puerta">
+      <ThemeProvider themeColor="puerta">
         <Story />
       </ThemeProvider>
     ),
@@ -247,7 +247,7 @@ export const Aqua: Story = {
   decorators: [
     // override the brand context, this is a Aqua-only component
     (Story) => (
-      <ThemeProvider brandId="aqua">
+      <ThemeProvider themeColor="aqua">
         <Story />
       </ThemeProvider>
     ),
@@ -394,7 +394,7 @@ export const Azul: Story = {
   decorators: [
     // override the brand context, this is a Azul-only component
     (Story) => (
-      <ThemeProvider brandId="azul">
+      <ThemeProvider themeColor="azul">
         <Story />
       </ThemeProvider>
     ),

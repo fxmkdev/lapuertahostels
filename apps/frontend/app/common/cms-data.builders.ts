@@ -16,6 +16,7 @@ export function brand(values: Partial<Brand> = {}): Brand {
     name: values.name ?? "La Puerta Hostels",
     homeLink: values.homeLink ?? internalLink("/"),
     rootPath: values.rootPath ?? "/",
+    themeColor: values.themeColor ?? "puerta",
     navLinks: values.navLinks ?? [],
     logo: values.logo ?? media("logo-puerta-simple.png"),
     createdAt: date,

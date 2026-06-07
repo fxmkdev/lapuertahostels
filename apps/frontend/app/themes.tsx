@@ -1,5 +1,4 @@
 import { PropsWithChildren, createContext, useContext } from "react";
-import { BrandId } from "./brands";
 
 export type Theme = {
   loadingBarColor: string;
@@ -38,14 +37,14 @@ export type Theme = {
 };
 
 export type ThemeProviderProps = {
-  brandId: BrandId;
+  themeColor: ThemeColor | null | undefined;
 };
 
 export function ThemeProvider({
-  brandId,
+  themeColor,
   children,
 }: PropsWithChildren<ThemeProviderProps>) {
-  const theme = themesByBrand[brandId];
+  const theme = getTheme(themeColor);
 
   return (
     <ThemeContext.Provider value={theme}>{children}</ThemeContext.Provider>
@@ -63,7 +62,17 @@ export function useTheme() {
   return theme;
 }
 
-export const themesByBrand: Record<BrandId, Theme> = {
+export type ThemeColor = "puerta" | "aqua" | "azul";
+
+export function isThemeColor(value: unknown): value is ThemeColor {
+  return value === "puerta" || value === "aqua" || value === "azul";
+}
+
+export function getTheme(themeColor: unknown) {
+  return themesByBrand[isThemeColor(themeColor) ? themeColor : "puerta"];
+}
+
+export const themesByBrand: Record<ThemeColor, Theme> = {
   puerta: {
     loadingBarColor: "bg-puerta-500",
     logoTextColor: "text-neutral-900",

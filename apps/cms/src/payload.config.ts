@@ -65,6 +65,11 @@ export default buildConfig({
       livePreviewBaseUrl: process.env.LIVE_PREVIEW_URL,
       serverUrl: process.env.SERVER_URL,
       e2eTestsApiKey: process.env.E2E_TESTS_API_KEY,
+      themeColors: [
+        { label: { en: "Puerta", es: "Puerta" }, value: "puerta" },
+        { label: { en: "Aqua", es: "Aqua" }, value: "aqua" },
+        { label: { en: "Azul", es: "Azul" }, value: "azul" },
+      ],
     }),
   ],
   db: mongooseAdapter({
