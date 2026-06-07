@@ -98,7 +98,7 @@ const preview: Preview = {
     withReactRouter,
     (Story, { globals, parameters }) => (
       <I18nextProvider i18n={parameters.i18n}>
-        <ThemeProvider brandId={globals.brand}>
+        <ThemeProvider themeColor={globals.brand}>
           <Story />
         </ThemeProvider>
       </I18nextProvider>
