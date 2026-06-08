@@ -8,6 +8,7 @@ import * as migration_20260529_000000_optional_room_cta from "./20260529_000000_
 import * as migration_20260529_224952_accommodation_selector_card_links from "./20260529_224952_accommodation_selector_card_links";
 import * as migration_20260606_194625_migrate_brand_root_paths from "./20260606_194625_migrate_brand_root_paths";
 import * as migration_20260606_210000_migrate_brand_theme_colors from "./20260606_210000_migrate_brand_theme_colors";
+import * as migration_20260608_000000_migrate_media_categories_to_folders from "./20260608_000000_migrate_media_categories_to_folders";
 
 export const migrations = [
   {
@@ -59,5 +60,10 @@ export const migrations = [
     up: migration_20260606_210000_migrate_brand_theme_colors.up,
     down: migration_20260606_210000_migrate_brand_theme_colors.down,
     name: "20260606_210000_migrate_brand_theme_colors",
+  },
+  {
+    up: migration_20260608_000000_migrate_media_categories_to_folders.up,
+    down: migration_20260608_000000_migrate_media_categories_to_folders.down,
+    name: "20260608_000000_migrate_media_categories_to_folders",
   },
 ];

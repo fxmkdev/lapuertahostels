@@ -53,6 +53,10 @@ export default buildConfig({
     cmsPlugin({
       additionalContentBlocks: [RoomListBlock, AccommodationSelectorBlock],
       additionalUiLabelFields,
+      media: {
+        organization: "folders",
+        retainLegacyCategories: true,
+      },
       mediaS3Storage: {
         bucket: process.env.MEDIA_S3_BUCKET!,
         region: process.env.MEDIA_S3_REGION!,

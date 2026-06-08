@@ -12,6 +12,9 @@ It includes:
 ## Repository-wide Guidelines
 
 - Use `pnpm` as package manager.
+- Before starting coding work, fetch and start from the latest `origin/main`.
+  For existing pull request branches, rebase onto the latest `origin/main`
+  before pushing updates.
 - Keep changes focused and minimal; avoid unrelated refactors.
 - Keep docs in sync when introducing new behavior, patterns, or conventions.
 - The runtime target is Node 24. Keep `@types/node` aligned with the current
@@ -87,6 +90,8 @@ pnpm --filter @lapuertahostels/e2e e2e                   # Run Playwright e2e UI
   shared workspace package with
   `pnpm --filter @lapuertahostels/payload-types pull-payload-types` when schema
   changes need to be consumed outside the CMS.
+- `@fxmk/cms-plugin` and `@fxmk/common` come from the same source repository.
+  Always update them together to the same version wherever they are declared.
 - Keep CMS configuration and custom blocks close to `apps/cms/src/`, and keep
   frontend rendering concerns in `apps/frontend/app/`.
 

@@ -33,6 +33,12 @@ Recommended types:
 Commits inside a pull request can stay descriptive for review flow and do not
 need to be strictly Conventional Commit formatted.
 
+## Branch Freshness
+
+- Coding agents should fetch and start new work from the latest `origin/main`.
+- For existing pull request branches, rebase onto the latest `origin/main`
+  before pushing updates.
+
 ## Pull Request Description Workflow
 
 - Prefer `gh pr create --body-file <path>` over `--body` to avoid shell
@@ -52,6 +58,11 @@ need to be strictly Conventional Commit formatted.
 
 - Keep `@types/node` on the Node 24 line until the next runtime migration is
   scheduled.
+
+## Shared Package Version Policy
+
+- `@fxmk/cms-plugin` and `@fxmk/common` come from the same source repository.
+  Always update them together to the same version wherever they are declared.
 
 ## Review Comment Workflow
 
