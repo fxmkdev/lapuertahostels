@@ -1,3 +1,5 @@
+# syntax = docker/dockerfile:1
+
 # From https://github.com/vercel/next.js/blob/canary/examples/with-docker/Dockerfile
 
 FROM node:24-alpine AS base
@@ -7,6 +9,7 @@ RUN npm install -g corepack@latest
 
 # Install dependencies only when needed
 FROM base AS builder
+ARG APP_VERSION=0.0.0-unknown
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
@@ -16,8 +19,12 @@ RUN corepack enable pnpm
 
 # Install dependencies
 COPY --link package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
-COPY --link apps/cms apps/cms
-RUN pnpm --filter cms install --frozen-lockfile
+COPY --link apps/cms/package.json apps/cms/
+RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store,sharing=locked \
+    pnpm --config.store-dir=/pnpm/store --filter @lapuertahostels/cms install --frozen-lockfile
+
+# Copy application code
+COPY apps/cms apps/cms
 
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
@@ -25,6 +32,7 @@ RUN pnpm --filter cms install --frozen-lockfile
 # ENV NEXT_TELEMETRY_DISABLED 1
 
 RUN pnpm --dir apps/cms build
+RUN node -e "const fs = require('fs'); const [file, version] = process.argv.slice(1); const pkg = JSON.parse(fs.readFileSync(file, 'utf8')); pkg.version = version; fs.writeFileSync(file, JSON.stringify(pkg, null, 2) + '\n');" apps/cms/.next/standalone/apps/cms/package.json "$APP_VERSION"
 
 # Production image, copy all the files and run next
 FROM base AS runner

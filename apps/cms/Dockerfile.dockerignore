@@ -12,9 +12,14 @@
 **/.next
 **/.react-router
 **/build
+**/coverage
+**/playwright-report
+**/storybook-static
+**/.cache
 **/node_modules
 **/tests
 **/.env*
 **/tsconfig.tsbuildinfo
+**/*.log
 **/.vscode
 **/.DS_Store
