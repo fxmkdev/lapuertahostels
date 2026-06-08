@@ -19,6 +19,7 @@ RUN corepack enable pnpm
 
 # Throw-away build stage to reduce size of final image
 FROM base AS build
+ARG APP_VERSION=0.0.0-unknown
 ENV CI=true
 
 # Install packages needed to build node modules
@@ -28,17 +29,23 @@ RUN apt-get update -qq && \
 # Install node modules
 COPY --link package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY --link apps/frontend/package.json apps/frontend/
-RUN pnpm --filter frontend install --prod=false --frozen-lockfile
+COPY --link libs/payload-types/package.json libs/payload-types/
+RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store,sharing=locked \
+    pnpm --filter @lapuertahostels/frontend install --prod=false --frozen-lockfile --store-dir /pnpm/store
 
 # Copy application code
-COPY --link apps/frontend apps/frontend
-COPY --link libs/payload-types libs/payload-types
+COPY apps/frontend apps/frontend
+COPY libs/payload-types libs/payload-types
+
+# React Router bundles the imported package JSON during the build.
+RUN node -e "const fs = require('fs'); const [file, version] = process.argv.slice(1); const pkg = JSON.parse(fs.readFileSync(file, 'utf8')); pkg.version = version; fs.writeFileSync(file, JSON.stringify(pkg, null, 2) + '\n');" apps/frontend/package.json "$APP_VERSION"
 
 # Build application
-RUN pnpm --filter frontend build
+RUN cd apps/frontend && ./node_modules/.bin/react-router build
 
 # Remove development dependencies
-RUN pnpm --dir apps/frontend prune --prod
+RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store,sharing=locked \
+    pnpm --config.store-dir=/pnpm/store --dir apps/frontend prune --prod
 
 
 # Final stage for app image
