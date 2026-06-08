@@ -13,7 +13,7 @@ on:
 jobs:
   deploy:
     name: "Deploy"
-    uses: fxmkdev/webplatform/.github/workflows/export.deploy.yml@v0.9.1
+    uses: fxmkdev/webplatform/.github/workflows/export.deploy.yml@v0.9.2
     with:
       environment: ${{ inputs.environment }}
     secrets: inherit

@@ -7,5 +7,5 @@ on:
 jobs:
   clean-preview:
     name: Clean Preview
-    uses: fxmkdev/webplatform/.github/workflows/export.clean-preview.yml@v0.9.1
+    uses: fxmkdev/webplatform/.github/workflows/export.clean-preview.yml@v0.9.2
     secrets: inherit
