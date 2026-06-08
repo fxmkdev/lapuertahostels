@@ -7,7 +7,7 @@ import {
   Footer,
 } from "@lapuertahostels/payload-types";
 import { BRANDS_DEPTH, PAGE_DEPTH } from "./cms-data";
-import { redis } from "./redis";
+import { runRedisCommand } from "./redis";
 
 const CACHE_EXPIRY_IN_MS = 1000 * 60; // 1 min
 
@@ -25,7 +25,7 @@ async function loadAndCacheData<TData, TResult>(
     await cacheData(cacheKeyWithLocale, result);
   } else {
     console.log(`Deleting data for ${cacheKeyWithLocale} (if exists)`);
-    await redis.del(cacheKeyWithLocale);
+    await deleteCachedData(cacheKeyWithLocale);
   }
 
   return result;
@@ -34,13 +34,42 @@ async function loadAndCacheData<TData, TResult>(
 async function cacheData(cacheKeyWithLocale: string, data: object) {
   console.log(`Caching data to ${cacheKeyWithLocale}`);
 
-  await redis.set(
-    cacheKeyWithLocale,
-    JSON.stringify({
-      data,
-      cachedAt: new Date().toJSON(),
-    } as CacheEntry<object>),
-  );
+  try {
+    await runRedisCommand((redis) =>
+      redis.set(
+        cacheKeyWithLocale,
+        JSON.stringify({
+          data,
+          cachedAt: new Date().toJSON(),
+        } as CacheEntry<object>),
+      ),
+    );
+  } catch (error) {
+    console.warn(
+      `Failed to cache data for ${cacheKeyWithLocale}. Continuing without Redis cache: ${formatError(error)}`,
+    );
+  }
+}
+
+async function deleteCachedData(cacheKeyWithLocale: string) {
+  try {
+    await runRedisCommand((redis) => redis.del(cacheKeyWithLocale));
+  } catch (error) {
+    console.warn(
+      `Failed to delete cache entry for ${cacheKeyWithLocale}. Continuing without Redis cache: ${formatError(error)}`,
+    );
+  }
+}
+
+async function getCachedData(cacheKeyWithLocale: string) {
+  try {
+    return await runRedisCommand((redis) => redis.get(cacheKeyWithLocale));
+  } catch (error) {
+    console.warn(
+      `Failed to read cache for ${cacheKeyWithLocale}. Treating as cache miss: ${formatError(error)}`,
+    );
+    return null;
+  }
 }
 
 type CacheEntry<T> = {
@@ -67,7 +96,7 @@ async function getData<TData, TResult>(
     return getResultFn(await loadData(pathname, locale, depth, queryParams));
   }
 
-  const cacheEntryString = await redis.get(cacheKeyWithLocale);
+  const cacheEntryString = await getCachedData(cacheKeyWithLocale);
   const cacheEntry = cacheEntryString
     ? (JSON.parse(cacheEntryString) as CacheEntry<TResult>)
     : null;
@@ -268,5 +297,9 @@ export async function getBrands(request: Request, locale: string) {
 }
 
 export async function purgeCache() {
-  await redis.flushDb();
+  await runRedisCommand((redis) => redis.flushDb());
+}
+
+function formatError(error: unknown) {
+  return error instanceof Error ? error.message : String(error);
 }
