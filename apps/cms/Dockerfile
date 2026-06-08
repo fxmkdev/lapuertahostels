@@ -21,7 +21,7 @@ RUN corepack enable pnpm
 COPY --link package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY --link apps/cms/package.json apps/cms/
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store,sharing=locked \
-    pnpm --filter @lapuertahostels/cms install --frozen-lockfile --store-dir /pnpm/store
+    pnpm --config.store-dir=/pnpm/store --filter @lapuertahostels/cms install --frozen-lockfile
 
 # Copy application code
 COPY apps/cms apps/cms

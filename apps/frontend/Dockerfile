@@ -31,7 +31,7 @@ COPY --link package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY --link apps/frontend/package.json apps/frontend/
 COPY --link libs/payload-types/package.json libs/payload-types/
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store,sharing=locked \
-    pnpm --filter @lapuertahostels/frontend install --prod=false --frozen-lockfile --store-dir /pnpm/store
+    pnpm --config.store-dir=/pnpm/store --filter @lapuertahostels/frontend install --prod=false --frozen-lockfile
 
 # Copy application code
 COPY apps/frontend apps/frontend
@@ -56,4 +56,4 @@ COPY --from=build /app /app
 
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
-CMD [ "pnpm", "--filter", "frontend", "start" ]
+CMD [ "pnpm", "--filter", "@lapuertahostels/frontend", "start" ]
