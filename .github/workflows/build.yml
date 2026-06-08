@@ -15,7 +15,7 @@ on:
 jobs:
   build:
     name: "Build"
-    uses: fxmkdev/webplatform/.github/workflows/export.build.yml@main
+    uses: fxmkdev/webplatform/.github/workflows/export.build.yml@v0.9.1
     permissions:
       contents: write
     secrets: inherit
