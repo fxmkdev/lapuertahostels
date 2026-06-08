@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { purgeCache, tryGetPage } from "./cms-data.server";
 
 const runRedisCommand = vi.hoisted(() => vi.fn());
@@ -33,6 +33,11 @@ beforeEach(() => {
   vi.stubEnv("PAYLOAD_CMS_API_KEY", "test-api-key");
   vi.stubGlobal("fetch", fetchMock);
   runRedisCommand.mockImplementation((command) => command(redis));
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
 });
 
 describe("CMS data cache", () => {

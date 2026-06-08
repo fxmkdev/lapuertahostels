@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { closeRedisClient, runRedisCommand } from "./redis";
 
 const createClient = vi.hoisted(() => vi.fn());
@@ -20,6 +20,10 @@ beforeEach(async () => {
   await closeRedisClient();
   createClient.mockReset();
   vi.stubEnv("REDIS_URL", "redis://localhost:6379");
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
 });
 
 describe("runRedisCommand", () => {

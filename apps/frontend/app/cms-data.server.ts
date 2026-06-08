@@ -31,7 +31,7 @@ async function loadAndCacheData<TData, TResult>(
   return result;
 }
 
-async function cacheData(cacheKeyWithLocale: string, data: object) {
+async function cacheData<TData>(cacheKeyWithLocale: string, data: TData) {
   console.log(`Caching data to ${cacheKeyWithLocale}`);
 
   try {
@@ -41,7 +41,7 @@ async function cacheData(cacheKeyWithLocale: string, data: object) {
         JSON.stringify({
           data,
           cachedAt: new Date().toJSON(),
-        } as CacheEntry<object>),
+        } as CacheEntry<TData>),
       ),
     );
   } catch (error) {
