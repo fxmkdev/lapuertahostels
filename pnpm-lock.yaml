@@ -42,8 +42,8 @@ importers:
   apps/cms:
     dependencies:
       '@fxmk/cms-plugin':
-        specifier: 0.9.2
-        version: 0.9.2(128199f210e2ca31efa9dd2040f35b6b)
+        specifier: 0.9.3
+        version: 0.9.3(128199f210e2ca31efa9dd2040f35b6b)
       '@payloadcms/db-mongodb':
         specifier: ^3.84.1
         version: 3.84.1(payload@3.84.1(graphql@16.10.0)(typescript@6.0.3))
@@ -106,8 +106,8 @@ importers:
   apps/frontend:
     dependencies:
       '@fxmk/common':
-        specifier: 0.9.2
-        version: 0.9.2
+        specifier: 0.9.3
+        version: 0.9.3
       '@headlessui/react':
         specifier: ^2.2.10
         version: 2.2.10(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -278,8 +278,8 @@ importers:
   tests/e2e:
     devDependencies:
       '@fxmk/common':
-        specifier: 0.9.2
-        version: 0.9.2
+        specifier: 0.9.3
+        version: 0.9.3
       '@lapuertahostels/payload-types':
         specifier: workspace:../../libs/payload-types
         version: link:../../libs/payload-types
@@ -1228,8 +1228,8 @@ packages:
   '@floating-ui/utils@0.2.11':
     resolution: {integrity: sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==}
 
-  '@fxmk/cms-plugin@0.9.2':
-    resolution: {integrity: sha512-GzSNh5Uj2MjKQcVzWRFipemNSji2eArUe1g+Ld5YZdP4twcuc05u7dXa7vnj0uUmFZZH0S0zXkvfZLqt7sGn5w==}
+  '@fxmk/cms-plugin@0.9.3':
+    resolution: {integrity: sha512-h1vUudeSZEtousDNg3baDHBFi/vpQ6iM2qe9HQ7Zd2/DJeMQQk3lTQu3T1JoDiuVLFLX9LZhBZQdgA+tSOhuLA==}
     engines: {node: '>=24.0.0', pnpm: ^9 || ^10 || ^11}
     peerDependencies:
       '@payloadcms/db-mongodb': ^3.84.1
@@ -1241,8 +1241,8 @@ packages:
       react: ^18 || ^19
       react-dom: ^18 || ^19
 
-  '@fxmk/common@0.9.2':
-    resolution: {integrity: sha512-IjoSEpSfVDrBdli6QXFyr6B+fBADicXInqT3hLlYj8LCGo5lgUiRvysTHSIBn1v/l9ArFyVJlbgNqQ63Z9cJ1A==}
+  '@fxmk/common@0.9.3':
+    resolution: {integrity: sha512-17hBv36YluvYizTYWYJhUVrNkJu5tti/KCwtTTsbUhxoJ1XypXv39LWrFUc/j/6EQULiyIFil1BdNR1A/+iAeQ==}
 
   '@fxmk/releaser@0.5.5':
     resolution: {integrity: sha512-QJNeR1vVYwzvj2souXsZ1F1jxr/FQ4wHiMzRK1dIh1WoKoW6cepRzL7sBdQJtr2SphJIf1M/DQBuhR8b1xLxuw==}
@@ -8096,7 +8096,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.11': {}
 
-  '@fxmk/cms-plugin@0.9.2(128199f210e2ca31efa9dd2040f35b6b)':
+  '@fxmk/cms-plugin@0.9.3(128199f210e2ca31efa9dd2040f35b6b)':
     dependencies:
       '@payloadcms/db-mongodb': 3.84.1(payload@3.84.1(graphql@16.10.0)(typescript@6.0.3))
       '@payloadcms/richtext-lexical': 3.84.1(@faceless-ui/modal@3.0.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@faceless-ui/scroll-info@2.0.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@payloadcms/next@3.84.1(@types/react@19.2.15)(graphql@16.10.0)(monaco-editor@0.52.2)(next@16.2.6(@playwright/test@1.60.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(payload@3.84.1(graphql@16.10.0)(typescript@6.0.3))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.3))(@types/react@19.2.15)(monaco-editor@0.52.2)(next@16.2.6(@playwright/test@1.60.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(payload@3.84.1(graphql@16.10.0)(typescript@6.0.3))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.3)(yjs@13.6.23)
@@ -8118,7 +8118,7 @@ snapshots:
       - debug
       - ws
 
-  '@fxmk/common@0.9.2': {}
+  '@fxmk/common@0.9.3': {}
 
   '@fxmk/releaser@0.5.5':
     dependencies:
