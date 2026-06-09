@@ -1,6 +1,6 @@
 import { RichTextParagraph } from "~/common/paragraph";
 import { cn } from "../common/cn";
-import { RichTextObject } from "@fxmk/common";
+import { RichTextObject } from "@lapuertahostels/rich-text";
 import { useTheme } from "~/themes";
 import { RichTextHeading } from "~/common/heading";
 import { MediaImage } from "~/common/media";

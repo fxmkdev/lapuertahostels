@@ -1,0 +1,16 @@
+.header {
+  margin-bottom: var(--base);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  > .stat {
+    color: var(--theme-elevation-400);
+  }
+}
+
+.emptyStateCell {
+  padding-block: var(--base);
+  text-align: center;
+  color: var(--theme-elevation-400);
+}

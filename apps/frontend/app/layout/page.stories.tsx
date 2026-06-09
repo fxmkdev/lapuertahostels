@@ -3,7 +3,12 @@ import { Page } from "./page";
 import { ThemeProvider } from "~/themes";
 import { callToAction, internalLink, media } from "~/common/cms-data.builders";
 import { createId } from "@paralleldrive/cuid2";
-import { bold, paragraph, richTextRoot, text } from "@fxmk/common";
+import {
+  bold,
+  paragraph,
+  richTextRoot,
+  text,
+} from "@lapuertahostels/rich-text";
 import { Brand, Page as PageItem } from "@lapuertahostels/payload-types";
 import { HeroSlidesBlockProps } from "~/blocks/slides-block/hero-slides-block";
 import { FeaturesBlockProps } from "~/blocks/features-block/features-block";

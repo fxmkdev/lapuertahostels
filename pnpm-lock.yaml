@@ -41,9 +41,6 @@ importers:
 
   apps/cms:
     dependencies:
-      '@fxmk/cms-plugin':
-        specifier: 0.9.0
-        version: 0.9.0(128199f210e2ca31efa9dd2040f35b6b)
       '@payloadcms/db-mongodb':
         specifier: ^3.84.1
         version: 3.84.1(payload@3.84.1(graphql@16.10.0)(typescript@6.0.3))
@@ -65,12 +62,24 @@ importers:
       '@payloadcms/ui':
         specifier: ^3.84.1
         version: 3.84.1(@types/react@19.2.15)(monaco-editor@0.52.2)(next@16.2.6(@playwright/test@1.60.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(payload@3.84.1(graphql@16.10.0)(typescript@6.0.3))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.3)
+      bson:
+        specifier: ^6.10.4
+        version: 6.10.4
       cross-env:
         specifier: ^10.1.0
         version: 10.1.0
+      deepl-node:
+        specifier: ^1.27.0
+        version: 1.27.0
+      jsdom:
+        specifier: 29.1.1
+        version: 29.1.1(@noble/hashes@2.2.0)
       next:
         specifier: ~16.2.6
         version: 16.2.6(@playwright/test@1.60.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4)
+      openai:
+        specifier: ^6.38.0
+        version: 6.38.0(ws@8.20.1)(zod@4.4.3)
       payload:
         specifier: ^3.84.1
         version: 3.84.1(graphql@16.10.0)(typescript@6.0.3)
@@ -80,7 +89,13 @@ importers:
       react-dom:
         specifier: ^19.2.6
         version: 19.2.6(react@19.2.6)
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
     devDependencies:
+      '@types/jsdom':
+        specifier: ^28.0.3
+        version: 28.0.3
       '@types/node':
         specifier: ^24.12.4
         version: 24.12.4
@@ -105,9 +120,6 @@ importers:
 
   apps/frontend:
     dependencies:
-      '@fxmk/common':
-        specifier: 0.9.0
-        version: 0.9.0
       '@headlessui/react':
         specifier: ^2.2.10
         version: 2.2.10(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -117,6 +129,9 @@ importers:
       '@lapuertahostels/payload-types':
         specifier: workspace:../../libs/payload-types
         version: link:../../libs/payload-types
+      '@lapuertahostels/rich-text':
+        specifier: workspace:../../libs/rich-text
+        version: link:../../libs/rich-text
       '@paralleldrive/cuid2':
         specifier: ^3.3.0
         version: 3.3.0
@@ -275,14 +290,20 @@ importers:
         specifier: ^6.0.3
         version: 6.0.3
 
+  libs/rich-text:
+    devDependencies:
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
   tests/e2e:
     devDependencies:
-      '@fxmk/common':
-        specifier: 0.9.0
-        version: 0.9.0
       '@lapuertahostels/payload-types':
         specifier: workspace:../../libs/payload-types
         version: link:../../libs/payload-types
+      '@lapuertahostels/rich-text':
+        specifier: workspace:../../libs/rich-text
+        version: link:../../libs/rich-text
       '@paralleldrive/cuid2':
         specifier: ^3.3.0
         version: 3.3.0
@@ -1227,22 +1248,6 @@ packages:
 
   '@floating-ui/utils@0.2.11':
     resolution: {integrity: sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==}
-
-  '@fxmk/cms-plugin@0.9.0':
-    resolution: {integrity: sha512-xlm91uZImEr0uRhpFIU+Wo31q0QtZ61diDHzvhiYs+Wt+EI7pItsCzbs6CSayyfEeq8DjHZ4tfwo6z+8gaJJHw==}
-    engines: {node: '>=24.0.0', pnpm: ^9 || ^10 || ^11}
-    peerDependencies:
-      '@payloadcms/db-mongodb': ^3.84.1
-      '@payloadcms/richtext-lexical': ^3.84.1
-      '@payloadcms/storage-s3': ^3.84.1
-      '@payloadcms/ui': ^3.84.1
-      next: '>=16.2.2 <17.0.0'
-      payload: ^3.84.1
-      react: ^18 || ^19
-      react-dom: ^18 || ^19
-
-  '@fxmk/common@0.9.0':
-    resolution: {integrity: sha512-ffbdbzAcGFX7N/b9oBqj0jmtba5mQYkgywOW/I2oy+x/3jNBXiBrUE34UJQ6X8dBIe2GPMF4M+3Ftpbu+tdJSg==}
 
   '@fxmk/releaser@0.5.5':
     resolution: {integrity: sha512-QJNeR1vVYwzvj2souXsZ1F1jxr/FQ4wHiMzRK1dIh1WoKoW6cepRzL7sBdQJtr2SphJIf1M/DQBuhR8b1xLxuw==}
@@ -3115,6 +3120,9 @@ packages:
   '@types/hast@3.0.4':
     resolution: {integrity: sha512-WPs+bbQw5aCj+x6laNGWLH3wviHtoCv/P3+otBhbOhJgG8qtpdAMlTCxLtsTWA7LH1Oh/bFCHsBn0TPS5m30EQ==}
 
+  '@types/jsdom@28.0.3':
+    resolution: {integrity: sha512-/HQ2uFoetFTXuye8vzIcHw2z6Fwi7Hi/qcgC+RoS9NCyewiqxhVGqlG+ViGB6lkax481R6dmhf1I7lIGlzJStQ==}
+
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
@@ -3154,6 +3162,9 @@ packages:
 
   '@types/resolve@1.20.6':
     resolution: {integrity: sha512-A4STmOXPhMUtHH+S6ymgE2GiBSMqf4oTvcQZMcHzokuTLVYzXTB8ttjcgxOVaAp2lGwEdzZ0J+cRbbeevQj1UQ==}
+
+  '@types/tough-cookie@4.0.5':
+    resolution: {integrity: sha512-/Ad8+nIOV7Rl++6f1BdKxFSMgmoqEoYbHRpPcx3JEfv8VRsQe9Z4mCXeJBzxs7mbHY/XOZZuXlRNfhpVPbs6ZA==}
 
   '@types/unist@2.0.11':
     resolution: {integrity: sha512-CmBKiL6NNo/OqgmMn95Fk9Whlp2mtvIv+KNpQKN2F4SjvrEesubTRWGYSg+BnWZOnlCaSTU1sMpsBOzgbYhnsA==}
@@ -6668,6 +6679,9 @@ packages:
   undici-types@7.16.0:
     resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
 
+  undici-types@7.27.2:
+    resolution: {integrity: sha512-cH9f42mHuljpNuoS47sWDDWXVxWnJgYCzHVUlr3tn7+HVx0L6QSO+VG5qgzT4kXkR2K8ZsReaT5bupam6RNAEQ==}
+
   undici@7.24.4:
     resolution: {integrity: sha512-BM/JzwwaRXxrLdElV2Uo6cTLEjhSb3WXboncJamZ15NgUURmvlXvxa6xkwIOILIjPNo9i8ku136ZvWV0Uly8+w==}
     engines: {node: '>=20.18.1'}
@@ -8095,30 +8109,6 @@ snapshots:
       tabbable: 6.4.0
 
   '@floating-ui/utils@0.2.11': {}
-
-  '@fxmk/cms-plugin@0.9.0(128199f210e2ca31efa9dd2040f35b6b)':
-    dependencies:
-      '@payloadcms/db-mongodb': 3.84.1(payload@3.84.1(graphql@16.10.0)(typescript@6.0.3))
-      '@payloadcms/richtext-lexical': 3.84.1(@faceless-ui/modal@3.0.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@faceless-ui/scroll-info@2.0.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@payloadcms/next@3.84.1(@types/react@19.2.15)(graphql@16.10.0)(monaco-editor@0.52.2)(next@16.2.6(@playwright/test@1.60.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(payload@3.84.1(graphql@16.10.0)(typescript@6.0.3))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.3))(@types/react@19.2.15)(monaco-editor@0.52.2)(next@16.2.6(@playwright/test@1.60.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(payload@3.84.1(graphql@16.10.0)(typescript@6.0.3))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.3)(yjs@13.6.23)
-      '@payloadcms/storage-s3': 3.84.1(@types/react@19.2.15)(monaco-editor@0.52.2)(next@16.2.6(@playwright/test@1.60.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(payload@3.84.1(graphql@16.10.0)(typescript@6.0.3))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.3)
-      '@payloadcms/translations': 3.84.1
-      '@payloadcms/ui': 3.84.1(@types/react@19.2.15)(monaco-editor@0.52.2)(next@16.2.6(@playwright/test@1.60.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(payload@3.84.1(graphql@16.10.0)(typescript@6.0.3))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.3)
-      bson: 6.10.4
-      deepl-node: 1.27.0
-      jsdom: 29.1.1(@noble/hashes@2.2.0)
-      next: 16.2.6(@playwright/test@1.60.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4)
-      openai: 6.38.0(ws@8.20.1)(zod@4.4.3)
-      payload: 3.84.1(graphql@16.10.0)(typescript@6.0.3)
-      react: 19.2.6
-      react-dom: 19.2.6(react@19.2.6)
-      zod: 4.4.3
-    transitivePeerDependencies:
-      - '@noble/hashes'
-      - canvas
-      - debug
-      - ws
-
-  '@fxmk/common@0.9.0': {}
 
   '@fxmk/releaser@0.5.5':
     dependencies:
@@ -9903,6 +9893,13 @@ snapshots:
     dependencies:
       '@types/unist': 3.0.3
 
+  '@types/jsdom@28.0.3':
+    dependencies:
+      '@types/node': 24.12.4
+      '@types/tough-cookie': 4.0.5
+      parse5: 8.0.1
+      undici-types: 7.27.2
+
   '@types/json-schema@7.0.15': {}
 
   '@types/json5@0.0.29': {}
@@ -9936,6 +9933,8 @@ snapshots:
       csstype: 3.2.3
 
   '@types/resolve@1.20.6': {}
+
+  '@types/tough-cookie@4.0.5': {}
 
   '@types/unist@2.0.11': {}
 
@@ -14090,6 +14089,8 @@ snapshots:
       which-boxed-primitive: 1.1.1
 
   undici-types@7.16.0: {}
+
+  undici-types@7.27.2: {}
 
   undici@7.24.4: {}
 

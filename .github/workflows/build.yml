@@ -12,10 +12,369 @@ on:
         default: false
         type: boolean
 
+env:
+  NODE_VERSION: 24
+  FLYCTL_VERSION: 0.4.52
+  FRONTEND_INTERNAL_PORT: 3000
+  CMS_INTERNAL_PORT: 3001
+
 jobs:
-  build:
-    name: "Build"
-    uses: fxmkdev/webplatform/.github/workflows/export.build.yml@v0.9.2
+  version:
+    name: "Generate version"
+    uses: ./.github/workflows/version.yml
+    with:
+      release: ${{ github.event.inputs.release }}
+
+  populate-cms-types:
+    name: "Populate CMS types"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Install CMS dependencies
+        run: pnpm --filter cms install
+      - name: Pull CMS types
+        run: pnpm --filter payload-types pull-payload-types
+      - name: Upload CMS types
+        uses: actions/upload-artifact@v7
+        with:
+          name: payload-types
+          path: libs/payload-types/src/payload-types.ts
+
+  frontend-lint:
+    name: "Frontend: Lint"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Install dependencies
+        run: pnpm --filter frontend install
+      - name: Run lint in frontend
+        run: pnpm --filter frontend lint --max-warnings=0
+
+  frontend-check-format:
+    name: "Frontend: Check Format"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Install dependencies
+        run: pnpm --filter frontend install
+      - name: Check format in frontend
+        run: pnpm --filter frontend check-format
+
+  frontend-typecheck:
+    name: "Frontend: Typecheck"
+    runs-on: ubuntu-latest
+    needs: populate-cms-types
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Download CMS types
+        uses: actions/download-artifact@v8
+        with:
+          name: payload-types
+          path: libs/payload-types/src
+      - name: Install dependencies
+        run: pnpm --filter frontend install
+      - name: Run typecheck in frontend
+        run: pnpm --filter frontend typecheck
+
+  frontend-unit-tests:
+    name: "Frontend: Unit Tests"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Install dependencies
+        run: pnpm --filter frontend install
+      - name: Run unit tests in frontend
+        run: pnpm --filter frontend test
+
+  frontend-build-push:
+    name: "Frontend: Build and Push"
+    runs-on: ubuntu-latest
+    needs: [populate-cms-types, version]
+    outputs:
+      image: ${{ steps.image-name.outputs.image }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Set up flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@v1
+        with:
+          version: ${{ env.FLYCTL_VERSION }}
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Download CMS types
+        uses: actions/download-artifact@v8
+        with:
+          name: payload-types
+          path: libs/payload-types/src
+      - name: Get frontend image name
+        id: image-name
+        run: |
+          IMAGE_NAME=${{ vars.FLY_STAGING_FRONTEND_APP }}
+          IMAGE_TAG=v${{ needs.version.outputs.version_with_sha }}
+          echo "image_name=$IMAGE_NAME" >> "$GITHUB_OUTPUT"
+          echo "image_tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          echo "image=registry.fly.io/$IMAGE_NAME:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+      - name: Build and push frontend Docker image
+        run: |
+          flyctl deploy \
+            --app ${{ steps.image-name.outputs.image_name }} \
+            --config apps/frontend/fly.build.toml \
+            --build-only \
+            --build-arg APP_VERSION=${{ needs.version.outputs.version }} \
+            --image-label ${{ steps.image-name.outputs.image_tag }} \
+            --label org.opencontainers.image.version=${{ steps.image-name.outputs.image_tag }} \
+            --push \
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  frontend-publish-chromatic:
+    name: "Frontend: Publish to Chromatic"
+    runs-on: ubuntu-latest
+    needs: [populate-cms-types]
+    steps:
+      - name: Checkout with full history
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Install dependencies for frontend
+        run: pnpm --filter frontend install
+      - name: Download CMS types
+        uses: actions/download-artifact@v8
+        with:
+          name: payload-types
+          path: libs/payload-types/src
+      - name: Publish frontend to Chromatic
+        uses: chromaui/action@v17
+        with:
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          exitOnceUploaded: true
+          workingDir: apps/frontend
+          storybookBaseDir: apps/frontend
+        env:
+          STORYBOOK_IMAGEKIT_BASE_URL: ${{ vars.STORYBOOK_IMAGEKIT_BASE_URL }}
+          STORYBOOK_USE_IMAGE_CACHE_BUSTER: true
+          STORYBOOK_GOOGLE_MAPS_API_KEY:
+            ${{ secrets.PREVIEW_GOOGLE_MAPS_API_KEY }}
+
+  cms-lint:
+    name: "CMS: Lint"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Install dependencies
+        run: pnpm --filter cms install
+      - name: Run lint
+        run: pnpm --filter cms lint --max-warnings=0
+
+  cms-check-format:
+    name: "CMS: Check Format"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Install dependencies
+        run: pnpm --filter cms install
+      - name: Check format in frontend
+        run: pnpm --filter cms check-format
+
+  cms-build-push:
+    name: "CMS: Build and Push"
+    runs-on: ubuntu-latest
+    needs: [version]
+    outputs:
+      image: ${{ steps.image-name.outputs.image }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Set up flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@v1
+        with:
+          version: ${{ env.FLYCTL_VERSION }}
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Get CMS image name
+        id: image-name
+        run: |
+          IMAGE_NAME=${{ vars.FLY_STAGING_CMS_APP }}
+          IMAGE_TAG=v${{ needs.version.outputs.version_with_sha }}
+          echo "image_name=$IMAGE_NAME" >> "$GITHUB_OUTPUT"
+          echo "image_tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          echo "image=registry.fly.io/$IMAGE_NAME:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+      - name: Build and push CMS Docker image
+        run: |
+          flyctl deploy \
+            --app ${{ steps.image-name.outputs.image_name }} \
+            --config apps/cms/fly.build.toml \
+            --build-only \
+            --build-arg APP_VERSION=${{ needs.version.outputs.version }} \
+            --image-label ${{ steps.image-name.outputs.image_tag }} \
+            --label org.opencontainers.image.version=${{ steps.image-name.outputs.image_tag }} \
+            --push \
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  e2e-tests:
+    name: End-to-End Tests
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    needs: [populate-cms-types, version, frontend-build-push, cms-build-push]
+    env:
+      CMS_API_KEY: e2e-tests-apikey
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Install dependencies for e2e
+        run: pnpm --filter e2e install
+      - name: Set up flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@v1
+        with:
+          version: ${{ env.FLYCTL_VERSION }}
+      - name: Authenticate Fly.io Docker registry
+        run: flyctl auth docker
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      - name: Start services
+        run: docker compose up -d && sleep 3
+        env:
+          FRONTEND_IMAGE: ${{ needs.frontend-build-push.outputs.image }}
+          CMS_API_KEY: ${{ env.CMS_API_KEY }}
+          SESSION_SECRET: $(openssl rand -hex 12)
+          CMS_IMAGE: ${{ needs.cms-build-push.outputs.image }}
+          PAYLOAD_SECRET: $(openssl rand -hex 12)
+          MEDIA_S3_BUCKET: ${{ vars.E2E_TESTS_MEDIA_S3_BUCKET }}
+          MEDIA_S3_REGION: ${{ vars.E2E_TESTS_MEDIA_S3_REGION }}
+          MEDIA_S3_ACCESS_KEY_ID:
+            ${{ secrets.E2E_TESTS_MEDIA_S3_ACCESS_KEY_ID }}
+          MEDIA_S3_SECRET_ACCESS_KEY:
+            ${{ secrets.E2E_TESTS_MEDIA_S3_SECRET_ACCESS_KEY }}
+          OPENAI_API_KEY: ${{ secrets.E2E_TESTS_OPENAI_API_KEY }}
+          IMAGEKIT_BASE_URL: ${{ vars.E2E_TESTS_IMAGEKIT_BASE_URL }}
+        working-directory: tests/e2e
+      - name: Get Playwright version
+        id: playwright-version
+        run: |
+          PLAYWRIGHT_VERSION=$(pnpm list @playwright/test --depth=0 | grep '@playwright/test' | awk '{print $2}')
+          echo "playwright_version=${PLAYWRIGHT_VERSION}" >> $GITHUB_OUTPUT
+        working-directory: tests/e2e
+      - name: Cache Playwright browsers
+        uses: actions/cache@v5
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key:
+            ${{ runner.os }}-playwright-${{
+            steps.playwright-version.outputs.playwright_version }}
+      - name: Install Playwright dependencies
+        run: pnpm playwright install --with-deps chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        working-directory: tests/e2e
+      - name: Download CMS types
+        uses: actions/download-artifact@v8
+        with:
+          name: payload-types
+          path: libs/payload-types/src
+      - name: Run e2e tests
+        run: pnpm playwright test
+        working-directory: tests/e2e
+        env:
+          FRONTEND_BASE_URL: http://localhost:${{ env.FRONTEND_INTERNAL_PORT }}
+          CMS_BASE_URL: http://localhost:${{ env.CMS_INTERNAL_PORT }}
+          CMS_API_KEY: ${{ env.CMS_API_KEY }}
+          EXPECTED_VERSION: ${{ needs.version.outputs.version }}
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: playwright-report
+          path: tests/e2e/playwright-report/
+          retention-days: 30
+
+  deploy:
+    name: Deploy
+    if: github.event_name != 'pull_request'
+    needs:
+      - version
+      - frontend-lint
+      - frontend-check-format
+      - frontend-typecheck
+      - frontend-unit-tests
+      - frontend-build-push
+      - cms-lint
+      - cms-check-format
+      - cms-build-push
+      - e2e-tests
+    uses: ./.github/workflows/deploy-version.yml
+    with:
+      version_with_sha: ${{ needs.version.outputs.version_with_sha }}
+      sha: ${{ needs.version.outputs.sha }}
+      environment: staging
+    secrets: inherit
+
+  deploy-preview:
+    name: Deploy Preview
+    if: github.event_name == 'pull_request'
+    needs:
+      - version
+      - frontend-build-push
+      - cms-build-push
+    uses: ./.github/workflows/deploy-version.yml
+    with:
+      version_with_sha: ${{ needs.version.outputs.version_with_sha }}
+      sha: ${{ needs.version.outputs.sha }}
+      environment: preview
+      high_availability: false
+    secrets: inherit
+
+  create-release:
+    name: Create release
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name != 'pull_request' && github.ref == 'refs/heads/main' &&
+      needs.version.outputs.is_new_release == 'true'
+    needs: [deploy, version]
     permissions:
       contents: write
+    steps:
+      - name: Checkout with full history
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Install dependencies
+        run: pnpm --workspace-root install
+      - name: Create release
+        run: |
+          pnpm releaser publish ${{ needs.version.outputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  clean-preview:
+    name: Clean Preview Apps
+    uses: ./.github/workflows/clean-preview-reusable.yml
     secrets: inherit
+    needs: deploy-preview
