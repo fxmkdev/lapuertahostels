@@ -1,0 +1,26 @@
+.container {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.translationsButton {
+  background-color: transparent;
+  text-decoration-line: underline;
+  cursor: pointer;
+  border-style: none;
+  padding: 0;
+  color: var(--theme-elevation-800);
+
+  &:hover:not(:disabled) {
+    @media (hover: hover) {
+      color: var(--theme-elevation-1000);
+    }
+  }
+
+  &:disabled {
+    opacity: 50%;
+    cursor: not-allowed;
+  }
+}

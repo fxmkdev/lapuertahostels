@@ -11,9 +11,16 @@ on:
           - production
 
 jobs:
-  deploy:
-    name: "Deploy"
-    uses: fxmkdev/webplatform/.github/workflows/export.deploy.yml@v0.9.2
+  version:
+    name: "Generate version"
+    uses: ./.github/workflows/version.yml
+
+  deploy-version:
+    name: "Deploy version"
+    needs: version
+    uses: ./.github/workflows/deploy-version.yml
     with:
+      version_with_sha: ${{ needs.version.outputs.version_with_sha }}
+      sha: ${{ needs.version.outputs.sha }}
       environment: ${{ inputs.environment }}
     secrets: inherit

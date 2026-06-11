@@ -12,7 +12,7 @@ import { Link } from "~/common/link";
 import { MapPinIcon } from "@heroicons/react/20/solid";
 import { Place, PlaceResolver } from "~/common/google-maps";
 import { OverlayTextBox } from "../common/overlay-text-box";
-import { RichTextObject } from "@fxmk/common";
+import { RichTextObject } from "@lapuertahostels/rich-text";
 import { useSettings } from "~/common/common";
 
 type MapBlockType = MapType;

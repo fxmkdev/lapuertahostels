@@ -4,7 +4,7 @@ import {
   richTextField,
   callToActionField,
   imageField,
-} from "@fxmk/cms-plugin";
+} from "../../fields/index";
 
 export const RoomListBlock: Block = {
   slug: "RoomList",
@@ -74,7 +74,7 @@ export const RoomListBlock: Block = {
       admin: {
         components: {
           RowLabel: {
-            path: "@fxmk/cms-plugin/client",
+            path: "/src/components/client",
             exportName: "RowLabel",
             clientProps: {
               textProp: "heading",
