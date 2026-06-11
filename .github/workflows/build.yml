@@ -257,6 +257,50 @@ jobs:
         run: flyctl auth docker
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      - name: Wait for Fly registry images
+        run: |
+          set -euo pipefail
+
+          IMAGES=("$FRONTEND_IMAGE" "$CMS_IMAGE")
+          MAX_ATTEMPTS=24
+          SLEEP_SECONDS=15
+
+          for IMAGE in "${IMAGES[@]}"; do
+            LAST_ERROR=""
+
+            for attempt in $(seq 1 "$MAX_ATTEMPTS"); do
+              ERROR_FILE="$(mktemp)"
+              if timeout 20s docker manifest inspect "$IMAGE" > /dev/null 2>"$ERROR_FILE"; then
+                rm -f "$ERROR_FILE"
+                echo "Image is available: $IMAGE"
+                break
+              fi
+
+              ERROR_TEXT="$(tr '\n' ' ' < "$ERROR_FILE" | sed -E 's/[[:space:]]+/ /g')"
+              rm -f "$ERROR_FILE"
+              LAST_ERROR="$ERROR_TEXT"
+
+              if printf '%s' "$ERROR_TEXT" | grep -Eiq '(unauthorized|authentication required|denied|forbidden|insufficient_scope|access denied)'; then
+                echo "Registry auth/permission error while checking image: $IMAGE"
+                echo "docker manifest inspect error: $ERROR_TEXT"
+                exit 1
+              fi
+
+              if [ "$attempt" -lt "$MAX_ATTEMPTS" ]; then
+                echo "[$attempt/$MAX_ATTEMPTS] Waiting for image: $IMAGE"
+                sleep "$SLEEP_SECONDS"
+              else
+                echo "Timed out waiting for image: $IMAGE"
+                if [ -n "$LAST_ERROR" ]; then
+                  echo "Last docker manifest inspect error: $LAST_ERROR"
+                fi
+                exit 1
+              fi
+            done
+          done
+        env:
+          FRONTEND_IMAGE: ${{ needs.frontend-build-push.outputs.image }}
+          CMS_IMAGE: ${{ needs.cms-build-push.outputs.image }}
       - name: Start services
         run: docker compose up -d && sleep 3
         env:
