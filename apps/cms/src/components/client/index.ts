@@ -1,3 +1,5 @@
+"use client";
+
 export * from "./generate-alt-text-button";
 export * from "./labels";
 export * from "./pathname-field";
