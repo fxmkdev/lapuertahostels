@@ -6,7 +6,6 @@ import {
   Button,
   Drawer,
   toast,
-  Translation,
   useModal,
   useTranslation,
 } from "@payloadcms/ui";
@@ -60,25 +59,11 @@ export function SelectLocalesDrawer({
     <Drawer slug={modalSlug} title={t("cmsPlugin:translations:selectLocales")}>
       <div className={styles.selectLocalesText}>
         <p>
-          <Translation
-            elements={{
-              a: ({ children }) => (
-                <a
-                  href="https://www.deepl.com"
-                  rel="noreferrer noopener"
-                  target="_blank"
-                >
-                  {children}
-                </a>
-              ),
-            }}
-            // @ts-expect-error types don't match
-            i18nKey="cmsPlugin:translations:selectLocalesDescription"
-            t={t}
-            variables={{
+          {renderDeepLDescription(
+            t("cmsPlugin:translations:selectLocalesDescription", {
               sourceLocale: getLabelText(currentLocale.label, i18n),
-            }}
-          />
+            }),
+          )}
         </p>
       </div>
       <div className={styles.selectLocalesList}>
@@ -101,12 +86,7 @@ export function SelectLocalesDrawer({
       </div>
 
       <p className={styles.selectLocalesNote}>
-        <Translation
-          elements={{ s: ({ children }) => <strong>{children}</strong> }}
-          // @ts-expect-error types don't match
-          i18nKey="cmsPlugin:translations:selectLocalesNote"
-          t={t}
-        />
+        {renderStrongNote(t("cmsPlugin:translations:selectLocalesNote"))}
       </p>
       <div className={styles.selectLocalesFooter}>
         <Button
@@ -167,4 +147,57 @@ export function SelectLocalesDrawer({
       </div>
     </Drawer>
   );
+}
+
+function renderDeepLDescription(text: string) {
+  const parts = splitSimpleTag(text, "a");
+  if (!parts) {
+    return text;
+  }
+
+  return (
+    <>
+      {parts.before}
+      <a href="https://www.deepl.com" rel="noreferrer noopener" target="_blank">
+        {parts.inner}
+      </a>
+      {parts.after}
+    </>
+  );
+}
+
+function renderStrongNote(text: string) {
+  const parts = splitSimpleTag(text, "s");
+  if (!parts) {
+    return text;
+  }
+
+  return (
+    <>
+      {parts.before}
+      <strong>{parts.inner}</strong>
+      {parts.after}
+    </>
+  );
+}
+
+function splitSimpleTag(text: string, tag: string) {
+  const openTag = `<${tag}>`;
+  const closeTag = `</${tag}>`;
+  const openTagIndex = text.indexOf(openTag);
+  const closeTagIndex = text.indexOf(closeTag);
+
+  if (
+    openTagIndex === -1 ||
+    closeTagIndex === -1 ||
+    closeTagIndex < openTagIndex
+  ) {
+    return null;
+  }
+
+  return {
+    after: text.slice(closeTagIndex + closeTag.length),
+    before: text.slice(0, openTagIndex),
+    inner: text.slice(openTagIndex + openTag.length, closeTagIndex),
+  };
 }
