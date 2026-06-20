@@ -9,8 +9,8 @@ import type {
   TranslationsObject,
 } from "../../translations/types";
 
+import { getLabelText } from "../../common/labels";
 import { findUsages } from "../../fields/usages/find-usages";
-import { Label } from "../client/labels";
 import styles from "./usages-field.module.css";
 
 export async function UsagesField({
@@ -61,33 +61,35 @@ export async function UsagesField({
           </thead>
           <tbody>
             {value && value.length > 0 ? (
-              value.map((usage, index) => (
-                <tr key={index}>
-                  <td>
-                    <Pill>
+              value.map((usage, index) => {
+                const label = getLabelText(usage.label, i18n);
+
+                return (
+                  <tr key={index}>
+                    <td>
+                      <Pill>
+                        {usage.type === "collection"
+                          ? label
+                          : t("cmsPlugin:usages:global")}
+                      </Pill>
+                    </td>
+                    <td>
                       {usage.type === "collection" ? (
-                        <Label>{usage.label}</Label>
+                        <Link
+                          href={`/admin/collections/${usage.collection}/${usage.id}`}
+                        >
+                          {usage.title ?? usage.id}
+                        </Link>
                       ) : (
-                        t("cmsPlugin:usages:global")
+                        <Link href={`/admin/globals/${usage.global}`}>
+                          {label}
+                        </Link>
                       )}
-                    </Pill>
-                  </td>
-                  <td>
-                    {usage.type === "collection" ? (
-                      <Link
-                        href={`/admin/collections/${usage.collection}/${usage.id}`}
-                      >
-                        {usage.title ?? usage.id}
-                      </Link>
-                    ) : (
-                      <Link href={`/admin/globals/${usage.global}`}>
-                        <Label>{usage.label}</Label>
-                      </Link>
-                    )}
-                  </td>
-                  <td>{usage.fieldPath}</td>
-                </tr>
-              ))
+                    </td>
+                    <td>{usage.fieldPath}</td>
+                  </tr>
+                );
+              })
             ) : (
               <tr>
                 <td className={styles.emptyStateCell} colSpan={3}>
