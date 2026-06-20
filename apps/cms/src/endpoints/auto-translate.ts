@@ -13,6 +13,11 @@ import { canManageContent } from "../common/access-control";
 import { getEditorConfig } from "../common/editor";
 import { translate } from "../common/translation";
 import { getValueByPath } from "../common/utils";
+import {
+  getTranslationTarget,
+  isResponse,
+  parseTargetLocaleCodes,
+} from "./translation-request";
 
 export const autoTranslateEndpoint: Endpoint = {
   handler: async (req) => {
@@ -28,51 +33,24 @@ export const autoTranslateEndpoint: Endpoint = {
       throw new Error("No JSON body");
     }
 
-    const { targetLocaleCodes } = (await req.json()) as {
-      targetLocaleCodes: TypedLocale[];
-    };
-
     const { ObjectId } = await import("bson");
 
-    const collection = req.searchParams.get("collection");
-    const global = req.searchParams.get("global");
-    const id = req.searchParams.get("id");
-
-    if (!collection && !global) {
-      return new Response(
-        JSON.stringify({ message: "'collection' or 'global' is required" }),
-        {
-          status: 400,
-          statusText: "Bad Request",
-        },
-      );
-    }
-    if (collection && !id) {
-      return new Response(JSON.stringify({ message: "'id' is required" }), {
-        status: 400,
-        statusText: "Bad Request",
-      });
+    const target = getTranslationTarget(req);
+    if (isResponse(target)) {
+      return target;
     }
 
-    const fieldPath = req.searchParams.get("fieldPath");
-    if (!fieldPath) {
-      return new Response(
-        JSON.stringify({ message: "'fieldPath' is required" }),
-        {
-          status: 400,
-          statusText: "Bad Request",
-        },
-      );
-    }
-    const _id = ObjectId.isValid(id!) ? new ObjectId(id!) : id!;
-
-    const originalDoc = collection
+    const originalDoc = target.collection
       ? await req.payload.db.connection
-          .collection<{ _id: ObjectIdType | string }>(collection)
-          .findOne({ _id })
+          .collection<{ _id: ObjectIdType | string }>(target.collection)
+          .findOne({
+            _id: ObjectId.isValid(target.id!)
+              ? new ObjectId(target.id!)
+              : target.id!,
+          })
       : await req.payload.db.connection
           .collection("globals")
-          .findOne({ globalType: global });
+          .findOne({ globalType: target.global });
     if (!originalDoc) {
       throw new Error("Document not found");
     }
@@ -86,7 +64,7 @@ export const autoTranslateEndpoint: Endpoint = {
       });
     }
 
-    const textInAllLocales = getValueByPath(originalDoc, fieldPath) as
+    const textInAllLocales = getValueByPath(originalDoc, target.fieldPath) as
       | null
       | Record<string, SerializedEditorState | string>
       | undefined;
@@ -108,19 +86,21 @@ export const autoTranslateEndpoint: Endpoint = {
       .map((l) => l.id)
       .filter((l) => l !== req.locale);
 
-    if (
-      targetLocaleCodes.some((tl) => !availableTranslationLocales.includes(tl!))
-    ) {
-      return new Response("Invalid target locales", {
-        status: 400,
-        statusText: "Bad Request",
-      });
+    const targetLocaleCodes = parseTargetLocaleCodes({
+      availableTranslationLocales,
+      body: await req.json(),
+    });
+    if (isResponse(targetLocaleCodes)) {
+      return targetLocaleCodes;
     }
 
     console.log(`Translation locales: ${availableTranslationLocales}`);
     console.log(`Target locales: ${targetLocaleCodes}`);
 
     const isRichText = typeof originalText !== "string";
+    const editorConfig = isRichText
+      ? await getEditorConfig(req.payload.config)
+      : undefined;
 
     const sourceLanguageCode = getDeepLSourceLanguageCode(req.locale);
     const promises = await Promise.allSettled(
@@ -139,7 +119,7 @@ export const autoTranslateEndpoint: Endpoint = {
 
           textInAllLocales[tl!] = isRichText
             ? convertHTMLToLexical({
-                editorConfig: await getEditorConfig(req.payload.config),
+                editorConfig: editorConfig!,
                 html: resultText,
                 JSDOM,
               })
@@ -156,12 +136,14 @@ export const autoTranslateEndpoint: Endpoint = {
     }
 
     await req.payload.db.connection
-      .collection<{ _id: ObjectIdType | string }>(collection || "globals")
+      .collection<{
+        _id: ObjectIdType | string;
+      }>(target.collection || "globals")
       .updateOne(
         { _id: originalDoc._id },
         {
           $set: {
-            [fieldPath]: textInAllLocales,
+            [target.fieldPath]: textInAllLocales,
           },
         },
       );

@@ -1,7 +1,8 @@
-import type { CollectionSlug, Endpoint, GlobalSlug } from "payload";
+import type { Endpoint } from "payload";
 
 import { canManageContent } from "../common/access-control";
 import { getValueByPath } from "../common/utils";
+import { getTranslationTarget, isResponse } from "./translation-request";
 
 export const translationsEndpoint: Endpoint = {
   handler: async (req) => {
@@ -13,56 +14,27 @@ export const translationsEndpoint: Endpoint = {
       return new Response(null, { status: 403, statusText: "Forbidden" });
     }
 
-    const collection = req.searchParams.get("collection");
-    const global = req.searchParams.get("global");
-    const id = req.searchParams.get("id");
-
-    if (!collection && !global) {
-      return new Response(
-        JSON.stringify({ message: "'collection' or 'global' is required" }),
-        {
-          status: 400,
-          statusText: "Bad Request",
-        },
-      );
+    const target = getTranslationTarget(req);
+    if (isResponse(target)) {
+      return target;
     }
 
-    if (collection && !id) {
-      return new Response(
-        JSON.stringify({ message: "'id' is required for collections" }),
-        {
-          status: 400,
-          statusText: "Bad Request",
-        },
-      );
-    }
-
-    const fieldPath = req.searchParams.get("fieldPath");
-    if (!fieldPath) {
-      return new Response(
-        JSON.stringify({ message: "'fieldPath' is required" }),
-        {
-          status: 400,
-          statusText: "Bad Request",
-        },
-      );
-    }
     const data =
-      collection && id
+      target.collection && target.id
         ? await req.payload.findByID({
-            id,
-            collection: collection as CollectionSlug,
+            id: target.id,
+            collection: target.collection,
             locale: "all",
             req,
           })
         : await req.payload.findGlobal({
-            slug: global as GlobalSlug,
+            slug: target.global!,
             locale: "all",
             req,
           });
 
     return new Response(
-      JSON.stringify({ value: getValueByPath(data, fieldPath) }),
+      JSON.stringify({ value: getValueByPath(data, target.fieldPath) }),
       {
         headers: {
           "content-type": "application/json",
