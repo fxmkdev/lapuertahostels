@@ -219,6 +219,11 @@ jobs:
           SERVER_URL:
             ${{ inputs.environment == 'preview' && format('https://{0}.fly.dev',
             steps.create-app.outputs.app_name) || vars.SERVER_URL }}
+          CMS_VERBOSE_SERVER_ERRORS:
+            ${{ inputs.environment == 'preview' && 'true' || 'false' }}
+          NODE_OPTIONS:
+            ${{ inputs.environment == 'preview' && '--enable-source-maps' || ''
+            }}
       - name: Deploy CMS
         run: |
           flyctl deploy \

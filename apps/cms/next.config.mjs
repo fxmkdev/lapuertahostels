@@ -2,6 +2,9 @@ import { withPayload } from "@payloadcms/next/withPayload";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    serverSourceMaps: true,
+  },
   output: "standalone",
   async redirects() {
     return [{ source: "/", destination: "/admin", permanent: false }];
