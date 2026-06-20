@@ -1,11 +1,16 @@
 import type { CollectionSlug, Endpoint, GlobalSlug } from "payload";
 
+import { canManageContent } from "../common/access-control";
 import { getValueByPath } from "../common/utils";
 
 export const translationsEndpoint: Endpoint = {
   handler: async (req) => {
     if (!req.user) {
       return new Response(null, { status: 401, statusText: "Unauthorized" });
+    }
+
+    if (!canManageContent({ req })) {
+      return new Response(null, { status: 403, statusText: "Forbidden" });
     }
 
     const collection = req.searchParams.get("collection");
@@ -48,10 +53,12 @@ export const translationsEndpoint: Endpoint = {
             id,
             collection: collection as CollectionSlug,
             locale: "all",
+            req,
           })
         : await req.payload.findGlobal({
             slug: global as GlobalSlug,
             locale: "all",
+            req,
           });
 
     return new Response(

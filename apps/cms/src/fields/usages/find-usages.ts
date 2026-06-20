@@ -131,8 +131,13 @@ function findItemUsagesOnCollection(
         addUsage(field.name);
       }
     } else if (field.type === "blocks") {
-      for (let i = 0; i < data[field.name].length; i++) {
-        const blockItem = data[field.name][i];
+      const blockItems = data[field.name];
+      if (!Array.isArray(blockItems)) {
+        continue;
+      }
+
+      for (let i = 0; i < blockItems.length; i++) {
+        const blockItem = blockItems[i];
         const block = field.blocks.find(
           (block) => block.slug === blockItem.blockType,
         );
@@ -152,8 +157,13 @@ function findItemUsagesOnCollection(
         );
       }
     } else if (field.type === "array") {
-      for (let i = 0; i < data[field.name].length; i++) {
-        const arrayItem = data[field.name][i];
+      const arrayItems = data[field.name];
+      if (!Array.isArray(arrayItems)) {
+        continue;
+      }
+
+      for (let i = 0; i < arrayItems.length; i++) {
+        const arrayItem = arrayItems[i];
         usagePaths.push(
           ...findItemUsagesOnCollection(
             fieldType,

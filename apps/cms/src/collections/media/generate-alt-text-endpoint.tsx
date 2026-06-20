@@ -1,5 +1,6 @@
 import { addLocalesToRequestFromData, type Endpoint } from "payload";
 
+import { canManageContent } from "../../common/access-control";
 import { generateAltText } from "../../common/openai";
 
 export function generateAltTextEndpoint({
@@ -11,6 +12,10 @@ export function generateAltTextEndpoint({
     handler: async (req) => {
       if (!req.user) {
         return new Response(null, { status: 401, statusText: "Unauthorized" });
+      }
+
+      if (!canManageContent({ req })) {
+        return new Response(null, { status: 403, statusText: "Forbidden" });
       }
 
       if (!req.routeParams) {
