@@ -1,5 +1,7 @@
 "use client";
 
+import type { SerializedEditorState } from "@payloadcms/richtext-lexical/lexical";
+
 import { convertLexicalToPlaintext } from "@payloadcms/richtext-lexical/plaintext";
 import { useRowLabel, useTranslation } from "@payloadcms/ui";
 
@@ -26,14 +28,32 @@ export function RowLabel({ fallbackLabelKey, textProp }: RowLabelProps) {
 
   const value = getValueByPath(data, textProp);
 
-  return (
-    (typeof value === "object"
-      ? convertLexicalToPlaintext({ data: value })
-      : value) || fallbackLabel
-  );
+  if (typeof value === "string") {
+    return value || fallbackLabel;
+  }
+
+  if (isSerializedEditorState(value)) {
+    return convertLexicalToPlaintext({ data: value }) || fallbackLabel;
+  }
+
+  return fallbackLabel;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getValueByPath(data: Record<string, any>, path: string): any {
-  return path.split(".").reduce((acc, key) => acc?.[key], data);
+function getValueByPath(data: Record<string, unknown>, path: string) {
+  return path
+    .split(".")
+    .reduce<unknown>(
+      (value, key) => (isRecord(value) ? value[key] : undefined),
+      data,
+    );
+}
+
+function isSerializedEditorState(
+  value: unknown,
+): value is SerializedEditorState {
+  return isRecord(value) && isRecord(value.root);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
