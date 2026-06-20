@@ -21,7 +21,7 @@ export function richTextField(
     admin: {
       ...config.admin,
       components: {
-        Label: "/src/components/client#TranslationsFieldLabel",
+        Label: "/src/components/rsc#TranslationsFieldLabel",
         ...config.admin?.components,
       },
     },

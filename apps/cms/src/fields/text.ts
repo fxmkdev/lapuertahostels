@@ -24,7 +24,7 @@ export function textField(config: TextFieldConfig = {}): TextField {
       ...fieldConfig.admin,
       components: {
         ...(enableTranslationTools
-          ? { Label: "/src/components/client#TranslationsFieldLabel" }
+          ? { Label: "/src/components/rsc#TranslationsFieldLabel" }
           : {}),
         ...fieldConfig.admin?.components,
       },

@@ -1,11 +1,6 @@
 "use client";
 
-import type {
-  FieldLabelClientProps,
-  RichTextFieldClient,
-  TextareaFieldClient,
-  TextFieldClient,
-} from "payload";
+import type { StaticLabel } from "payload";
 
 import {
   Drawer,
@@ -27,18 +22,22 @@ import type {
   TranslationsObject,
 } from "../../translations/types";
 
-import { getLabelText } from "../../common/labels";
 import { DrawerContent } from "./translations-drawer-content";
 import styles from "./translations-field-label.module.css";
 
 export { CheckboxInput } from "./translation-checkbox-input";
 
-export function TranslationsFieldLabel({
-  field,
+export type TranslationsFieldLabelClientProps = {
+  label?: StaticLabel;
+  path?: string;
+  required?: boolean;
+};
+
+export function TranslationsFieldLabelClient({
+  label,
   path,
-}: FieldLabelClientProps<
-  RichTextFieldClient | TextareaFieldClient | TextFieldClient
->) {
+  required,
+}: TranslationsFieldLabelClientProps) {
   const { closeModal, isModalOpen, openModal } = useModal();
 
   const { id, collectionSlug, globalSlug } = useDocumentInfo();
@@ -63,7 +62,6 @@ export function TranslationsFieldLabel({
 
   const translationsDisabled = (collectionSlug && !id) || isModified;
 
-  const label = field?.label ? getLabelText(field.label, i18n) : undefined;
   //  The Label is also rendered in the List view, here without path, see https://payloadcms.com/docs/fields/overview#label
   if (!path) {
     return <FieldLabel label={label} unstyled={true} />;
@@ -75,7 +73,7 @@ export function TranslationsFieldLabel({
         label={label}
         localized={true}
         path={path}
-        required={field?.required}
+        required={required}
       />
       {path && (
         <>
