@@ -125,6 +125,10 @@ function findItemUsagesOnCollection(
 ) {
   const usagePaths: string[] = [];
 
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    return usagePaths;
+  }
+
   for (const field of fields) {
     if (field.type === fieldType && field.relationTo === collectionToFind) {
       if (data[field.name] === id) {
