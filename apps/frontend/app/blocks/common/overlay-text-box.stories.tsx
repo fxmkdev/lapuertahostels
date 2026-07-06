@@ -1,7 +1,12 @@
 import { Meta, StoryObj } from "@storybook/react";
 import { OverlayTextBox } from "./overlay-text-box";
 import { customLink, media } from "~/common/cms-data.builders";
-import { bold, paragraph, richTextRoot, text } from "@fxmk/common";
+import {
+  bold,
+  paragraph,
+  richTextRoot,
+  text,
+} from "@lapuertahostels/rich-text";
 import { MediaImage } from "~/common/media";
 import { Cog6ToothIcon } from "@heroicons/react/20/solid";
 import { PageLink } from "~/common/page-link";

@@ -1,4 +1,4 @@
-import { paragraph, richTextRoot, text } from "@fxmk/common";
+import { paragraph, richTextRoot, text } from "@lapuertahostels/rich-text";
 import { RoomCard, RoomCardProps } from "./room-card";
 import { Meta, StoryObj } from "@storybook/react";
 import { media, requiredCallToAction } from "~/common/cms-data.builders";

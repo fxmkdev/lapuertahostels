@@ -1,4 +1,4 @@
-import { migrateBrandThemeColors } from "@fxmk/cms-plugin";
+import { migrateBrandThemeColors } from "../collections/brands/migrate-theme-colors";
 import { MigrateDownArgs, MigrateUpArgs } from "@payloadcms/db-mongodb";
 
 export async function up({ payload, req }: MigrateUpArgs): Promise<void> {

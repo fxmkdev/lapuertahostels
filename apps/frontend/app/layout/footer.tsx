@@ -1,6 +1,6 @@
 import { Button } from "../common/button";
 import { BrandLogo } from "../common/brand-logo";
-import { RichTextObject } from "@fxmk/common";
+import { RichTextObject } from "@lapuertahostels/rich-text";
 import { useTranslation } from "react-i18next";
 import { socials } from "~/common/socials";
 import { useTheme } from "~/themes";

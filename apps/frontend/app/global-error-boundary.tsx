@@ -17,7 +17,7 @@ import { Footer } from "./layout/footer";
 import { AnalyticsScript } from "./analytics-script";
 import { MaintenanceScreen } from "./layout/maintenance-screen";
 import { Settings } from "@lapuertahostels/payload-types";
-import { richTextRoot } from "@fxmk/common";
+import { richTextRoot } from "@lapuertahostels/rich-text";
 
 export function GlobalErrorBoundary() {
   const rootLoaderData = useRouteLoaderData<typeof rootLoader>("root");

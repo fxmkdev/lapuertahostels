@@ -1,4 +1,4 @@
-import { RichTextObject } from "@fxmk/common";
+import { RichTextObject } from "@lapuertahostels/rich-text";
 import { cn } from "../common/cn";
 import { Heading } from "../common/heading";
 import { RichTextParagraph } from "../common/paragraph";

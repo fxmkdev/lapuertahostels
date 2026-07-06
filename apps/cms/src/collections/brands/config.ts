@@ -1,0 +1,386 @@
+import type {
+  CollectionConfig,
+  Locale,
+  SanitizedCollectionConfig,
+} from "payload";
+
+import type { RowLabelProps } from "../../components/client/row-label";
+
+import { canManageContent, isAdmin } from "../../common/access-control";
+import { getLivePreviewUrl } from "../../common/live-preview";
+import { imageField } from "../../fields/image";
+import { linkField } from "../../fields/link";
+import { showField } from "../../fields/show";
+import { textField } from "../../fields/text";
+import { contentGroup } from "../../groups";
+import { syncBrandHomeLink } from "./home-link";
+import { resolveRootPathForLocale, rootPathField } from "./root-path";
+import { brandUsagesField } from "./usages";
+
+export type BrandThemeColorOption = {
+  label: Record<string, string> | string;
+  value: string;
+};
+
+const defaultThemeColorOptions: BrandThemeColorOption[] = [
+  { label: "Default", value: "default" },
+];
+
+type BrandsOptions = {
+  livePreviewBaseUrl?: string;
+  themeColors?: BrandThemeColorOption[];
+};
+
+export function Brands({
+  livePreviewBaseUrl,
+  themeColors,
+}: BrandsOptions): CollectionConfig {
+  const themeColorOptions = themeColors?.length
+    ? themeColors
+    : defaultThemeColorOptions;
+
+  return {
+    slug: "brands",
+    access: {
+      create: canManageContent,
+      delete: ({ req }) => isAdmin(req),
+      update: canManageContent,
+    },
+    admin: {
+      defaultColumns: ["name", "rootPath", "themeColor", "logo", "updatedAt"],
+      group: contentGroup,
+      listSearchableFields: ["id", "name"],
+      livePreview: livePreviewBaseUrl
+        ? {
+            url: ({
+              data,
+              locale,
+            }: {
+              collectionConfig?: SanitizedCollectionConfig;
+              data: Record<string, unknown>;
+              locale: Locale;
+            }) => {
+              return getLivePreviewUrl(
+                livePreviewBaseUrl,
+                resolveRootPathForLocale(data.rootPath, locale.code) ?? "/",
+                `brands/${data.id as string}`,
+                locale.code,
+              );
+            },
+          }
+        : undefined,
+      useAsTitle: "name",
+    },
+    defaultPopulate: {
+      id: true,
+      name: true,
+      baseTitle: true,
+      homeLink: true,
+      rootPath: true,
+      themeColor: true,
+    },
+    defaultSort: "name",
+    fields: [
+      {
+        name: "id",
+        type: "text",
+        access: {
+          update: () => false,
+        },
+        admin: {
+          position: "sidebar",
+        },
+        label: {
+          en: "ID",
+          es: "ID",
+        },
+        required: true,
+      },
+      {
+        name: "name",
+        type: "text",
+        admin: {
+          position: "sidebar",
+        },
+        label: {
+          en: "Name",
+          es: "Nombre",
+        },
+        required: true,
+      },
+
+      {
+        type: "tabs",
+        tabs: [
+          {
+            fields: [
+              linkField({
+                allowedLinkTypes: ["internal"],
+                fieldConfig: {
+                  name: "homeLink",
+                  access: {
+                    create: () => false,
+                    update: () => false,
+                  },
+                  admin: {
+                    hidden: true,
+                  },
+                  label: {
+                    en: "Home Link",
+                    es: "Enlace de inicio",
+                  },
+                },
+                required: false,
+              }),
+              rootPathField(),
+              {
+                name: "themeColor",
+                type: "select",
+                admin: {
+                  description: {
+                    en: "Choose the theme color used by the frontend for this brand.",
+                    es: "Elige el color de tema que usará el frontend para esta marca.",
+                  },
+                },
+                defaultValue: themeColorOptions[0]?.value ?? "default",
+                label: {
+                  en: "Theme Color",
+                  es: "Color de tema",
+                },
+                options: themeColorOptions,
+                required: true,
+              },
+              textField({
+                name: "baseTitle",
+                admin: {
+                  description: {
+                    en: "The base title is appended to the titles of the brand’s pages. If the page does not have a title, the base title will be used as the title. Include important keywords in the title for SEO.",
+                    es: "El título base se añade a los títulos de las páginas de la marca. Si la página no tiene un título, se usará el título base como título. Incluye palabras clave importantes en el título para SEO.",
+                  },
+                },
+                label: {
+                  en: "Base Title",
+                  es: "Título Base",
+                },
+                required: false,
+              }),
+              imageField({
+                name: "logo",
+                label: {
+                  en: "Logo",
+                  es: "Logo",
+                },
+              }),
+            ],
+            label: {
+              en: "General",
+              es: "General",
+            },
+          },
+          {
+            fields: [
+              {
+                name: "banner",
+                type: "relationship",
+                admin: {
+                  description: {
+                    en: "A banner is useful to announce promotions or important news and can have a call to action. It will be shown on all pages of the brand.",
+                    es: "Un banner es útil para anunciar promociones o noticias importantes y puede tener un call to action. Se mostrará en todas las páginas de la marca.",
+                  },
+                },
+                label: {
+                  en: "Banner",
+                  es: "Banner",
+                },
+                relationTo: "banners",
+              },
+              {
+                name: "navLinks",
+                type: "array",
+                admin: {
+                  components: {
+                    RowLabel: {
+                      clientProps: {
+                        fallbackLabelKey: "cmsPlugin:brands:navLinkRowLabel",
+                        textProp: "label",
+                      } as RowLabelProps,
+                      exportName: "RowLabel",
+                      path: "/src/components/client",
+                    },
+                  },
+                },
+                fields: [
+                  textField({
+                    name: "label",
+                    label: { en: "Label", es: "Etiqueta" },
+                  }),
+                  linkField(),
+                ],
+                label: {
+                  en: "Navigation Links",
+                  es: "Enlaces de navegación",
+                },
+                labels: {
+                  plural: {
+                    en: "Navigation Links",
+                    es: "Enlaces de navegación",
+                  },
+                  singular: {
+                    en: "Navigation Link",
+                    es: "Enlace de navegación",
+                  },
+                },
+              },
+              {
+                name: "bookCta",
+                type: "group",
+                fields: [
+                  showField(),
+                  textField({
+                    name: "label",
+                    admin: {
+                      condition: (_, siblingData) => siblingData?.show,
+                    },
+                    label: { en: "Label", es: "Etiqueta" },
+                  }),
+                  linkField({
+                    fieldConfig: {
+                      admin: {
+                        condition: (_, siblingData) => siblingData?.show,
+                      },
+                    },
+                  }),
+                ],
+                label: {
+                  en: "Book CTA",
+                  es: "CTA de reserva",
+                },
+              },
+            ],
+            label: {
+              en: "Header",
+              es: "Encabezado",
+            },
+          },
+          {
+            name: "footer",
+            fields: [
+              {
+                name: "linkGroups",
+                type: "array",
+                admin: {
+                  components: {
+                    RowLabel: {
+                      clientProps: {
+                        fallbackLabelKey: "cmsPlugin:rowLabel:linkGroup",
+                        textProp: "title",
+                      } as RowLabelProps,
+                      exportName: "RowLabel",
+                      path: "/src/components/client",
+                    },
+                  },
+                },
+                fields: [
+                  textField({
+                    name: "title",
+                    label: { en: "Title", es: "Título" },
+                  }),
+                  {
+                    name: "links",
+                    type: "array",
+                    admin: {
+                      components: {
+                        RowLabel: {
+                          clientProps: {
+                            fallbackLabelKey: "cmsPlugin:rowLabel:link",
+                            textProp: "label",
+                          } as RowLabelProps,
+                          exportName: "RowLabel",
+                          path: "/src/components/client",
+                        },
+                      },
+                    },
+                    fields: [
+                      textField({
+                        name: "label",
+                        label: { en: "Label", es: "Etiqueta" },
+                      }),
+                      linkField(),
+                    ],
+                    label: {
+                      en: "Links",
+                      es: "Enlaces",
+                    },
+                    labels: {
+                      plural: {
+                        en: "Links",
+                        es: "Enlaces",
+                      },
+                      singular: {
+                        en: "Link",
+                        es: "Enlace",
+                      },
+                    },
+                  },
+                ],
+                label: {
+                  en: "Link Groups",
+                  es: "Grupos de enlaces",
+                },
+                labels: {
+                  plural: {
+                    en: "Link Groups",
+                    es: "Grupos de enlaces",
+                  },
+                  singular: {
+                    en: "Link Group",
+                    es: "Grupo de enlaces",
+                  },
+                },
+              },
+            ],
+            label: {
+              en: "Footer",
+              es: "Pie de página",
+            },
+          },
+          {
+            fields: [brandUsagesField()],
+            label: {
+              en: "Usages",
+              es: "Usos",
+            },
+          },
+        ],
+      },
+    ],
+    hooks: {
+      afterChange: [
+        async ({ doc, operation, previousDoc, req }) => {
+          if (operation !== "update") {
+            return;
+          }
+
+          if (
+            JSON.stringify(doc.rootPath) ===
+            JSON.stringify(previousDoc?.rootPath)
+          ) {
+            return;
+          }
+
+          await syncBrandHomeLink({ brandId: doc.id as string, req });
+        },
+      ],
+    },
+    labels: {
+      plural: {
+        en: "Brands",
+        es: "Marcas",
+      },
+      singular: {
+        en: "Brand",
+        es: "Marca",
+      },
+    },
+  };
+}

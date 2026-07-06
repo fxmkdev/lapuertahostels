@@ -4,9 +4,9 @@ import {
   showField,
   textareaField,
   textField,
-  contentGroup,
-  canManageContent,
-} from "@fxmk/cms-plugin";
+} from "../../fields/index";
+import { canManageContent } from "../../common/access-control";
+import { contentGroup } from "../../groups";
 import { GlobalConfig } from "payload";
 import { socialPlatformOptions } from "./social-platforms";
 import { SocialPlatformRowLabelProps } from "./social-platform-row-label";

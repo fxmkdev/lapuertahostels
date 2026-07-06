@@ -8,7 +8,7 @@ import {
   paragraph,
   text,
   listitem,
-} from "@fxmk/common";
+} from "@lapuertahostels/rich-text";
 import { LongFormRichText } from "./long-form-rich-text";
 
 const meta = {

@@ -2,7 +2,12 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { WideImageBlock, WideImageBlockProps } from "./wide-image-block";
 import { callToAction, media } from "~/common/cms-data.builders";
 import { createId } from "@paralleldrive/cuid2";
-import { bold, paragraph, richTextRoot, text } from "@fxmk/common";
+import {
+  bold,
+  paragraph,
+  richTextRoot,
+  text,
+} from "@lapuertahostels/rich-text";
 
 const meta = {
   title: "blocks/Wide Image Block",

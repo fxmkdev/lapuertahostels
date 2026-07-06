@@ -6,7 +6,7 @@ import {
   elementIdField,
   imageField,
   linkField,
-} from "@fxmk/cms-plugin";
+} from "../../fields/index";
 
 export const AccommodationSelectorBlock: Block = {
   slug: "AccommodationSelector",

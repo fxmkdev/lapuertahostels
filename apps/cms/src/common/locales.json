@@ -1,0 +1,385 @@
+[
+  { "code": "en", "label": { "en": "English", "es": "Inglés" } },
+  {
+    "code": "en-US",
+    "label": {
+      "en": "English (United States)",
+      "es": "Inglés (Estados Unidos)"
+    }
+  },
+  {
+    "code": "en-GB",
+    "label": { "en": "English (United Kingdom)", "es": "Inglés (Reino Unido)" }
+  },
+  {
+    "code": "en-CA",
+    "label": { "en": "English (Canada)", "es": "Inglés (Canadá)" }
+  },
+  {
+    "code": "en-AU",
+    "label": { "en": "English (Australia)", "es": "Inglés (Australia)" }
+  },
+  { "code": "zh", "label": { "en": "Chinese", "es": "Chino" } },
+  {
+    "code": "zh-CN",
+    "label": { "en": "Chinese (China)", "es": "Chino (China)" }
+  },
+  {
+    "code": "zh-TW",
+    "label": { "en": "Chinese (Taiwan)", "es": "Chino (Taiwán)" }
+  },
+  {
+    "code": "zh-HK",
+    "label": { "en": "Chinese (Hong Kong)", "es": "Chino (Hong Kong)" }
+  },
+  { "code": "es", "label": { "en": "Spanish", "es": "Español" } },
+  {
+    "code": "es-ES",
+    "label": { "en": "Spanish (Spain)", "es": "Español (España)" }
+  },
+  {
+    "code": "es-MX",
+    "label": { "en": "Spanish (Mexico)", "es": "Español (México)" }
+  },
+  {
+    "code": "es-AR",
+    "label": { "en": "Spanish (Argentina)", "es": "Español (Argentina)" }
+  },
+  {
+    "code": "es-CO",
+    "label": { "en": "Spanish (Colombia)", "es": "Español (Colombia)" }
+  },
+  {
+    "code": "es-CL",
+    "label": { "en": "Spanish (Chile)", "es": "Español (Chile)" }
+  },
+  { "code": "ar", "label": { "en": "Arabic", "es": "Árabe" } },
+  {
+    "code": "ar-SA",
+    "label": { "en": "Arabic (Saudi Arabia)", "es": "Árabe (Arabia Saudí)" }
+  },
+  {
+    "code": "ar-EG",
+    "label": { "en": "Arabic (Egypt)", "es": "Árabe (Egipto)" }
+  },
+  {
+    "code": "ar-AE",
+    "label": {
+      "en": "Arabic (United Arab Emirates)",
+      "es": "Árabe (Emiratos Árabes Unidos)"
+    }
+  },
+  { "code": "pt", "label": { "en": "Portuguese", "es": "Portugués" } },
+  {
+    "code": "pt-BR",
+    "label": { "en": "Portuguese (Brazil)", "es": "Portugués (Brasil)" }
+  },
+  {
+    "code": "pt-PT",
+    "label": { "en": "Portuguese (Portugal)", "es": "Portugués (Portugal)" }
+  },
+  { "code": "fr", "label": { "en": "French", "es": "Francés" } },
+  {
+    "code": "fr-FR",
+    "label": { "en": "French (France)", "es": "Francés (Francia)" }
+  },
+  {
+    "code": "fr-CA",
+    "label": { "en": "French (Canada)", "es": "Francés (Canadá)" }
+  },
+  { "code": "de", "label": { "en": "German", "es": "Alemán" } },
+  {
+    "code": "de-DE",
+    "label": { "en": "German (Germany)", "es": "Alemán (Alemania)" }
+  },
+  { "code": "ja", "label": { "en": "Japanese", "es": "Japonés" } },
+  {
+    "code": "ja-JP",
+    "label": { "en": "Japanese (Japan)", "es": "Japonés (Japón)" }
+  },
+  { "code": "ru", "label": { "en": "Russian", "es": "Ruso" } },
+  {
+    "code": "ru-RU",
+    "label": { "en": "Russian (Russia)", "es": "Ruso (Rusia)" }
+  },
+  { "code": "hi", "label": { "en": "Hindi", "es": "Hindi" } },
+  {
+    "code": "hi-IN",
+    "label": { "en": "Hindi (India)", "es": "Hindi (India)" }
+  },
+  { "code": "it", "label": { "en": "Italian", "es": "Italiano" } },
+  {
+    "code": "it-IT",
+    "label": { "en": "Italian (Italy)", "es": "Italiano (Italia)" }
+  },
+  { "code": "ko", "label": { "en": "Korean", "es": "Coreano" } },
+  {
+    "code": "ko-KR",
+    "label": { "en": "Korean (South Korea)", "es": "Coreano (Corea del Sur)" }
+  },
+  { "code": "tr", "label": { "en": "Turkish", "es": "Turco" } },
+  {
+    "code": "tr-TR",
+    "label": { "en": "Turkish (Turkey)", "es": "Turco (Turquía)" }
+  },
+  { "code": "pl", "label": { "en": "Polish", "es": "Polaco" } },
+  {
+    "code": "pl-PL",
+    "label": { "en": "Polish (Poland)", "es": "Polaco (Polonia)" }
+  },
+  { "code": "nl", "label": { "en": "Dutch", "es": "Neerlandés" } },
+  {
+    "code": "nl-NL",
+    "label": { "en": "Dutch (Netherlands)", "es": "Neerlandés (Países Bajos)" }
+  },
+  { "code": "sv", "label": { "en": "Swedish", "es": "Sueco" } },
+  {
+    "code": "sv-SE",
+    "label": { "en": "Swedish (Sweden)", "es": "Sueco (Suecia)" }
+  },
+  { "code": "fi", "label": { "en": "Finnish", "es": "Finés" } },
+  {
+    "code": "fi-FI",
+    "label": { "en": "Finnish (Finland)", "es": "Finés (Finlandia)" }
+  },
+  { "code": "no", "label": { "en": "Norwegian", "es": "Noruego" } },
+  {
+    "code": "no-NO",
+    "label": { "en": "Norwegian (Norway)", "es": "Noruego (Noruega)" }
+  },
+  { "code": "da", "label": { "en": "Danish", "es": "Danés" } },
+  {
+    "code": "da-DK",
+    "label": { "en": "Danish (Denmark)", "es": "Danés (Dinamarca)" }
+  },
+  { "code": "id", "label": { "en": "Indonesian", "es": "Indonesio" } },
+  {
+    "code": "id-ID",
+    "label": { "en": "Indonesian (Indonesia)", "es": "Indonesio (Indonesia)" }
+  },
+  { "code": "ms", "label": { "en": "Malay", "es": "Malayo" } },
+  {
+    "code": "ms-MY",
+    "label": { "en": "Malay (Malaysia)", "es": "Malayo (Malasia)" }
+  },
+  { "code": "th", "label": { "en": "Thai", "es": "Tailandés" } },
+  {
+    "code": "th-TH",
+    "label": { "en": "Thai (Thailand)", "es": "Tailandés (Tailandia)" }
+  },
+  { "code": "vi", "label": { "en": "Vietnamese", "es": "Vietnamita" } },
+  {
+    "code": "vi-VN",
+    "label": { "en": "Vietnamese (Vietnam)", "es": "Vietnamita (Vietnam)" }
+  },
+  { "code": "he", "label": { "en": "Hebrew", "es": "Hebreo" } },
+  {
+    "code": "he-IL",
+    "label": { "en": "Hebrew (Israel)", "es": "Hebreo (Israel)" }
+  },
+  { "code": "fa", "label": { "en": "Persian", "es": "Persa" } },
+  {
+    "code": "fa-IR",
+    "label": { "en": "Persian (Iran)", "es": "Persa (Irán)" }
+  },
+  { "code": "uk", "label": { "en": "Ukrainian", "es": "Ucraniano" } },
+  {
+    "code": "uk-UA",
+    "label": { "en": "Ukrainian (Ukraine)", "es": "Ucraniano (Ucrania)" }
+  },
+  { "code": "cs", "label": { "en": "Czech", "es": "Checo" } },
+  {
+    "code": "cs-CZ",
+    "label": { "en": "Czech (Czechia)", "es": "Checo (Chequia)" }
+  },
+  { "code": "sk", "label": { "en": "Slovak", "es": "Eslovaco" } },
+  {
+    "code": "sk-SK",
+    "label": { "en": "Slovak (Slovakia)", "es": "Eslovaco (Eslovaquia)" }
+  },
+  { "code": "ro", "label": { "en": "Romanian", "es": "Rumano" } },
+  {
+    "code": "ro-RO",
+    "label": { "en": "Romanian (Romania)", "es": "Rumano (Rumanía)" }
+  },
+  { "code": "hu", "label": { "en": "Hungarian", "es": "Húngaro" } },
+  {
+    "code": "hu-HU",
+    "label": { "en": "Hungarian (Hungary)", "es": "Húngaro (Hungría)" }
+  },
+  { "code": "el", "label": { "en": "Greek", "es": "Griego" } },
+  {
+    "code": "el-GR",
+    "label": { "en": "Greek (Greece)", "es": "Griego (Grecia)" }
+  },
+  { "code": "bn", "label": { "en": "Bengali", "es": "Bengalí" } },
+  {
+    "code": "bn-BD",
+    "label": { "en": "Bengali (Bangladesh)", "es": "Bengalí (Bangladés)" }
+  },
+  {
+    "code": "bn-IN",
+    "label": { "en": "Bengali (India)", "es": "Bengalí (India)" }
+  },
+  { "code": "ta", "label": { "en": "Tamil", "es": "Tamil" } },
+  {
+    "code": "ta-IN",
+    "label": { "en": "Tamil (India)", "es": "Tamil (India)" }
+  },
+  { "code": "te", "label": { "en": "Telugu", "es": "Telugu" } },
+  {
+    "code": "te-IN",
+    "label": { "en": "Telugu (India)", "es": "Telugu (India)" }
+  },
+  { "code": "ml", "label": { "en": "Malayalam", "es": "Malayalam" } },
+  {
+    "code": "ml-IN",
+    "label": { "en": "Malayalam (India)", "es": "Malayalam (India)" }
+  },
+  { "code": "mr", "label": { "en": "Marathi", "es": "Maratí" } },
+  {
+    "code": "mr-IN",
+    "label": { "en": "Marathi (India)", "es": "Maratí (India)" }
+  },
+  { "code": "pa", "label": { "en": "Punjabi", "es": "Punyabí" } },
+  {
+    "code": "pa-IN",
+    "label": { "en": "Punjabi (India)", "es": "Punyabí (India)" }
+  },
+  { "code": "gu", "label": { "en": "Gujarati", "es": "Guyaratí" } },
+  {
+    "code": "gu-IN",
+    "label": { "en": "Gujarati (India)", "es": "Guyaratí (India)" }
+  },
+  { "code": "ur", "label": { "en": "Urdu", "es": "Urdu" } },
+  {
+    "code": "ur-PK",
+    "label": { "en": "Urdu (Pakistan)", "es": "Urdu (Pakistán)" }
+  },
+  { "code": "sw", "label": { "en": "Swahili", "es": "Suajili" } },
+  {
+    "code": "sw-KE",
+    "label": { "en": "Swahili (Kenya)", "es": "Suajili (Kenia)" }
+  },
+  { "code": "af", "label": { "en": "Afrikaans", "es": "Afrikáans" } },
+  {
+    "code": "af-ZA",
+    "label": { "en": "Afrikaans (South Africa)", "es": "Afrikáans (Sudáfrica)" }
+  },
+  { "code": "am", "label": { "en": "Amharic", "es": "Amárico" } },
+  {
+    "code": "am-ET",
+    "label": { "en": "Amharic (Ethiopia)", "es": "Amárico (Etiopía)" }
+  },
+  { "code": "et", "label": { "en": "Estonian", "es": "Estonio" } },
+  {
+    "code": "et-EE",
+    "label": { "en": "Estonian (Estonia)", "es": "Estonio (Estonia)" }
+  },
+  { "code": "lv", "label": { "en": "Latvian", "es": "Letón" } },
+  {
+    "code": "lv-LV",
+    "label": { "en": "Latvian (Latvia)", "es": "Letón (Letonia)" }
+  },
+  { "code": "lt", "label": { "en": "Lithuanian", "es": "Lituano" } },
+  {
+    "code": "lt-LT",
+    "label": { "en": "Lithuanian (Lithuania)", "es": "Lituano (Lituania)" }
+  },
+  { "code": "sl", "label": { "en": "Slovenian", "es": "Esloveno" } },
+  {
+    "code": "sl-SI",
+    "label": { "en": "Slovenian (Slovenia)", "es": "Esloveno (Eslovenia)" }
+  },
+  { "code": "sr", "label": { "en": "Serbian", "es": "Serbio" } },
+  {
+    "code": "sr-RS",
+    "label": { "en": "Serbian (Serbia)", "es": "Serbio (Serbia)" }
+  },
+  { "code": "hr", "label": { "en": "Croatian", "es": "Croata" } },
+  {
+    "code": "hr-HR",
+    "label": { "en": "Croatian (Croatia)", "es": "Croata (Croacia)" }
+  },
+  { "code": "bg", "label": { "en": "Bulgarian", "es": "Búlgaro" } },
+  {
+    "code": "bg-BG",
+    "label": { "en": "Bulgarian (Bulgaria)", "es": "Búlgaro (Bulgaria)" }
+  },
+  { "code": "ka", "label": { "en": "Georgian", "es": "Georgiano" } },
+  {
+    "code": "ka-GE",
+    "label": { "en": "Georgian (Georgia)", "es": "Georgiano (Georgia)" }
+  },
+  { "code": "az", "label": { "en": "Azerbaijani", "es": "Azerí" } },
+  {
+    "code": "az-AZ",
+    "label": { "en": "Azerbaijani (Azerbaijan)", "es": "Azerí (Azerbaiyán)" }
+  },
+  { "code": "hy", "label": { "en": "Armenian", "es": "Armenio" } },
+  {
+    "code": "hy-AM",
+    "label": { "en": "Armenian (Armenia)", "es": "Armenio (Armenia)" }
+  },
+  { "code": "ne", "label": { "en": "Nepali", "es": "Nepalí" } },
+  {
+    "code": "ne-NP",
+    "label": { "en": "Nepali (Nepal)", "es": "Nepalí (Nepal)" }
+  },
+  { "code": "si", "label": { "en": "Sinhala", "es": "Cingalés" } },
+  {
+    "code": "si-LK",
+    "label": { "en": "Sinhala (Sri Lanka)", "es": "Cingalés (Sri Lanka)" }
+  },
+  { "code": "my", "label": { "en": "Burmese", "es": "Birmano" } },
+  {
+    "code": "my-MM",
+    "label": { "en": "Burmese (Myanmar)", "es": "Birmano (Birmania)" }
+  },
+  { "code": "km", "label": { "en": "Khmer", "es": "Jemer" } },
+  {
+    "code": "km-KH",
+    "label": { "en": "Khmer (Cambodia)", "es": "Jemer (Camboya)" }
+  },
+  { "code": "lo", "label": { "en": "Lao", "es": "Lao" } },
+  { "code": "lo-LA", "label": { "en": "Lao (Laos)", "es": "Lao (Laos)" } },
+  { "code": "mn", "label": { "en": "Mongolian", "es": "Mongol" } },
+  {
+    "code": "mn-MN",
+    "label": { "en": "Mongolian (Mongolia)", "es": "Mongol (Mongolia)" }
+  },
+  { "code": "kk", "label": { "en": "Kazakh", "es": "Kazajo" } },
+  {
+    "code": "kk-KZ",
+    "label": { "en": "Kazakh (Kazakhstan)", "es": "Kazajo (Kazajistán)" }
+  },
+  { "code": "uz", "label": { "en": "Uzbek", "es": "Uzbeko" } },
+  {
+    "code": "uz-UZ",
+    "label": { "en": "Uzbek (Uzbekistan)", "es": "Uzbeko (Uzbekistán)" }
+  },
+  { "code": "ps", "label": { "en": "Pashto", "es": "Pastún" } },
+  {
+    "code": "ps-AF",
+    "label": { "en": "Pashto (Afghanistan)", "es": "Pastún (Afganistán)" }
+  },
+  {
+    "code": "es-419",
+    "label": {
+      "en": "Spanish (Latin America)",
+      "es": "Español (Latinoamérica)"
+    }
+  },
+  {
+    "code": "zh-Hans",
+    "label": { "en": "Chinese (Simplified)", "es": "Chino (Simplificado)" }
+  },
+  {
+    "code": "zh-Hant",
+    "label": { "en": "Chinese (Traditional)", "es": "Chino (Tradicional)" }
+  },
+  {
+    "code": "nb",
+    "label": { "en": "Norwegian Bokmål", "es": "Noruego Bokmål" }
+  }
+]

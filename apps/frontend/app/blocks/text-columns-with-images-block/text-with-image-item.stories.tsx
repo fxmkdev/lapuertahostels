@@ -3,7 +3,7 @@ import {
   TextWithImageItem,
   TextWithImageItemProps,
 } from "./text-with-image-item";
-import { paragraph, richTextRoot, text } from "@fxmk/common";
+import { paragraph, richTextRoot, text } from "@lapuertahostels/rich-text";
 import { callToAction, media } from "~/common/cms-data.builders";
 import { createId } from "@paralleldrive/cuid2";
 

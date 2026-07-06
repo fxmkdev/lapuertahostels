@@ -30,12 +30,14 @@ RUN apt-get update -qq && \
 COPY --link package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY --link apps/frontend/package.json apps/frontend/
 COPY --link libs/payload-types/package.json libs/payload-types/
+COPY --link libs/rich-text/package.json libs/rich-text/
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store,sharing=locked \
     pnpm --config.store-dir=/pnpm/store --filter @lapuertahostels/frontend install --prod=false --frozen-lockfile
 
 # Copy application code
 COPY apps/frontend apps/frontend
 COPY libs/payload-types libs/payload-types
+COPY libs/rich-text libs/rich-text
 
 # React Router bundles the imported package JSON during the build.
 RUN node -e "const fs = require('fs'); const [file, version] = process.argv.slice(1); const pkg = JSON.parse(fs.readFileSync(file, 'utf8')); pkg.version = version; fs.writeFileSync(file, JSON.stringify(pkg, null, 2) + '\n');" apps/frontend/package.json "$APP_VERSION"

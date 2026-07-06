@@ -1,0 +1,71 @@
+name: Version
+on:
+  workflow_call:
+    inputs:
+      release:
+        description: "Create a release"
+        required: false
+        default: "false"
+        # using a string due to this issue with GitHub Actions: https://github.com/actions/runner/issues/1483
+        type: string
+    outputs:
+      version:
+        value: ${{ jobs.version.outputs.version }}
+        description: "Version"
+      version_with_sha:
+        value: ${{ jobs.version.outputs.version_with_sha }}
+        description: "Version with SHA"
+      is_release:
+        value: ${{ jobs.version.outputs.is_release }}
+        description: "Is this a release?"
+      is_new_release:
+        value: ${{ jobs.version.outputs.is_new_release }}
+        description: "Is this a new release?"
+      release_version:
+        value: ${{ jobs.version.outputs.release_version }}
+        description: "Release version (without prerelease tag if any)"
+      prerelease_tag:
+        value: ${{ jobs.version.outputs.prerelease_tag }}
+        description: "Prerelease tag"
+      sha:
+        value: ${{ jobs.version.outputs.sha }}
+        description: "Commit SHA"
+
+env:
+  NODE_VERSION: 24
+
+jobs:
+  version:
+    name: "Generate version"
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get-version.outputs.version }}
+      version_with_sha: ${{ steps.get-version.outputs.version_with_sha }}
+      is_release: ${{ steps.get-version.outputs.is_release }}
+      is_new_release: ${{ steps.get-version.outputs.is_new_release }}
+      release_version: ${{ steps.get-version.outputs.release_version }}
+      prerelease_tag: ${{ steps.get-version.outputs.prerelease_tag }}
+      sha: ${{ steps.get-version.outputs.sha }}
+    steps:
+      - name: Checkout with full history
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Install dependencies
+        run: pnpm --workspace-root install
+      - name: Get version
+        id: get-version
+        run: |
+          RESULT=$(pnpm releaser get-version $([[ "${{ inputs.release }}" == 'true' ]] && echo '--release'))
+
+          echo $RESULT
+
+          echo "version=$(echo $RESULT | jq -r '.version')" >> "$GITHUB_OUTPUT"
+          echo "version_with_sha=$(echo $RESULT | jq -r '.versionWithSha')" >> "$GITHUB_OUTPUT"
+          echo "is_release=$(echo $RESULT | jq -r '.isRelease')" >> "$GITHUB_OUTPUT"
+          echo "is_new_release=$(echo $RESULT | jq -r '.isNewRelease')" >> "$GITHUB_OUTPUT"
+          echo "release_version=$(echo $RESULT | jq -r '.releaseVersion')" >> "$GITHUB_OUTPUT"
+          echo "prerelease_tag=$(echo $RESULT | jq -r '.prereleaseTag // ""')" >> "$GITHUB_OUTPUT"
+          echo "sha=$(echo $RESULT | jq -r '.sha')" >> "$GITHUB_OUTPUT"

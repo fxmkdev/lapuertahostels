@@ -1,4 +1,4 @@
-import { optionalTextField } from "@fxmk/cms-plugin";
+import { optionalTextField } from "./fields/index";
 import { Field } from "payload";
 
 export const additionalUiLabelFields: Field[] = [

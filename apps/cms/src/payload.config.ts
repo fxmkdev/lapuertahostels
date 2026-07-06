@@ -10,7 +10,7 @@ import { fileURLToPath } from "url";
 import { en } from "@payloadcms/translations/languages/en";
 import { es } from "@payloadcms/translations/languages/es";
 import { resendAdapter } from "@payloadcms/email-resend";
-import { cmsPlugin } from "@fxmk/cms-plugin";
+import { cmsPlugin } from "./index";
 import { RoomListBlock } from "./blocks/room-list/config";
 import { AccommodationSelectorBlock } from "./blocks/accommodation-selector/config";
 import { footer } from "./globals/footer/config";
