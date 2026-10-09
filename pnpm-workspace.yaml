@@ -62,3 +62,6 @@ allowBuilds:
   esbuild: false
   sharp: true
   unrs-resolver: false
+
+patchedDependencies:
+  payload@3.90.2: patches/payload@3.90.2.patch
