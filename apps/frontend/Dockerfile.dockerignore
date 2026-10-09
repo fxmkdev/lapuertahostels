@@ -6,6 +6,7 @@
 !pnpm-lock.yaml
 !pnpm-workspace.yaml
 !.npmrc
+!/patches
 !/apps/frontend
 !/libs/payload-types
 

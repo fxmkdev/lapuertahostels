@@ -28,6 +28,7 @@ RUN apt-get update -qq && \
 
 # Install node modules
 COPY --link package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY --link patches patches
 COPY --link apps/frontend/package.json apps/frontend/
 COPY --link libs/payload-types/package.json libs/payload-types/
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store,sharing=locked \
