@@ -30,3 +30,12 @@ Both application Dockerfiles copy `patches/` before installing dependencies.
 When upgrading Payload, check whether upstream global updates now pass
 `overrideAccess` to `beforeChange`, then remove the patch and its
 `patchedDependencies` entry if the fix is included.
+
+## Dependency Security
+
+The remaining `braces` advisory has been assessed as low practical risk for the
+current application and accepted for PR #410. The package remains flagged by
+audit; it has not been patched or suppressed. See the
+[security assessment](docs/security/braces-risk-assessment.md) for the
+dependency paths, evidence, limitations, and conditions that require
+reassessment.
