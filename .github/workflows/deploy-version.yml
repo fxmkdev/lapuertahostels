@@ -130,7 +130,7 @@ jobs:
           FLY_CPU_KIND: ${{ vars.FLY_CPU_KIND }}
           FLY_CPUS: ${{ vars.FLY_CPUS }}
           CANONICAL_HOSTNAME:
-            ${{ inputs.environment == 'preview' && format('https://{0}.fly.dev',
+            ${{ inputs.environment == 'preview' && format('{0}.fly.dev',
             steps.create-app.outputs.app_name) || vars.CANONICAL_HOSTNAME }}
           PAYLOAD_CMS_BASE_URL:
             ${{ inputs.environment == 'preview' && format('https://{0}.fly.dev',
