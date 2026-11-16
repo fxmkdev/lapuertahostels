@@ -19,6 +19,7 @@ RUN corepack enable pnpm
 
 # Install dependencies
 COPY --link package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY --link patches patches
 COPY --link apps/cms/package.json apps/cms/
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store,sharing=locked \
     pnpm --config.store-dir=/pnpm/store --filter @lapuertahostels/cms install --frozen-lockfile

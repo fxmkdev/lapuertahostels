@@ -17,3 +17,25 @@ page of one brand to a page of another brand.
 - [React Router framework (formerly Remix)](https://reactrouter.com/)
 - [Payload CMS](https://payloadcms.com/)
 - [MongoDB](https://www.mongodb.com/)
+
+## Dependency Patches
+
+`patches/payload@3.90.2.patch` preserves `overrideAccess` during field
+validation in Payload global updates. Without it, CMS initialization on an empty
+database rejects the default fallback locale before creating the E2E API key.
+The patch keeps normal relationship access checks intact; the E2E setup checks
+both trusted initialization and denied anonymous locale access.
+
+Both application Dockerfiles copy `patches/` before installing dependencies.
+When upgrading Payload, check whether upstream global updates now pass
+`overrideAccess` to `beforeChange`, then remove the patch and its
+`patchedDependencies` entry if the fix is included.
+
+## Dependency Security
+
+The remaining `braces` advisory has been assessed as low practical risk for the
+current application and accepted for PR #410. The package remains flagged by
+audit; it has not been patched or suppressed. See the
+[security assessment](docs/security/braces-risk-assessment.md) for the
+dependency paths, evidence, limitations, and conditions that require
+reassessment.

@@ -11,6 +11,12 @@ It includes:
 
 ## Repository-wide Guidelines
 
+- Before starting any new work, run `git fetch origin` and base new branches
+  and worktrees on the freshly fetched `origin/main`, rather than local `main`.
+  New work means starting a new task or branch, not every resumed agent turn.
+  If fetching fails, report the failure before proceeding from an unverified
+  base. When continuing an existing PR, stay on its branch; this rule does not
+  require resetting that branch or discarding local changes.
 - Use `pnpm` as package manager.
 - Keep changes focused and minimal; avoid unrelated refactors.
 - Keep docs in sync when introducing new behavior, patterns, or conventions.

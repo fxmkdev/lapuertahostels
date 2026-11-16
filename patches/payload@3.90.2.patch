@@ -1,0 +1,12 @@
+diff --git a/dist/globals/operations/update.js b/dist/globals/operations/update.js
+index 27214991ce9223951bb499b6cf956ae57cdfe1b7..07c5261862d017f5a1910fdb5be8e69ef6c185c5 100644
+--- a/dist/globals/operations/update.js
++++ b/dist/globals/operations/update.js
+@@ -212,6 +212,7 @@ export const updateOperation = async (args)=>{
+             fieldsToValidate: submittedTopLevelFieldNames,
+             global: globalConfig,
+             operation: 'update',
++            overrideAccess,
+             req,
+             skipValidation: isSavingDraft && !hasDraftValidationEnabled(globalConfig)
+         };

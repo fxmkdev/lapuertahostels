@@ -3,6 +3,23 @@
 This workspace uses squash merges to `main`. The squash commit message should
 come from the pull request title, so PR title quality matters.
 
+## Starting New Work
+
+Before starting any new work, run `git fetch origin` and base new branches and
+worktrees on the freshly fetched `origin/main`, rather than local `main`:
+
+```bash
+git fetch origin
+git switch -c codex/<task-name> origin/main
+```
+
+Replace `<task-name>` with a descriptive name for the task. New work means
+starting a new task or branch, not every resumed agent turn. If fetching fails,
+report the failure before proceeding from an unverified base.
+
+When continuing an existing PR, stay on its branch. This rule does not require
+resetting that branch or discarding local changes.
+
 ## Pull Request Title Convention
 
 All pull request titles must follow Conventional Commits:

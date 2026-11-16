@@ -28,6 +28,7 @@ RUN apt-get update -qq && \
 
 # Install node modules
 COPY --link package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY --link patches patches
 COPY --link apps/frontend/package.json apps/frontend/
 COPY --link libs/payload-types/package.json libs/payload-types/
 COPY --link libs/rich-text/package.json libs/rich-text/
