@@ -1,6 +1,6 @@
 import { Meta, StoryObj } from "@storybook/react";
 import { TestimonialsBlock } from "./testimonials";
-import { paragraph, richTextRoot, text } from "@fxmk/common";
+import { paragraph, richTextRoot, text } from "@lapuertahostels/rich-text";
 import { Testimonials } from "@lapuertahostels/payload-types";
 
 const meta = {

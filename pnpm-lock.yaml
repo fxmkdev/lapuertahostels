@@ -76,9 +76,6 @@ importers:
 
   apps/cms:
     dependencies:
-      '@fxmk/cms-plugin':
-        specifier: 0.9.0
-        version: 0.9.0(1b2d40ec724137bea8e1cbebef03a76e)
       '@payloadcms/db-mongodb':
         specifier: ^3.90.2
         version: 3.90.2(payload@3.90.2(patch_hash=6ddde1e6896be51c0d8e7c98cf0a2145bbd8a0f1e52a7ac0d79d9684e1cf98d2)(graphql@16.10.0)(typescript@6.0.3))
@@ -100,12 +97,24 @@ importers:
       '@payloadcms/ui':
         specifier: ^3.90.2
         version: 3.90.2(@types/react@19.2.15)(monaco-editor@0.52.2)(next@16.4.5(@playwright/test@1.61.1)(@types/node@24.12.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(payload@3.90.2(patch_hash=6ddde1e6896be51c0d8e7c98cf0a2145bbd8a0f1e52a7ac0d79d9684e1cf98d2)(graphql@16.10.0)(typescript@6.0.3))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.3)
+      bson:
+        specifier: ^6.10.4
+        version: 6.10.4
       cross-env:
         specifier: ^10.1.0
         version: 10.1.0
+      deepl-node:
+        specifier: ^1.27.0
+        version: 1.27.0
+      jsdom:
+        specifier: 29.1.1
+        version: 29.1.1(@noble/hashes@2.2.0)
       next:
         specifier: ~16.4.1
         version: 16.4.5(@playwright/test@1.61.1)(@types/node@24.12.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4)
+      openai:
+        specifier: ^6.38.0
+        version: 6.38.0(ws@8.21.0)(zod@4.6.6)
       payload:
         specifier: ^3.90.2
         version: 3.90.2(patch_hash=6ddde1e6896be51c0d8e7c98cf0a2145bbd8a0f1e52a7ac0d79d9684e1cf98d2)(graphql@16.10.0)(typescript@6.0.3)
@@ -115,7 +124,13 @@ importers:
       react-dom:
         specifier: ^19.2.6
         version: 19.2.6(react@19.2.6)
+      zod:
+        specifier: 4.6.6
+        version: 4.6.6
     devDependencies:
+      '@types/jsdom':
+        specifier: ^28.0.3
+        version: 28.0.3
       '@types/node':
         specifier: ^24.12.4
         version: 24.12.4
@@ -140,9 +155,6 @@ importers:
 
   apps/frontend:
     dependencies:
-      '@fxmk/common':
-        specifier: 0.9.0
-        version: 0.9.0
       '@headlessui/react':
         specifier: ^2.2.10
         version: 2.2.10(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -152,6 +164,9 @@ importers:
       '@lapuertahostels/payload-types':
         specifier: workspace:../../libs/payload-types
         version: link:../../libs/payload-types
+      '@lapuertahostels/rich-text':
+        specifier: workspace:../../libs/rich-text
+        version: link:../../libs/rich-text
       '@paralleldrive/cuid2':
         specifier: ^3.3.0
         version: 3.3.0
@@ -310,14 +325,20 @@ importers:
         specifier: ^6.0.3
         version: 6.0.3
 
+  libs/rich-text:
+    devDependencies:
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+
   tests/e2e:
     devDependencies:
-      '@fxmk/common':
-        specifier: 0.9.0
-        version: 0.9.0
       '@lapuertahostels/payload-types':
         specifier: workspace:../../libs/payload-types
         version: link:../../libs/payload-types
+      '@lapuertahostels/rich-text':
+        specifier: workspace:../../libs/rich-text
+        version: link:../../libs/rich-text
       '@paralleldrive/cuid2':
         specifier: ^3.3.0
         version: 3.3.0
@@ -1138,22 +1159,6 @@ packages:
 
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
-
-  '@fxmk/cms-plugin@0.9.0':
-    resolution: {integrity: sha512-xlm91uZImEr0uRhpFIU+Wo31q0QtZ61diDHzvhiYs+Wt+EI7pItsCzbs6CSayyfEeq8DjHZ4tfwo6z+8gaJJHw==}
-    engines: {node: '>=24.0.0', pnpm: ^9 || ^10 || ^11}
-    peerDependencies:
-      '@payloadcms/db-mongodb': ^3.84.1
-      '@payloadcms/richtext-lexical': ^3.84.1
-      '@payloadcms/storage-s3': ^3.84.1
-      '@payloadcms/ui': ^3.84.1
-      next: '>=16.2.2 <17.0.0'
-      payload: ^3.84.1
-      react: ^18 || ^19
-      react-dom: ^18 || ^19
-
-  '@fxmk/common@0.9.0':
-    resolution: {integrity: sha512-ffbdbzAcGFX7N/b9oBqj0jmtba5mQYkgywOW/I2oy+x/3jNBXiBrUE34UJQ6X8dBIe2GPMF4M+3Ftpbu+tdJSg==}
 
   '@fxmk/releaser@0.5.5':
     resolution: {integrity: sha512-QJNeR1vVYwzvj2souXsZ1F1jxr/FQ4wHiMzRK1dIh1WoKoW6cepRzL7sBdQJtr2SphJIf1M/DQBuhR8b1xLxuw==}
@@ -2182,9 +2187,6 @@ packages:
     peerDependencies:
       payload: 3.90.2
 
-  '@payloadcms/translations@3.84.1':
-    resolution: {integrity: sha512-1g4IsXvRfeQCn8YmPweaj8MMAFK9oSxYWKJG15j+Ah9Nra+f35/ZdOt/k80+vfoJmdKsOK/AnuzVdSTWy2GQpg==}
-
   '@payloadcms/translations@3.90.2':
     resolution: {integrity: sha512-BGpXyw22ndzL6URrK28qlk2qIsksH8mbWpU/n8vaTt8W6O87KoniX4lJ82m5o0FR/wjWqzcuVRsE0TNX3/7gHg==}
 
@@ -3122,6 +3124,9 @@ packages:
   '@types/hast@3.0.5':
     resolution: {integrity: sha512-rp/ezSWaD1m44dPKICGhiskI13nVr7qTloFwDa/IYkhhf5nzwP+zIQcIJh3WIFSBOy/H1PzB40jPjMDksN4F+g==}
 
+  '@types/jsdom@28.0.3':
+    resolution: {integrity: sha512-/HQ2uFoetFTXuye8vzIcHw2z6Fwi7Hi/qcgC+RoS9NCyewiqxhVGqlG+ViGB6lkax481R6dmhf1I7lIGlzJStQ==}
+
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
@@ -3161,6 +3166,9 @@ packages:
 
   '@types/resolve@1.20.6':
     resolution: {integrity: sha512-A4STmOXPhMUtHH+S6ymgE2GiBSMqf4oTvcQZMcHzokuTLVYzXTB8ttjcgxOVaAp2lGwEdzZ0J+cRbbeevQj1UQ==}
+
+  '@types/tough-cookie@4.0.5':
+    resolution: {integrity: sha512-/Ad8+nIOV7Rl++6f1BdKxFSMgmoqEoYbHRpPcx3JEfv8VRsQe9Z4mCXeJBzxs7mbHY/XOZZuXlRNfhpVPbs6ZA==}
 
   '@types/trusted-types@2.0.7':
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
@@ -6785,6 +6793,9 @@ packages:
   undici-types@7.16.0:
     resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
 
+  undici-types@7.30.2:
+    resolution: {integrity: sha512-Vx15rZHtDo7X+sZVzcecz08ooRvEa0cjSs8z85v/jRRf81BT1m9eaoMI4gxvaNwgQg2IgkfjJ45dMpKrSl0zEQ==}
+
   undici@7.30.1:
     resolution: {integrity: sha512-03KrMbjIFDWQR5RNPrSw3bd1r12JpyFQl9/yxjUbJtqkjmllqC5lFjZh6ujeuJCKr8EOQvRW872Oy/az+nLYxg==}
     engines: {node: '>=20.18.1'}
@@ -8131,31 +8142,6 @@ snapshots:
 
   '@floating-ui/utils@0.2.12': {}
 
-  '@fxmk/cms-plugin@0.9.0(1b2d40ec724137bea8e1cbebef03a76e)':
-    dependencies:
-      '@payloadcms/db-mongodb': 3.90.2(payload@3.90.2(patch_hash=6ddde1e6896be51c0d8e7c98cf0a2145bbd8a0f1e52a7ac0d79d9684e1cf98d2)(graphql@16.10.0)(typescript@6.0.3))
-      '@payloadcms/richtext-lexical': 3.90.2(@faceless-ui/modal@3.0.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@faceless-ui/scroll-info@2.0.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@payloadcms/next@3.90.2(@types/react@19.2.15)(graphql@16.10.0)(monaco-editor@0.52.2)(next@16.4.5(@playwright/test@1.61.1)(@types/node@24.12.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(payload@3.90.2(patch_hash=6ddde1e6896be51c0d8e7c98cf0a2145bbd8a0f1e52a7ac0d79d9684e1cf98d2)(graphql@16.10.0)(typescript@6.0.3))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.3))(@types/react@19.2.15)(monaco-editor@0.52.2)(next@16.4.5(@playwright/test@1.61.1)(@types/node@24.12.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(payload@3.90.2(patch_hash=6ddde1e6896be51c0d8e7c98cf0a2145bbd8a0f1e52a7ac0d79d9684e1cf98d2)(graphql@16.10.0)(typescript@6.0.3))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.3)(yjs@13.6.23)
-      '@payloadcms/storage-s3': 3.90.2(@types/react@19.2.15)(monaco-editor@0.52.2)(next@16.4.5(@playwright/test@1.61.1)(@types/node@24.12.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(payload@3.90.2(patch_hash=6ddde1e6896be51c0d8e7c98cf0a2145bbd8a0f1e52a7ac0d79d9684e1cf98d2)(graphql@16.10.0)(typescript@6.0.3))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.3)
-      '@payloadcms/translations': 3.84.1
-      '@payloadcms/ui': 3.90.2(@types/react@19.2.15)(monaco-editor@0.52.2)(next@16.4.5(@playwright/test@1.61.1)(@types/node@24.12.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(payload@3.90.2(patch_hash=6ddde1e6896be51c0d8e7c98cf0a2145bbd8a0f1e52a7ac0d79d9684e1cf98d2)(graphql@16.10.0)(typescript@6.0.3))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.3)
-      bson: 6.10.4
-      deepl-node: 1.27.0
-      jsdom: 29.1.1(@noble/hashes@2.2.0)
-      next: 16.4.5(@playwright/test@1.61.1)(@types/node@24.12.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4)
-      openai: 6.38.0(ws@8.21.0)(zod@4.6.6)
-      payload: 3.90.2(patch_hash=6ddde1e6896be51c0d8e7c98cf0a2145bbd8a0f1e52a7ac0d79d9684e1cf98d2)(graphql@16.10.0)(typescript@6.0.3)
-      react: 19.2.6
-      react-dom: 19.2.6(react@19.2.6)
-      zod: 4.6.6
-    transitivePeerDependencies:
-      - '@noble/hashes'
-      - canvas
-      - debug
-      - supports-color
-      - ws
-
-  '@fxmk/common@0.9.0': {}
-
   '@fxmk/releaser@0.5.5':
     dependencies:
       '@octokit/rest': 22.0.1
@@ -9098,10 +9084,6 @@ snapshots:
       - supports-color
       - typescript
 
-  '@payloadcms/translations@3.84.1':
-    dependencies:
-      date-fns: 4.1.0
-
   '@payloadcms/translations@3.90.2':
     dependencies:
       date-fns: 4.1.0
@@ -9981,6 +9963,13 @@ snapshots:
     dependencies:
       '@types/unist': 3.0.3
 
+  '@types/jsdom@28.0.3':
+    dependencies:
+      '@types/node': 24.12.4
+      '@types/tough-cookie': 4.0.5
+      parse5: 8.0.1
+      undici-types: 7.30.2
+
   '@types/json-schema@7.0.15': {}
 
   '@types/json5@0.0.29': {}
@@ -10014,6 +10003,8 @@ snapshots:
       csstype: 3.2.3
 
   '@types/resolve@1.20.6': {}
+
+  '@types/tough-cookie@4.0.5': {}
 
   '@types/trusted-types@2.0.7': {}
 
@@ -14223,6 +14214,8 @@ snapshots:
       which-boxed-primitive: 1.1.1
 
   undici-types@7.16.0: {}
+
+  undici-types@7.30.2: {}
 
   undici@7.30.1: {}
 

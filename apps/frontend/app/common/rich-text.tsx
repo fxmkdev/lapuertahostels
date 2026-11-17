@@ -18,7 +18,7 @@ import {
   IS_STRIKETHROUGH,
   IS_CODE,
   Node,
-} from "@fxmk/common";
+} from "@lapuertahostels/rich-text";
 import { useTranslation } from "react-i18next";
 import { getPageLinkHref } from "./page-link";
 import { Page } from "@lapuertahostels/payload-types";

@@ -9,6 +9,7 @@
 !/patches
 !/apps/frontend
 !/libs/payload-types
+!/libs/rich-text
 
 # These should be ignored, though
 **/.next

@@ -4,7 +4,7 @@ import { PageLink } from "~/common/page-link";
 import { cn } from "~/common/cn";
 import { Heading, HeadingProps } from "~/common/heading";
 import { RichTextParagraph } from "~/common/paragraph";
-import { RichTextObject } from "@fxmk/common";
+import { RichTextObject } from "@lapuertahostels/rich-text";
 import { TextColumnsWithImages } from "@lapuertahostels/payload-types";
 
 export type TextWithImageItemProps = Partial<

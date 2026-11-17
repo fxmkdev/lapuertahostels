@@ -1,0 +1,31 @@
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+
+  .lockButton {
+    background-color: transparent;
+    text-decoration-line: underline;
+    color: var(--theme-elevation-800);
+    cursor: pointer;
+    padding: 0;
+    border-style: none;
+
+    &:disabled {
+      opacity: 50%;
+      cursor: not-allowed;
+    }
+
+    &:hover:not(:disabled) {
+      color: var(--theme-elevation-1000);
+    }
+  }
+}
+
+.createRedirectCheckbox {
+  margin-top: 1rem;
+  & > div {
+    flex-shrink: 0;
+  }
+}

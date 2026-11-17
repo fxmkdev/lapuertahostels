@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 
 import { HeroSlidesBlock, HeroSlidesBlockProps } from "./hero-slides-block";
 import { callToAction, media } from "~/common/cms-data.builders";
-import { paragraph, richTextRoot, text } from "@fxmk/common";
+import { paragraph, richTextRoot, text } from "@lapuertahostels/rich-text";
 
 const meta = {
   title: "blocks/Hero Slides Block",
