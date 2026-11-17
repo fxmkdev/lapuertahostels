@@ -111,6 +111,7 @@ export function queryStringAndFragmentField(): RowField {
         name: "fragment",
         type: "text",
         admin: {
+          components: { Field: "/src/components/client#FragmentField" },
           condition: (_, siblingData) => siblingData.linkType === "internal",
           description: translated("cmsPlugin:fields:link:fragment:description"),
           width: "50%",

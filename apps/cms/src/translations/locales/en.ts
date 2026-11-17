@@ -74,8 +74,13 @@ export const en = {
         doc: { label: "Choose a document to link" },
         fragment: {
           description:
-            "If a fragment is provided, it will be appended to the URL with a '#' character. Use this to link to a section of a page, defined by an 'Element ID'.",
+            "Select an Element ID from the saved target page or type a custom fragment without '#'. Save anchor changes on the target page and reopen the link editor to refresh suggestions. Renaming an Element ID does not update existing links.",
           label: "Fragment",
+          loadError:
+            "Could not load page anchors. You can still enter a custom fragment.",
+          noAnchors: "No saved anchors. Type a custom fragment to use it.",
+          placeholder: "Select or type a fragment",
+          useCustom: "Use {{fragment}}",
         },
         label: "Link",
         linkType: {

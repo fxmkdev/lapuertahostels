@@ -72,8 +72,14 @@ export const es: TranslationsObject = {
         doc: { label: "Elige un documento a enlazar" },
         fragment: {
           description:
-            "Si se proporciona un fragmento, se añadirá a la URL con un carácter '#'. Úsalo para enlazar a una sección de una página, definida por un 'ID de elemento'.",
+            "Selecciona un ID de elemento de la página de destino guardada o escribe un fragmento personalizado sin '#'. Guarda los cambios de anclas en la página de destino y vuelve a abrir el editor de enlaces para actualizar las sugerencias. Cambiar un ID de elemento no actualiza los enlaces existentes.",
           label: "Fragmento",
+          loadError:
+            "No se pudieron cargar las anclas de la página. Puedes escribir un fragmento personalizado.",
+          noAnchors:
+            "No hay anclas guardadas. Escribe un fragmento personalizado para usarlo.",
+          placeholder: "Selecciona o escribe un fragmento",
+          useCustom: "Usar {{fragment}}",
         },
         label: "Enlace",
         linkType: {
