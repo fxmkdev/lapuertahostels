@@ -18,9 +18,16 @@ page of one brand to a page of another brand.
 - [Payload CMS](https://payloadcms.com/)
 - [MongoDB](https://www.mongodb.com/)
 
+## Runtime
+
+Use Node.js 24.22.3 or newer on the Node 24 line, as required by Payload 3.94.
+The package manifests declare this supported range, and `pnpm-workspace.yaml`
+uses 24.22.3 as its dependency-compatibility baseline. That setting does not
+switch your runtime; select a supported Node version before running pnpm.
+
 ## Dependency Patches
 
-`patches/payload@3.90.2.patch` preserves `overrideAccess` during field
+`patches/payload@3.94.0.patch` preserves `overrideAccess` during field
 validation in Payload global updates. Without it, CMS initialization on an empty
 database rejects the default fallback locale before creating the E2E API key.
 The patch keeps normal relationship access checks intact; the E2E setup checks

@@ -3,7 +3,7 @@ packages:
   - "libs/*"
   - "tests/e2e"
 
-nodeVersion: 24.12.0
+nodeVersion: 24.22.3
 injectWorkspacePackages: true
 
 overrides:
@@ -67,4 +67,4 @@ allowBuilds:
   unrs-resolver: false
 
 patchedDependencies:
-  payload@3.90.2: patches/payload@3.90.2.patch
+  payload@3.94.0: patches/payload@3.94.0.patch

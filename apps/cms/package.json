@@ -17,22 +17,22 @@
     "check-format": "prettier --check ."
   },
   "dependencies": {
-    "@payloadcms/db-mongodb": "^3.90.2",
-    "@payloadcms/email-resend": "^3.90.2",
-    "@payloadcms/next": "^3.90.2",
-    "@payloadcms/richtext-lexical": "^3.90.2",
-    "@payloadcms/storage-s3": "^3.90.2",
-    "@payloadcms/translations": "^3.90.2",
-    "@payloadcms/ui": "^3.90.2",
+    "@payloadcms/db-mongodb": "^3.94.0",
+    "@payloadcms/email-resend": "^3.94.0",
+    "@payloadcms/next": "^3.94.0",
+    "@payloadcms/richtext-lexical": "^3.94.0",
+    "@payloadcms/storage-s3": "^3.94.0",
+    "@payloadcms/translations": "^3.94.0",
+    "@payloadcms/ui": "^3.94.0",
     "bson": "^6.10.4",
     "cross-env": "^10.1.0",
     "deepl-node": "^1.27.0",
     "jsdom": "29.1.1",
-    "next": "~16.4.1",
+    "next": "~16.4.6",
     "openai": "^6.38.0",
-    "payload": "^3.90.2",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
+    "payload": "^3.94.0",
+    "react": "^19.2.9",
+    "react-dom": "^19.2.9",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -41,12 +41,12 @@
     "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",
     "eslint": "^9.32.0",
-    "eslint-config-next": "~16.2.6",
+    "eslint-config-next": "~16.4.6",
     "prettier": "3.8.3",
     "typescript": "^6.0.3"
   },
   "engines": {
-    "node": "24"
+    "node": ">=24.22.3 <25"
   },
   "packageManager": "pnpm@11.1.2+sha512.415a1cc25974731e75455c1468371be74c5aa5fb7621b50d4056d222451609f11412f23fd602e6169f1e060466641f798597e1be961a10688836a67b16569499"
 }
