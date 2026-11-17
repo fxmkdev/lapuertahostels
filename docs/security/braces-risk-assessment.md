@@ -79,6 +79,22 @@ reproduce the reported stack overflow. That result does not disprove the
 advisory on other runtimes, stack sizes, or patterns. The risk decision rests on
 the lack of attacker-controlled glob reachability, not on these tests.
 
+## Payload 3.94 Upgrade Review
+
+Rechecked on 2026-11-17 for
+[PR #420](https://github.com/fxmkdev/lapuertahostels/pull/420). The upgrade
+retains `braces@3.0.3`, `sass@1.77.4`, `chokidar@3.6.0`,
+`find-node-modules@2.1.3`, `findup-sync@4.0.0`, and `micromatch@4.0.8`.
+`@payloadcms/plugin-cloud-storage@3.94.0` still declares `find-node-modules`
+without importing it in its shipped JavaScript or TypeScript files. Sass still
+disables Chokidar globbing, and the Next.js ESLint plugin still takes directory
+patterns from repository configuration. The upgrade introduces no application
+source changes that pass public inputs to these consumers.
+
+This scoped dependency and source review leaves the reachability conclusion
+unchanged. It does not claim the advisory is fixed or replace the original
+assessment's evidence and limitations.
+
 ## Maintenance and Reassessment
 
 Reassess this decision when:

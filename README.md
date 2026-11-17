@@ -21,7 +21,9 @@ page of one brand to a page of another brand.
 ## Runtime
 
 Use Node.js 24.22.3 or newer on the Node 24 line, as required by Payload 3.94.
-The workspace pins this minimum version in `pnpm-workspace.yaml`.
+The package manifests declare this supported range, and `pnpm-workspace.yaml`
+uses 24.22.3 as its dependency-compatibility baseline. That setting does not
+switch your runtime; select a supported Node version before running pnpm.
 
 ## Dependency Patches
 
