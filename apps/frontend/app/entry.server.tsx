@@ -11,7 +11,8 @@ import { createReadableStreamFromReadable } from "@react-router/node";
 import { ServerRouter } from "react-router";
 import { isbot } from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
-import { createInstance as createI18nInstance, i18n } from "i18next";
+import type { i18n } from "i18next";
+import { createInstance as createI18nInstance } from "i18next";
 import { createRemixI18Next } from "./i18next.server";
 import { I18nextProvider, initReactI18next } from "react-i18next";
 import i18nConfig from "./i18n";
@@ -22,7 +23,7 @@ import {
 } from "./common/routing";
 import { I18NextBackend } from "./i18next-backend.server";
 import { getSettings } from "./cms-data.server";
-import { LocaleConfig } from "@lapuertahostels/payload-types";
+import type { LocaleConfig } from "@lapuertahostels/payload-types";
 
 // Reject/cancel all pending promises after 5 seconds
 export const streamTimeout = 5000;

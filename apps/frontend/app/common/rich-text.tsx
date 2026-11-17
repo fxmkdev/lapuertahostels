@@ -1,27 +1,23 @@
-import {
-  ComponentType,
-  createContext,
-  ElementType,
-  Fragment,
-  PropsWithChildren,
-  useContext,
-} from "react";
-import {
+import type { ComponentType, ElementType, PropsWithChildren } from "react";
+import { createContext, Fragment, useContext } from "react";
+import type {
   RichTextObject,
   ElementNode,
   HeadingElementNode,
   ListElementNode,
   TextNode,
+  Node,
+} from "@lapuertahostels/rich-text";
+import {
   IS_BOLD,
   IS_ITALIC,
   IS_UNDERLINE,
   IS_STRIKETHROUGH,
   IS_CODE,
-  Node,
 } from "@lapuertahostels/rich-text";
 import { useTranslation } from "react-i18next";
 import { getPageLinkHref } from "./page-link";
-import { Page } from "@lapuertahostels/payload-types";
+import type { Page } from "@lapuertahostels/payload-types";
 
 export type RichTextProps = {
   content?: RichTextObject;

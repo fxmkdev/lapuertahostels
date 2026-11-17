@@ -1,5 +1,5 @@
 import { createId } from "@paralleldrive/cuid2";
-import {
+import type {
   Banner,
   Brand,
   LeadText,

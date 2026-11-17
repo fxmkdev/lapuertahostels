@@ -1,8 +1,6 @@
-import {
-  Link as ReactRouterLink,
-  LinkProps as ReactRouterLinkProps,
-} from "react-router";
-import { Ref } from "react";
+import type { LinkProps as ReactRouterLinkProps } from "react-router";
+import { Link as ReactRouterLink } from "react-router";
+import type { Ref } from "react";
 
 export type LinkProps = Omit<ReactRouterLinkProps, "to"> & {
   ref?: Ref<HTMLAnchorElement>;

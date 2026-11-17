@@ -6,7 +6,7 @@ import {
 } from "@headlessui/react";
 import { cn } from "~/common/cn";
 import { useTheme } from "~/themes";
-import { LocaleConfig } from "@lapuertahostels/payload-types";
+import type { LocaleConfig } from "@lapuertahostels/payload-types";
 
 export type MobileLocaleSwitcherProps = {
   currentLocale: string;

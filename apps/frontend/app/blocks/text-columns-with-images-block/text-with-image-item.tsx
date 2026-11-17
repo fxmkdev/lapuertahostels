@@ -2,10 +2,11 @@ import { MediaImage } from "~/common/media";
 import { Button } from "~/common/button";
 import { PageLink } from "~/common/page-link";
 import { cn } from "~/common/cn";
-import { Heading, HeadingProps } from "~/common/heading";
+import type { HeadingProps } from "~/common/heading";
+import { Heading } from "~/common/heading";
 import { RichTextParagraph } from "~/common/paragraph";
-import { RichTextObject } from "@lapuertahostels/rich-text";
-import { TextColumnsWithImages } from "@lapuertahostels/payload-types";
+import type { RichTextObject } from "@lapuertahostels/rich-text";
+import type { TextColumnsWithImages } from "@lapuertahostels/payload-types";
 
 export type TextWithImageItemProps = Partial<
   TextColumnsWithImages["items"][number] & {

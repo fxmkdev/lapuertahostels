@@ -1,12 +1,9 @@
-import {
-  Form,
+import type {
   MetaFunction,
-  useActionData,
   ActionFunctionArgs,
-  data,
   LoaderFunctionArgs,
-  redirect,
 } from "react-router";
+import { Form, useActionData, data, redirect } from "react-router";
 import { useTranslation } from "react-i18next";
 import { Button } from "~/common/button";
 import { Input } from "~/common/input";

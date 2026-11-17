@@ -9,9 +9,9 @@ import {
   richTextRoot,
   text,
 } from "@lapuertahostels/rich-text";
-import { Brand, Page as PageItem } from "@lapuertahostels/payload-types";
-import { HeroSlidesBlockProps } from "~/blocks/slides-block/hero-slides-block";
-import { FeaturesBlockProps } from "~/blocks/features-block/features-block";
+import type { Brand, Page as PageItem } from "@lapuertahostels/payload-types";
+import type { HeroSlidesBlockProps } from "~/blocks/slides-block/hero-slides-block";
+import type { FeaturesBlockProps } from "~/blocks/features-block/features-block";
 
 const meta = {
   title: "layout/Page",

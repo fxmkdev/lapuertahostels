@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 import { Header } from "./header";
 import { banner, brand, internalLink, media } from "~/common/cms-data.builders";
 

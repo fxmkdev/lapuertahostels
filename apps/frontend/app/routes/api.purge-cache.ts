@@ -1,4 +1,4 @@
-import { ActionFunctionArgs } from "react-router";
+import type { ActionFunctionArgs } from "react-router";
 import { purgeCache } from "~/cms-data.server";
 import { isAuthenticated } from "~/common/auth";
 

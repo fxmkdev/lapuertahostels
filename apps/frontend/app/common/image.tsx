@@ -1,13 +1,5 @@
-import {
-  DetailedHTMLProps,
-  ImgHTMLAttributes,
-  Ref,
-  useCallback,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-} from "react";
+import type { DetailedHTMLProps, ImgHTMLAttributes, Ref } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useEnvironment } from "~/common/environment";
 import { mergeRefs } from "./utils";
 

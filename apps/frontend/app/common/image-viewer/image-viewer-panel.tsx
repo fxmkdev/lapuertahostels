@@ -1,12 +1,6 @@
-import {
-  Ref,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-import { ImageViewerImage } from "./types";
+import type { Ref, SetStateAction } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { ImageViewerImage } from "./types";
 import { Transition, TransitionChild } from "@headlessui/react";
 import { Image } from "~/common/image";
 import { ImageViewerControlsOverlay } from "./image-viewer-controls-overlay";

@@ -1,6 +1,7 @@
-import { Brand, NewLink } from "@lapuertahostels/payload-types";
-import { Link, LinkProps } from "./link";
-import { PropsWithChildren } from "react";
+import type { Brand, NewLink } from "@lapuertahostels/payload-types";
+import type { LinkProps } from "./link";
+import { Link } from "./link";
+import type { PropsWithChildren } from "react";
 import { gracefully, isObject } from "./utils";
 import { buildLocalizedRelativeUrl } from "./routing";
 import { useTranslation } from "react-i18next";

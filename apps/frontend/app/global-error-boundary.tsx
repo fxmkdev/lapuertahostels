@@ -7,7 +7,7 @@ import {
   useRouteLoaderData,
 } from "react-router";
 import { Trans, useTranslation } from "react-i18next";
-import { loader as rootLoader } from "./root";
+import type { loader as rootLoader } from "./root";
 import { getTitle } from "./common/meta";
 import { ThemeProvider } from "./themes";
 import { Header } from "./layout/header";
@@ -16,7 +16,7 @@ import { StoryBlock } from "./blocks/story-block";
 import { Footer } from "./layout/footer";
 import { AnalyticsScript } from "./analytics-script";
 import { MaintenanceScreen } from "./layout/maintenance-screen";
-import { Settings } from "@lapuertahostels/payload-types";
+import type { Settings } from "@lapuertahostels/payload-types";
 import { richTextRoot } from "@lapuertahostels/rich-text";
 
 export function GlobalErrorBoundary() {

@@ -1,4 +1,4 @@
-import { Map as MapType } from "@lapuertahostels/payload-types";
+import type { Map as MapType } from "@lapuertahostels/payload-types";
 import {
   AdvancedMarker,
   Map,
@@ -10,9 +10,10 @@ import { useTheme } from "~/themes";
 import { cn } from "~/common/cn";
 import { Link } from "~/common/link";
 import { MapPinIcon } from "@heroicons/react/20/solid";
-import { Place, PlaceResolver } from "~/common/google-maps";
+import type { Place } from "~/common/google-maps";
+import { PlaceResolver } from "~/common/google-maps";
 import { OverlayTextBox } from "../common/overlay-text-box";
-import { RichTextObject } from "@lapuertahostels/rich-text";
+import type { RichTextObject } from "@lapuertahostels/rich-text";
 import { useSettings } from "~/common/common";
 
 type MapBlockType = MapType;

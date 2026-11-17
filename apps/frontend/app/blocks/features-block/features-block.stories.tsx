@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { FeaturesBlock, FeaturesBlockProps } from "./features-block";
+import type { FeaturesBlockProps } from "./features-block";
+import { FeaturesBlock } from "./features-block";
 import { callToAction, media } from "~/common/cms-data.builders";
 import {
   bold,

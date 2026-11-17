@@ -4,7 +4,7 @@ import {
   Transition,
   TransitionChild,
 } from "@headlessui/react";
-import { ImageViewerImage } from "./types";
+import type { ImageViewerImage } from "./types";
 import { ImageViewerPanel } from "./image-viewer-panel";
 
 export type ImageViewerDialogProps = {

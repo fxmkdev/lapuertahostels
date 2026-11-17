@@ -1,4 +1,4 @@
-import { LoaderFunctionArgs } from "react-router";
+import type { LoaderFunctionArgs } from "react-router";
 import { getCanonicalRequestUrl } from "~/common/routing";
 
 export async function loader({ request }: LoaderFunctionArgs) {

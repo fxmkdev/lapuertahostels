@@ -1,8 +1,8 @@
-import { WideImage } from "@lapuertahostels/payload-types";
+import type { WideImage } from "@lapuertahostels/payload-types";
 import { MediaImage } from "~/common/media";
 import { PageLink } from "~/common/page-link";
 import { OverlayTextBox } from "./common/overlay-text-box";
-import { RichTextObject } from "@lapuertahostels/rich-text";
+import type { RichTextObject } from "@lapuertahostels/rich-text";
 
 export type WideImageBlockProps = WideImage;
 

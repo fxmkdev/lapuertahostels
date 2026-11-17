@@ -1,8 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import {
-  AccommodationSelectorBlock,
-  AccommodationSelectorBlockProps,
-} from "./accommodation-selector-block";
+import type { AccommodationSelectorBlockProps } from "./accommodation-selector-block";
+import { AccommodationSelectorBlock } from "./accommodation-selector-block";
 import { internalLink, media } from "~/common/cms-data.builders";
 import {
   bold,

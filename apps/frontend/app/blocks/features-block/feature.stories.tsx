@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { Feature, FeatureProps } from "./feature";
+import type { FeatureProps } from "./feature";
+import { Feature } from "./feature";
 import { callToAction, media } from "~/common/cms-data.builders";
 import { paragraph, richTextRoot, text } from "@lapuertahostels/rich-text";
 

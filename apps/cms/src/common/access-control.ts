@@ -1,4 +1,4 @@
-import { Access, CollectionSlug, PayloadRequest } from "payload";
+import type { Access, CollectionSlug, PayloadRequest } from "payload";
 
 export function isAdmin(req: PayloadRequest) {
   return (

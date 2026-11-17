@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 
 import { Paragraph, ParagraphHighlight } from "./paragraph";
 import { cn } from "./cn";
-import { BrandId } from "~/brands";
+import type { BrandId } from "~/brands";
 import { themesByBrand } from "~/themes";
 import { allModes } from "../../.storybook/modes";
 

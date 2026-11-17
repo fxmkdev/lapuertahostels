@@ -1,6 +1,7 @@
 import { cn } from "../../common/cn";
 import { useState } from "react";
-import { MediaImage, MediaImageProps } from "~/common/media";
+import type { MediaImageProps } from "~/common/media";
+import { MediaImage } from "~/common/media";
 
 export type SlideImageProps = Pick<MediaImageProps, "media"> & {
   withPreview?: boolean;

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { HeroVideoBlock, HeroVideoBlockProps } from "./hero-video-block";
+import type { HeroVideoBlockProps } from "./hero-video-block";
+import { HeroVideoBlock } from "./hero-video-block";
 import { callToAction, media } from "~/common/cms-data.builders";
 import {
   bold,

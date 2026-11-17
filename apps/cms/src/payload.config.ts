@@ -3,7 +3,7 @@ import path from "path";
 import { mongooseAdapter } from "@payloadcms/db-mongodb";
 import { buildConfig } from "payload";
 
-import { Config } from "./payload-types";
+import type { Config } from "./payload-types";
 import { translations } from "./translations";
 import { fileURLToPath } from "url";
 

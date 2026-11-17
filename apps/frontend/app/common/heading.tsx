@@ -1,7 +1,8 @@
-import { PropsWithChildren, createContext, useContext } from "react";
+import type { PropsWithChildren } from "react";
+import { createContext, useContext } from "react";
 import { cn } from "./cn";
 import { useTheme } from "~/themes";
-import { RichTextObject } from "@lapuertahostels/rich-text";
+import type { RichTextObject } from "@lapuertahostels/rich-text";
 import { TextHighlight } from "./text-highlight";
 import { isEmptyRichText, RichText } from "./rich-text";
 

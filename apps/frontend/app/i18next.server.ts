@@ -3,7 +3,7 @@ import { RemixI18Next } from "remix-i18next/server";
 import i18n from "~/i18n"; // your i18n configuration file
 import { I18NextBackend } from "./i18next-backend.server";
 import { getSettings } from "./cms-data.server";
-import { LocaleConfig } from "@lapuertahostels/payload-types";
+import type { LocaleConfig } from "@lapuertahostels/payload-types";
 
 export const localeCookie = createCookie("locale");
 

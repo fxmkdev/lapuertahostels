@@ -1,6 +1,5 @@
+import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 import {
-  LoaderFunctionArgs,
-  MetaFunction,
   type LinksFunction,
   Links,
   Meta,
@@ -13,7 +12,7 @@ import {
 import styles from "./global.css?url";
 import { useTranslation } from "react-i18next";
 import { Footer } from "./layout/footer";
-import { BrandId } from "./brands";
+import type { BrandId } from "./brands";
 import {
   getBrands,
   getCommon,
@@ -31,7 +30,7 @@ import {
   toRelativeUrl,
   toUrl,
 } from "./common/routing";
-import { Brand, LocaleConfig } from "@lapuertahostels/payload-types";
+import type { Brand, LocaleConfig } from "@lapuertahostels/payload-types";
 import { GlobalErrorBoundary } from "./global-error-boundary";
 import { AnalyticsScript } from "./analytics-script";
 import { PreviewBar } from "./layout/preview-bar";

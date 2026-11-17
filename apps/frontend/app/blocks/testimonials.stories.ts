@@ -1,7 +1,7 @@
-import { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 import { TestimonialsBlock } from "./testimonials";
 import { paragraph, richTextRoot, text } from "@lapuertahostels/rich-text";
-import { Testimonials } from "@lapuertahostels/payload-types";
+import type { Testimonials } from "@lapuertahostels/payload-types";
 
 const meta = {
   title: "blocks/Testimonials Block",

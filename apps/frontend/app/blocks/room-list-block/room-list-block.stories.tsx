@@ -1,6 +1,7 @@
 import { media, requiredCallToAction } from "~/common/cms-data.builders";
-import { RoomListBlock, RoomListBlockProps } from "./room-list-block";
-import { Meta, StoryObj } from "@storybook/react";
+import type { RoomListBlockProps } from "./room-list-block";
+import { RoomListBlock } from "./room-list-block";
+import type { Meta, StoryObj } from "@storybook/react";
 import { paragraph, richTextRoot, text } from "@lapuertahostels/rich-text";
 
 const meta = {

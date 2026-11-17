@@ -1,5 +1,5 @@
 import { Image } from "../image";
-import { ImageViewerImage } from "./types";
+import type { ImageViewerImage } from "./types";
 import { useState } from "react";
 import { ImageViewerDialog } from "./image-viewer-dialog";
 import { Heading } from "../heading";

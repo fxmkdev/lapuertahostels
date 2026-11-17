@@ -1,4 +1,4 @@
-import { MigrateDownArgs, MigrateUpArgs } from "@payloadcms/db-mongodb";
+import type { MigrateDownArgs, MigrateUpArgs } from "@payloadcms/db-mongodb";
 
 export async function up({ payload }: MigrateUpArgs): Promise<void> {
   const common = await payload.db.connection

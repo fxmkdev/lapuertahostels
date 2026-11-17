@@ -1,4 +1,5 @@
-import { MetaFunction, useLoaderData, LoaderFunctionArgs } from "react-router";
+import type { MetaFunction, LoaderFunctionArgs } from "react-router";
+import { useLoaderData } from "react-router";
 import { OptInLivePreview } from "~/common/live-preview";
 import { Page } from "../layout/page";
 import { getPageTitle } from "~/common/meta";
@@ -9,13 +10,13 @@ import {
   getRequestUrl,
   toUrl,
 } from "~/common/routing";
-import { SerializeFromLoader } from "~/common/types";
+import type { SerializeFromLoader } from "~/common/types";
 import { type loader as rootLoader } from "~/root";
 import { toImagekitTransformationString } from "~/common/image";
 import { getAltFromMedia } from "~/common/media";
 import { PAGE_DEPTH } from "~/cms-data";
 import { getSettings, tryGetLocalizedPathname } from "~/cms-data.server";
-import { LocaleConfig } from "@lapuertahostels/payload-types";
+import type { LocaleConfig } from "@lapuertahostels/payload-types";
 
 export const meta: MetaFunction<typeof loader> = ({ data, matches }) => {
   if (!data) throw new Error("No loader data");
