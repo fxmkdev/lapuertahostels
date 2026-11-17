@@ -72,10 +72,12 @@ need to be strictly Conventional Commit formatted.
 
 ## TypeScript Imports
 
-Frontend and CMS TypeScript files must use `import type` for imports used only
-as types. Keep type imports in separate declarations from runtime imports,
-including when both come from the same module. ESLint enforces this convention
-with `@typescript-eslint/consistent-type-imports`.
+Frontend and CMS TypeScript files must mark imports used only as types with
+`import type` or an inline `type` modifier. Prefer separate `import type`
+declarations when a module supplies both types and runtime values. ESLint's
+`@typescript-eslint/consistent-type-imports` rule requires type-only imports
+and uses separate declarations when automatically fixing mixed imports;
+existing inline `type` modifiers also satisfy the rule.
 
 ## Review Comment Workflow
 
