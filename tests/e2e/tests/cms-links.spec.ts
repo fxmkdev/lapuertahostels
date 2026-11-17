@@ -1,5 +1,10 @@
 import { createId } from "@paralleldrive/cuid2";
-import { expect, test, type Page as BrowserPage } from "@playwright/test";
+import {
+  expect,
+  test,
+  type Locator,
+  type Page as BrowserPage,
+} from "@playwright/test";
 import type { Page } from "@lapuertahostels/payload-types";
 import {
   internalLink,
@@ -33,7 +38,7 @@ test.afterEach(async ({ request }) => {
   if (editorId) await request.delete(cmsUrl(`/api/users/${editorId}`));
 });
 
-async function createLinkedPage() {
+async function createLinkedPage(fragment = "legacy-fragment") {
   const target = await createPage({
     content: [
       {
@@ -53,7 +58,7 @@ async function createLinkedPage() {
     fields: {
       linkType: "internal",
       doc: { relationTo: "pages", value: target.id },
-      fragment: "legacy-fragment",
+      fragment,
       queryString: "source=rich",
     },
   };
@@ -76,7 +81,7 @@ async function createLinkedPage() {
           link: {
             linkType: "internal",
             doc: target.id,
-            fragment: "legacy-fragment",
+            fragment,
             queryString: "source=cta",
           },
         },
@@ -100,7 +105,7 @@ async function openContent(page: BrowserPage, source: Page) {
   await block
     .getByRole("heading", { name: "Call to Action (CTA)", exact: true })
     .scrollIntoViewIfNeeded();
-  await expect(page.getByLabel("Fragment", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("Anchor", { exact: true })).toBeVisible();
 }
 
 async function savePage(page: BrowserPage, source: Page) {
@@ -119,6 +124,101 @@ async function openRichLinkDrawer(page: BrowserPage) {
   await editor.press("Home");
   await editor.press("ArrowRight");
   await page.getByRole("button", { name: "Edit link", exact: true }).click();
+}
+
+async function expectAlignedLinkFields(
+  scope: Locator,
+  stacked: boolean,
+  screenshotName: string,
+) {
+  const query = scope.getByLabel("Query string", { exact: true });
+  const anchor = scope.getByLabel("Anchor", { exact: true });
+  const control = anchor.locator(
+    'xpath=ancestor::div[contains(concat(" ", normalize-space(@class), " "), " rs__control ")][1]',
+  );
+  await query.scrollIntoViewIfNeeded();
+  await expect
+    .poll(async () => {
+      const [queryBox, anchorBox] = await Promise.all([
+        query.boundingBox(),
+        control.boundingBox(),
+      ]);
+      if (!queryBox || !anchorBox) return Infinity;
+      return Math.max(
+        Math.abs(queryBox.width - anchorBox.width),
+        Math.abs(queryBox.height - anchorBox.height),
+        stacked
+          ? Math.abs(queryBox.x - anchorBox.x)
+          : Math.abs(queryBox.y - anchorBox.y),
+      );
+    })
+    .toBeLessThanOrEqual(2);
+  if (stacked) {
+    const queryBox = await query.boundingBox();
+    const anchorBox = await control.boundingBox();
+    expect(anchorBox!.y).toBeGreaterThanOrEqual(queryBox!.y + queryBox!.height);
+  }
+  expect(
+    await control.evaluate(
+      (element) => element.scrollWidth <= element.clientWidth + 1,
+    ),
+  ).toBe(true);
+  const row = anchor.locator(
+    'xpath=ancestor::div[contains(concat(" ", normalize-space(@class), " "), " row ")][1]',
+  );
+  await test
+    .info()
+    .attach(screenshotName, {
+      body: await row.screenshot(),
+      contentType: "image/png",
+    });
+}
+
+async function expectLinkHelp(scope: Locator, page: BrowserPage) {
+  for (const name of ["About query strings", "About anchors"]) {
+    const button = scope.getByRole("button", { name, exact: true });
+    await button.focus();
+    await expect(scope.getByRole("tooltip")).toBeVisible();
+    await button.press("Escape");
+    await expect(scope.getByRole("tooltip")).toHaveCount(0);
+    await expect(button).toBeFocused();
+    await button.click();
+    const tooltip = scope.getByRole("tooltip");
+    await expect(tooltip).toBeVisible();
+    const box = await tooltip.boundingBox();
+    expect(box!.x).toBeGreaterThanOrEqual(0);
+    expect(box!.x + box!.width).toBeLessThanOrEqual(page.viewportSize()!.width);
+    await button.click();
+    await expect(tooltip).toHaveCount(0);
+  }
+}
+
+for (const theme of ["light", "dark"] as const) {
+  for (const mobile of [false, true]) {
+    test(`internal-link layout and help: ${theme}, ${mobile ? "mobile" : "desktop"}`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: mobile ? 390 : 1280, height: 900 });
+      await page.emulateMedia({ colorScheme: theme });
+      const longAnchor = `experiences-${"nearby-".repeat(12)}and-adventures`;
+      const source = await createLinkedPage(longAnchor);
+      await openContent(page, source);
+      await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+      const block = page.locator("#content-row-0");
+      await expectAlignedLinkFields(block, mobile, "structured-link-fields");
+      await expect(
+        block.getByText(`#${longAnchor}`, { exact: true }),
+      ).toBeVisible();
+      await expectLinkHelp(block, page);
+      await openRichLinkDrawer(page);
+      const drawer = page.locator(".lexical-link-edit-drawer");
+      await expectAlignedLinkFields(drawer, mobile, "rich-text-link-fields");
+      await expectLinkHelp(drawer, page);
+      await expect(
+        drawer.getByRole("heading", { name: "Edit Link", exact: true }),
+      ).toBeVisible();
+    });
+  }
 }
 
 test("structured links preserve legacy fragments and save selected or custom anchors", async ({
@@ -140,18 +240,18 @@ test("structured links preserve legacy fragments and save selected or custom anc
     page.getByText("#legacy-fragment", { exact: true }),
   ).toBeVisible();
 
-  const fragment = page.getByLabel("Fragment", { exact: true });
+  const fragment = page.getByLabel("Anchor", { exact: true });
   await fragment.click();
   await page.getByRole("option", { name: "#rooms", exact: true }).click();
   await savePage(page, source);
   await openContent(page, source);
   await expect(page.getByText("#rooms", { exact: true })).toBeVisible();
 
-  await page.getByLabel("Fragment", { exact: true }).fill("custom-anchor");
+  await page.getByLabel("Anchor", { exact: true }).fill("custom-anchor");
   await expect(
     page.getByRole("option", { name: "Use custom-anchor", exact: true }),
   ).toBeVisible();
-  await page.getByLabel("Fragment", { exact: true }).press("Enter");
+  await page.getByLabel("Anchor", { exact: true }).press("Enter");
   await savePage(page, source);
   const saved = await request.get(
     cmsUrl(`/api/pages/${source.id}?depth=0&locale=en`),
@@ -162,9 +262,9 @@ test("structured links preserve legacy fragments and save selected or custom anc
   });
 
   await openContent(page, source);
-  await page.getByLabel("Fragment", { exact: true }).focus();
-  await page.getByLabel("Fragment", { exact: true }).press("Backspace");
-  await page.getByLabel("Fragment", { exact: true }).press("Escape");
+  await page.getByLabel("Anchor", { exact: true }).focus();
+  await page.getByLabel("Anchor", { exact: true }).press("Backspace");
+  await page.getByLabel("Anchor", { exact: true }).press("Escape");
   await savePage(page, source);
   await openContent(page, source);
   await expect(page.getByText("#custom-anchor", { exact: true })).toHaveCount(
@@ -187,7 +287,7 @@ test("rich-text link drawers select anchors and retain them after saving and reo
   await expect(
     drawer.getByText("#legacy-fragment", { exact: true }),
   ).toBeVisible();
-  await drawer.getByLabel("Fragment", { exact: true }).click();
+  await drawer.getByLabel("Anchor", { exact: true }).click();
   await page.getByRole("option", { name: "#contact", exact: true }).click();
   await drawer
     .getByRole("button", { name: "Save changes", exact: true })

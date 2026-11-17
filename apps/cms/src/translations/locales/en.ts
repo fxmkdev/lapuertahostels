@@ -73,13 +73,14 @@ export const en = {
       link: {
         doc: { label: "Choose a document to link" },
         fragment: {
-          description:
-            "Select an Element ID from the saved target page or type a custom fragment without '#'. Save anchor changes on the target page and reopen the link editor to refresh suggestions. Renaming an Element ID does not update existing links.",
-          label: "Fragment",
+          description: "Choose a page section or enter a custom anchor.",
+          help: "Select an Element ID from the saved target page or type a custom fragment without '#'. Save anchor changes on the target page and reopen the link editor to refresh suggestions. Renaming an Element ID does not update existing links.",
+          helpLabel: "About anchors",
+          label: "Anchor",
           loadError:
-            "Could not load page anchors. You can still enter a custom fragment.",
-          noAnchors: "No saved anchors. Type a custom fragment to use it.",
-          placeholder: "Select or type a fragment",
+            "Could not load page anchors. You can still enter a custom anchor.",
+          noAnchors: "No saved anchors. Type a custom anchor to use it.",
+          placeholder: "Select or type an anchor",
           useCustom: "Use {{fragment}}",
         },
         label: "Link",
@@ -93,9 +94,10 @@ export const en = {
           },
         },
         queryString: {
-          description:
-            "If a query string is provided, it will be appended to the URL with a '?' character.",
-          label: "Query String",
+          description: "Optional. Example: guests=2",
+          help: "If a query string is provided, it will be appended to the URL with a '?' character.",
+          helpLabel: "About query strings",
+          label: "Query string",
         },
         url: { label: "URL" },
       },

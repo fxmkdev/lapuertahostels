@@ -1,4 +1,4 @@
-import type { ComponentProps } from "react";
+import type { ComponentProps, ReactNode } from "react";
 import type { TextFieldClientProps } from "payload";
 import type { ReactSelect } from "@payloadcms/ui";
 
@@ -20,6 +20,7 @@ const form = vi.hoisted(() => ({
   value: "legacy-fragment",
   disabled: false,
   currentPath: undefined as string | undefined,
+  description: null as ReactNode,
   setValue: vi.fn(),
 }));
 
@@ -36,12 +37,20 @@ vi.mock("@payloadcms/ui", () => ({
     value: form.value,
     setValue: form.setValue,
     disabled: form.disabled,
+    customComponents: { Description: form.description },
   }),
   useFormFields: (selector: (state: unknown[]) => unknown) =>
     selector([form.fields]),
   FieldLabel: () => null,
   FieldError: () => null,
   FieldDescription: () => null,
+  RenderCustomComponent: ({
+    CustomComponent,
+    Fallback,
+  }: {
+    CustomComponent?: ReactNode;
+    Fallback: ReactNode;
+  }) => (CustomComponent === undefined ? Fallback : CustomComponent),
   ReactSelect: ({
     options,
     value,
@@ -59,7 +68,7 @@ vi.mock("@payloadcms/ui", () => ({
           onChange={(event) => onInputChange?.(event.target.value)}
         />
         <select
-          aria-label="Fragment"
+          aria-label="Anchor"
           disabled={disabled}
           value={String(selected?.value ?? "")}
           onChange={(event) =>
@@ -90,7 +99,7 @@ vi.mock("@payloadcms/ui", () => ({
 
 const props = {
   path: "content.2.callToAction.link.fragment",
-  field: { name: "fragment", type: "text", label: "Fragment", admin: {} },
+  field: { name: "fragment", type: "text", label: "Anchor", admin: {} },
 } as TextFieldClientProps;
 
 function pageResponse(elementId: string) {
@@ -106,6 +115,7 @@ beforeEach(() => {
   form.locale = "en";
   form.disabled = false;
   form.currentPath = undefined;
+  form.description = null;
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue(pageResponse("rooms")));
 });
 
@@ -152,6 +162,18 @@ it("selects, creates and clears fragments only on explicit input", async () => {
   expect(form.setValue).toHaveBeenLastCalledWith("custom-anchor");
   fireEvent.change(screen.getByRole("combobox"), { target: { value: "" } });
   expect(form.setValue).toHaveBeenLastCalledWith("");
+});
+
+it("renders the translated helper supplied by Payload's server", async () => {
+  form.description = (
+    <span>Choose a page section or enter a custom anchor.</span>
+  );
+  render(<FragmentField {...props} />);
+  expect(
+    screen.getByText("Choose a page section or enter a custom anchor."),
+  ).toBeTruthy();
+  await screen.findByRole("option", { name: "#rooms" });
+  expect(form.setValue).not.toHaveBeenCalled();
 });
 
 it("supports root-level Lexical relationships and refreshes on locale changes", async () => {

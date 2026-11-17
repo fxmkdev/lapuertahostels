@@ -3,6 +3,7 @@
 export * from "./generate-alt-text-button";
 export * from "./fragment-field";
 export * from "./labels";
+export * from "./link-field-label";
 export * from "./pathname-field";
 export * from "./row-label";
 export * from "./to-cell";

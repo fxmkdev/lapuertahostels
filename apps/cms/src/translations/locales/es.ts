@@ -72,13 +72,15 @@ export const es: TranslationsObject = {
         doc: { label: "Elige un documento a enlazar" },
         fragment: {
           description:
-            "Selecciona un ID de elemento de la página de destino guardada o escribe un fragmento personalizado sin '#'. Guarda los cambios de anclas en la página de destino y vuelve a abrir el editor de enlaces para actualizar las sugerencias. Cambiar un ID de elemento no actualiza los enlaces existentes.",
-          label: "Fragmento",
+            "Elige una sección de la página o escribe un ancla personalizada.",
+          help: "Selecciona un ID de elemento de la página de destino guardada o escribe un fragmento personalizado sin '#'. Guarda los cambios de anclas en la página de destino y vuelve a abrir el editor de enlaces para actualizar las sugerencias. Cambiar un ID de elemento no actualiza los enlaces existentes.",
+          helpLabel: "Acerca de las anclas",
+          label: "Ancla",
           loadError:
-            "No se pudieron cargar las anclas de la página. Puedes escribir un fragmento personalizado.",
+            "No se pudieron cargar las anclas de la página. Puedes escribir un ancla personalizada.",
           noAnchors:
-            "No hay anclas guardadas. Escribe un fragmento personalizado para usarlo.",
-          placeholder: "Selecciona o escribe un fragmento",
+            "No hay anclas guardadas. Escribe un ancla personalizada para usarla.",
+          placeholder: "Selecciona o escribe un ancla",
           useCustom: "Usar {{fragment}}",
         },
         label: "Enlace",
@@ -92,8 +94,9 @@ export const es: TranslationsObject = {
           },
         },
         queryString: {
-          description:
-            "Si se proporciona una cadena de consulta, se añadirá a la URL con un carácter '?'.",
+          description: "Opcional. Ejemplo: guests=2",
+          help: "Si se proporciona una cadena de consulta, se añadirá a la URL con un carácter '?'.",
+          helpLabel: "Acerca de las cadenas de consulta",
           label: "Cadena de consulta",
         },
         url: { label: "URL" },

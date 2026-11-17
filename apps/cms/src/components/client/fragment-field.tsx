@@ -5,13 +5,13 @@ import type { TextFieldClientProps, Validate } from "payload";
 import {
   FieldDescription,
   FieldError,
-  FieldLabel,
   ReactSelect,
+  RenderCustomComponent,
   useField,
   useFormFields,
   useTranslation,
 } from "@payloadcms/ui";
-import { useCallback, useId, useState } from "react";
+import { type CSSProperties, useCallback, useId, useState } from "react";
 
 import type {
   TranslationsKey,
@@ -19,6 +19,8 @@ import type {
 } from "../../translations/types";
 
 import { getTargetPageId } from "./fragment-options";
+import styles from "./fragment-field.module.css";
+import { LinkFieldLabel } from "./link-field-label";
 import { usePageFragments } from "./use-page-fragments";
 
 export function FragmentField({
@@ -41,10 +43,11 @@ export function FragmentField({
         : true,
     [validate, field.name, field.required, field.minLength, field.maxLength],
   );
-  const { disabled, path, setValue, showError, value } = useField<string>({
-    potentiallyStalePath: pathFromProps,
-    validate: validateFragment,
-  });
+  const { customComponents, disabled, path, setValue, showError, value } =
+    useField<string>({
+      potentiallyStalePath: pathFromProps,
+      validate: validateFragment,
+    });
   const docPath = `${path.slice(0, path.lastIndexOf(".") + 1)}doc`;
   const pageId = useFormFields(([fields]) =>
     getTargetPageId(fields[docPath]?.value),
@@ -68,14 +71,32 @@ export function FragmentField({
         ]
       : options;
   const isReadOnly = Boolean(readOnly || disabled);
+  const fieldStyle: CSSProperties & {
+    "--field-width"?: CSSProperties["width"];
+  } = {
+    ...field.admin?.style,
+    ...(field.admin?.width
+      ? { "--field-width": field.admin.width }
+      : { flex: "1 1 auto" }),
+    ...(field.admin?.style?.flex ? { flex: field.admin.style.flex } : {}),
+  };
 
   return (
     <div
-      className={["field-type", "text", showError && "error"]
+      className={[
+        "field-type",
+        "select",
+        styles.field,
+        field.admin?.className,
+        showError && "error",
+      ]
         .filter(Boolean)
         .join(" ")}
+      style={fieldStyle}
     >
-      <FieldLabel
+      <LinkFieldLabel
+        helpLabel={t("cmsPlugin:fields:link:fragment:helpLabel")}
+        helpText={t("cmsPlugin:fields:link:fragment:help")}
         htmlFor={inputId}
         label={field.label}
         localized={field.localized}
@@ -103,7 +124,15 @@ export function FragmentField({
         showError={showError}
         value={value ? { label: `#${value}`, value } : []}
       />
-      <FieldDescription description={field.admin?.description} path={path} />
+      <RenderCustomComponent
+        CustomComponent={customComponents?.Description}
+        Fallback={
+          <FieldDescription
+            description={field.admin?.description}
+            path={path}
+          />
+        }
+      />
       {failed && (
         <p role="status">{t("cmsPlugin:fields:link:fragment:loadError")}</p>
       )}
