@@ -6,8 +6,8 @@ import type {
   TextFieldClient,
 } from "payload";
 
-import { FieldLabel, useTranslation } from "@payloadcms/ui";
-import { useEffect, useId, useRef, useState } from "react";
+import { FieldLabel, useFieldPath, useTranslation } from "@payloadcms/ui";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 
 import type {
   TranslationsKey,
@@ -31,9 +31,10 @@ export function LinkFieldLabel({
   );
   const helpId = useId();
   const helpRef = useRef<HTMLSpanElement>(null);
+  const dismissedWithEscape = useRef(false);
   const isOpen = openedBy !== null;
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!isOpen) return;
 
     function dismissOutside(event: PointerEvent) {
@@ -41,6 +42,7 @@ export function LinkFieldLabel({
     }
     function dismissWithEscape(event: KeyboardEvent) {
       if (event.key === "Escape") {
+        dismissedWithEscape.current = true;
         event.preventDefault();
         event.stopPropagation();
         setOpenedBy(null);
@@ -48,12 +50,26 @@ export function LinkFieldLabel({
     }
 
     document.addEventListener("pointerdown", dismissOutside);
-    document.addEventListener("keydown", dismissWithEscape, true);
+    window.addEventListener("keydown", dismissWithEscape, true);
     return () => {
       document.removeEventListener("pointerdown", dismissOutside);
-      document.removeEventListener("keydown", dismissWithEscape, true);
+      window.removeEventListener("keydown", dismissWithEscape, true);
     };
   }, [isOpen]);
+
+  useEffect(() => {
+    function consumeEscapeRelease(event: KeyboardEvent) {
+      if (event.key === "Escape" && dismissedWithEscape.current) {
+        event.preventDefault();
+        event.stopPropagation();
+        dismissedWithEscape.current = false;
+      }
+    }
+    // Capture before React's portal/editor shortcuts, including after help hides.
+    window.addEventListener("keyup", consumeEscapeRelease, true);
+    return () =>
+      window.removeEventListener("keyup", consumeEscapeRelease, true);
+  }, []);
 
   return (
     <div className={styles.labelRow}>
@@ -71,13 +87,24 @@ export function LinkFieldLabel({
           aria-expanded={isOpen}
           aria-label={helpLabel}
           className={styles.helpButton}
-          onBlur={() => setOpenedBy(null)}
+          onBlur={() => {
+            dismissedWithEscape.current = false;
+            setOpenedBy(null);
+          }}
           onClick={() =>
             setOpenedBy((current) => (current === "click" ? null : "click"))
           }
           onFocus={() =>
             setOpenedBy((current) => (current === "click" ? current : "focus"))
           }
+          onKeyDown={(event) => {
+            if (event.key === "Escape" && isOpen) {
+              dismissedWithEscape.current = true;
+              event.preventDefault();
+              event.stopPropagation();
+              setOpenedBy(null);
+            }
+          }}
           type="button"
         >
           <svg aria-hidden="true" fill="none" viewBox="0 0 20 20">
@@ -111,9 +138,15 @@ export function QueryStringLabel({
   ...props
 }: FieldLabelClientProps<TextFieldClient>) {
   const { t } = useTranslation<TranslationsObject, TranslationsKey>();
+  const path = useFieldPath() || props.path;
   return (
     <LinkFieldLabel
       {...props}
+      path={path}
+      htmlFor={
+        props.htmlFor ??
+        (path ? `field-${path.replace(/\./g, "__")}` : undefined)
+      }
       label={props.label ?? field?.label}
       localized={props.localized ?? field?.localized}
       required={props.required ?? field?.required}

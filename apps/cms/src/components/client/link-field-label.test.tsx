@@ -12,28 +12,36 @@ import { afterEach, expect, it, vi } from "vitest";
 import { LinkFieldLabel, QueryStringLabel } from "./link-field-label";
 
 vi.mock("@payloadcms/ui", () => ({
-  FieldLabel: ({ label, htmlFor }: GenericLabelProps) => (
-    <label htmlFor={htmlFor}>{String(label)}</label>
+  FieldLabel: ({ label, htmlFor, path }: GenericLabelProps) => (
+    <label htmlFor={htmlFor ?? path}>{String(label)}</label>
   ),
   useTranslation: () => ({ t: (key: string) => key.split(":").at(-1) }),
+  useFieldPath: () => "queryString",
 }));
 
 afterEach(cleanup);
 
 it("uses the label from Payload's client field config", () => {
   render(
-    <QueryStringLabel
-      field={{ name: "queryString", type: "text", label: "Query string" }}
-      path="link.queryString"
-    />,
+    <>
+      <QueryStringLabel
+        field={{ name: "queryString", type: "text", label: "Query string" }}
+        path="link.queryString"
+      />
+      <input id="field-queryString" />
+    </>,
   );
   expect(screen.getByText("Query string")).toBeTruthy();
+  expect(screen.getByLabelText("Query string")).toBe(
+    screen.getByRole("textbox"),
+  );
 });
 
 function renderLabel() {
   const submit = vi.fn((event) => event.preventDefault());
+  const parentKeyUp = vi.fn();
   render(
-    <form onSubmit={submit}>
+    <form onSubmit={submit} onKeyUp={parentKeyUp}>
       <LinkFieldLabel
         label="Anchor"
         htmlFor="anchor"
@@ -46,6 +54,7 @@ function renderLabel() {
   return {
     button: screen.getByRole("button", { name: "About anchors" }),
     submit,
+    parentKeyUp,
   };
 }
 
@@ -61,13 +70,15 @@ it("shows help on hover and closes when the pointer leaves", () => {
 });
 
 it("connects keyboard help to its button and dismisses Escape without losing focus", () => {
-  const { button } = renderLabel();
+  const { button, parentKeyUp } = renderLabel();
   act(() => button.focus());
   expect(button.getAttribute("aria-describedby")).toBe(
     screen.getByRole("tooltip").id,
   );
   expect(button.getAttribute("aria-expanded")).toBe("true");
   fireEvent.keyDown(button, { key: "Escape" });
+  fireEvent.keyUp(button, { key: "Escape" });
+  expect(parentKeyUp).not.toHaveBeenCalled();
   expect(screen.queryByRole("tooltip")).toBeNull();
   expect(button.getAttribute("aria-expanded")).toBe("false");
   expect(document.activeElement).toBe(button);

@@ -99,8 +99,10 @@ async function openContent(page: BrowserPage, source: Page) {
     .click();
   const block = page.locator("#content-row-0");
   await expect(block).toBeVisible();
-  const toggle = block.locator(".collapsible__toggle--collapsed").first();
-  if (await toggle.count()) await toggle.click();
+  await page
+    .getByRole("main")
+    .getByRole("button", { name: "Show All", exact: true })
+    .click();
   // Payload mounts off-screen field groups only after they enter the viewport.
   await block
     .getByRole("heading", { name: "Call to Action (CTA)", exact: true })
@@ -166,12 +168,10 @@ async function expectAlignedLinkFields(
   const row = anchor.locator(
     'xpath=ancestor::div[contains(concat(" ", normalize-space(@class), " "), " row ")][1]',
   );
-  await test
-    .info()
-    .attach(screenshotName, {
-      body: await row.screenshot(),
-      contentType: "image/png",
-    });
+  await test.info().attach(screenshotName, {
+    body: await row.screenshot(),
+    contentType: "image/png",
+  });
 }
 
 async function expectLinkHelp(scope: Locator, page: BrowserPage) {
