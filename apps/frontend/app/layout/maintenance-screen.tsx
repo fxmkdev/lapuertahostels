@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "~/common/button";
 import { Heading } from "~/common/heading";
 import { Link } from "~/common/link";
-import { Settings } from "@lapuertahostels/payload-types";
+import type { Settings } from "@lapuertahostels/payload-types";
 
 export type MaintenanceScreenProps = NonNullable<Settings["maintenanceScreen"]>;
 

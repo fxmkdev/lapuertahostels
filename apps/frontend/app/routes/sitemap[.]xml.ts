@@ -3,9 +3,9 @@ import {
   buildLocalizedRelativeUrl,
   getCanonicalRequestUrl,
 } from "~/common/routing";
-import { LoaderFunctionArgs } from "react-router";
+import type { LoaderFunctionArgs } from "react-router";
 import { isAuthenticated } from "~/common/auth";
-import { LocaleConfig } from "@lapuertahostels/payload-types";
+import type { LocaleConfig } from "@lapuertahostels/payload-types";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const settings = await getSettings(request);

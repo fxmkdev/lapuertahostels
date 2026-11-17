@@ -1,7 +1,7 @@
-import { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 import { TextHighlight } from "./text-highlight";
 import { themesByBrand } from "~/themes";
-import { BrandId } from "~/brands";
+import type { BrandId } from "~/brands";
 import { cn } from "./cn";
 
 const meta = {

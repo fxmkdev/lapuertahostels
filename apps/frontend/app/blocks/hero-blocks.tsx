@@ -1,6 +1,6 @@
 import { HeroSlidesBlock } from "~/blocks/slides-block/hero-slides-block";
 import { HeroVideoBlock } from "~/blocks/hero-video-block";
-import { Page } from "@lapuertahostels/payload-types";
+import type { Page } from "@lapuertahostels/payload-types";
 import { HeroHeadingBlock } from "./hero-heading-block";
 
 export type HeroBlocksProps = {

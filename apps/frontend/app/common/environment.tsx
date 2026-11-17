@@ -1,6 +1,6 @@
 import { useRouteLoaderData } from "react-router";
 import { type loader as rootLoader } from "~/root";
-import { SerializeFromLoader } from "./types";
+import type { SerializeFromLoader } from "./types";
 
 export type Environment = SerializeFromLoader<typeof rootLoader>["environment"];
 

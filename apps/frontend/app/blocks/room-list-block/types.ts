@@ -1,4 +1,4 @@
-import { RoomList } from "@lapuertahostels/payload-types";
+import type { RoomList } from "@lapuertahostels/payload-types";
 
 export type RoomListBlock = RoomList;
 

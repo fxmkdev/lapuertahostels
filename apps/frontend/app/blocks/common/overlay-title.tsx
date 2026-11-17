@@ -1,11 +1,12 @@
-import { RichTextHeading, RichTextHeadingProps } from "~/common/heading";
+import type { RichTextHeadingProps } from "~/common/heading";
+import { RichTextHeading } from "~/common/heading";
 import { Button } from "../../common/button";
 import { cn } from "../../common/cn";
-import { MouseEventHandler } from "react";
-import { RichTextObject } from "@lapuertahostels/rich-text";
+import type { MouseEventHandler } from "react";
+import type { RichTextObject } from "@lapuertahostels/rich-text";
 import { PageLink } from "~/common/page-link";
 import { RichTextParagraph } from "~/common/paragraph";
-import { Page } from "@lapuertahostels/payload-types";
+import type { Page } from "@lapuertahostels/payload-types";
 
 type OverlayTitleType = NonNullable<
   (NonNullable<Page["hero"]>[number] & {

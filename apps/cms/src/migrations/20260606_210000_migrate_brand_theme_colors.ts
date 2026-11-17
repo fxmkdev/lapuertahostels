@@ -1,5 +1,5 @@
 import { migrateBrandThemeColors } from "../collections/brands/migrate-theme-colors";
-import { MigrateDownArgs, MigrateUpArgs } from "@payloadcms/db-mongodb";
+import type { MigrateDownArgs, MigrateUpArgs } from "@payloadcms/db-mongodb";
 
 export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
   const result = await migrateBrandThemeColors({

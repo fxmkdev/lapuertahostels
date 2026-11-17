@@ -1,6 +1,7 @@
-import { Brand, LocaleConfig } from "@lapuertahostels/payload-types";
+import type { Brand, LocaleConfig } from "@lapuertahostels/payload-types";
 import { Banner } from "./banner";
-import { Navbar, NavbarProps } from "./navbar/navbar";
+import type { NavbarProps } from "./navbar/navbar";
+import { Navbar } from "./navbar/navbar";
 import { isObject } from "~/common/utils";
 import { LoadingBar } from "./loading-bar";
 

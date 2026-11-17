@@ -1,4 +1,4 @@
-import { MigrateDownArgs, MigrateUpArgs } from "@payloadcms/db-mongodb";
+import type { MigrateDownArgs, MigrateUpArgs } from "@payloadcms/db-mongodb";
 
 type Document = Record<string, unknown>;
 type BrandDocument = Document & {

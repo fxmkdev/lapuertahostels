@@ -1,10 +1,10 @@
-import { RichTextObject } from "@lapuertahostels/rich-text";
+import type { RichTextObject } from "@lapuertahostels/rich-text";
 import { cn } from "../common/cn";
 import { Heading } from "../common/heading";
 import { RichTextParagraph } from "../common/paragraph";
 import { MediaImage } from "~/common/media";
 import { PageLink } from "~/common/page-link";
-import { AccommodationSelector } from "@lapuertahostels/payload-types";
+import type { AccommodationSelector } from "@lapuertahostels/payload-types";
 
 export type AccommodationSelectorBlockProps = Partial<AccommodationSelector>;
 

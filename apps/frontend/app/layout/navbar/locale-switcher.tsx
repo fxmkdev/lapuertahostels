@@ -1,5 +1,5 @@
 import { LanguageIcon } from "@heroicons/react/16/solid";
-import { LocaleConfig } from "@lapuertahostels/payload-types";
+import type { LocaleConfig } from "@lapuertahostels/payload-types";
 import { cn } from "~/common/cn";
 import { Dropdown, DropdownButton, DropdownItem } from "~/common/dropdown";
 

@@ -1,8 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import {
-  ImageWithFloatingTextBlock,
-  ImageWithFloatingTextBlockProps,
-} from "./image-with-floating-text-block";
+import type { ImageWithFloatingTextBlockProps } from "./image-with-floating-text-block";
+import { ImageWithFloatingTextBlock } from "./image-with-floating-text-block";
 import { allModes } from "../../.storybook/modes";
 import {
   bold,

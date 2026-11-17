@@ -23,6 +23,15 @@ const eslintConfig = [
       ],
     },
   },
+  {
+    files: ["**/*.{ts,tsx,mts,cts}"],
+    rules: {
+      "@typescript-eslint/consistent-type-imports": [
+        "error",
+        { prefer: "type-imports", fixStyle: "separate-type-imports" },
+      ],
+    },
+  },
 ];
 
 export default eslintConfig;

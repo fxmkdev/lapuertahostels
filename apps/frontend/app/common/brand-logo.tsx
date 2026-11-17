@@ -1,4 +1,4 @@
-import { Brand } from "@lapuertahostels/payload-types";
+import type { Brand } from "@lapuertahostels/payload-types";
 import { cn } from "./cn";
 import { getTheme } from "~/themes";
 import { MediaImage } from "./media";

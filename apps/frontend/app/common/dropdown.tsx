@@ -5,7 +5,7 @@ import {
   MenuItems,
   Transition,
 } from "@headlessui/react";
-import {
+import type {
   ComponentPropsWithoutRef,
   ElementType,
   PropsWithChildren,

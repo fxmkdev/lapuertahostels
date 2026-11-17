@@ -1,4 +1,4 @@
-import { Brand, Page } from "@lapuertahostels/payload-types";
+import type { Brand, Page } from "@lapuertahostels/payload-types";
 
 export function getPageTitle(page: Page) {
   return getTitle(page.title ?? undefined, page.brand as Brand);

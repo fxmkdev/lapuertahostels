@@ -1,4 +1,4 @@
-import { BackendModule, ReadCallback, Services } from "i18next";
+import type { BackendModule, ReadCallback, Services } from "i18next";
 import { getCommon } from "./cms-data.server";
 
 export type I18NextBackendOptions = {

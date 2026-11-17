@@ -7,9 +7,9 @@ import {
 } from "../../fields/index";
 import { canManageContent } from "../../common/access-control";
 import { contentGroup } from "../../groups";
-import { GlobalConfig } from "payload";
+import type { GlobalConfig } from "payload";
 import { socialPlatformOptions } from "./social-platforms";
-import { SocialPlatformRowLabelProps } from "./social-platform-row-label";
+import type { SocialPlatformRowLabelProps } from "./social-platform-row-label";
 
 export function footer(): GlobalConfig {
   return {

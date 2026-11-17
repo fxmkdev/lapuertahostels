@@ -1,10 +1,10 @@
-import { PropsWithChildren } from "react";
+import type { PropsWithChildren } from "react";
 import { cn } from "../../common/cn";
 import { RichTextParagraph } from "~/common/paragraph";
 import { type Feature } from "./types";
 import { Heading } from "~/common/heading";
 import { Button } from "~/common/button";
-import { RichTextObject } from "@lapuertahostels/rich-text";
+import type { RichTextObject } from "@lapuertahostels/rich-text";
 import { MediaImage } from "~/common/media";
 import { PageLink } from "~/common/page-link";
 

@@ -1,7 +1,8 @@
-import { PropsWithChildren } from "react";
-import { Heading, HeadingProps } from "./heading";
+import type { PropsWithChildren } from "react";
+import type { HeadingProps } from "./heading";
+import { Heading } from "./heading";
 import { Paragraph } from "./paragraph";
-import { RichTextObject } from "@lapuertahostels/rich-text";
+import type { RichTextObject } from "@lapuertahostels/rich-text";
 import { TextHighlight } from "./text-highlight";
 import { useTheme } from "~/themes";
 import { cn } from "./cn";

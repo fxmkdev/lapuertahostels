@@ -1,9 +1,10 @@
-import { ActionFunctionArgs, data } from "react-router";
+import type { ActionFunctionArgs } from "react-router";
+import { data } from "react-router";
 import { localeCookie } from "~/i18next.server";
 import { toUrl } from "~/common/routing";
 import { redirectToLocalizedRoute } from "~/common/routing.server";
 import { getSettings } from "~/cms-data.server";
-import { LocaleConfig } from "@lapuertahostels/payload-types";
+import type { LocaleConfig } from "@lapuertahostels/payload-types";
 
 export async function action({ request }: ActionFunctionArgs) {
   if (request.method !== "POST") {

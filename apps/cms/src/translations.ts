@@ -1,4 +1,4 @@
-import { Config } from "payload";
+import type { Config } from "payload";
 import type { NestedKeysStripped } from "@payloadcms/translations";
 
 export const translations = {

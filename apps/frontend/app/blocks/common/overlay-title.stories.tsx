@@ -1,5 +1,6 @@
-import { Meta, StoryObj } from "@storybook/react";
-import { OverlayTitle, OverlayTitleProps } from "./overlay-title";
+import type { Meta, StoryObj } from "@storybook/react";
+import type { OverlayTitleProps } from "./overlay-title";
+import { OverlayTitle } from "./overlay-title";
 import {
   bold,
   paragraph,

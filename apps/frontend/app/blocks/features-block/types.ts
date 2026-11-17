@@ -1,4 +1,4 @@
-import { Features } from "@lapuertahostels/payload-types";
+import type { Features } from "@lapuertahostels/payload-types";
 
 export type FeaturesBlock = Features;
 

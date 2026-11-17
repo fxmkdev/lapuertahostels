@@ -1,5 +1,6 @@
-import { Meta, StoryObj } from "@storybook/react";
-import { MapBlock, MapBlockProps } from "./map-block";
+import type { Meta, StoryObj } from "@storybook/react";
+import type { MapBlockProps } from "./map-block";
+import { MapBlock } from "./map-block";
 import { paragraph, richTextRoot, text } from "@lapuertahostels/rich-text";
 import { APIProvider } from "@vis.gl/react-google-maps";
 import { useEnvironment } from "~/common/environment";
