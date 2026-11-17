@@ -13,46 +13,14 @@ export type BannerProps = Partial<Banner>;
 export function Banner({ id, message, cta }: BannerProps) {
   const { t, i18n } = useTranslation();
   const theme = useTheme();
-  const storageKey = `lapuertahostels:banner-dismissal:v1:${JSON.stringify([id ?? null, i18n.language])}`;
-  const signature = JSON.stringify([
-    message ?? "",
-    Boolean(cta?.show),
-    cta?.show && isObject(cta.link)
-      ? [cta.label ?? "", getPageLinkHref(cta.link, i18n.language)]
-      : null,
-  ]);
-  const [dismissal, setDismissal] = useState<{
-    key: string;
-    signature: string | null;
-  }>();
-
-  useEffect(() => {
-    let dismissedSignature: string | null = null;
-    if (id) {
-      try {
-        dismissedSignature = window.localStorage.getItem(storageKey);
-      } catch {
-        // Storage may be blocked; dismissal still works for this mount.
-      }
-    }
-    setDismissal({ key: storageKey, signature: dismissedSignature });
-  }, [id, storageKey]);
-
-  function dismiss() {
-    setDismissal({ key: storageKey, signature });
-    if (id) {
-      try {
-        window.localStorage.setItem(storageKey, signature);
-      } catch {
-        // Keep the in-memory dismissal even when storage is unavailable or full.
-      }
-    }
-  }
+  const { isVisible, dismiss } = useBannerDismissal(
+    { id, message, cta },
+    i18n.language,
+  );
 
   return (
     <Transition
-      // Wait until hydration has checked storage to avoid flashing dismissed content.
-      show={dismissal?.key === storageKey && dismissal.signature !== signature}
+      show={isVisible}
       as="div"
       className={cn(
         "flex items-center gap-x-6 px-6 py-2.5 text-sm text-white transition-colors duration-500 ease-linear sm:px-3.5 sm:before:flex-1",
@@ -91,4 +59,49 @@ export function Banner({ id, message, cta }: BannerProps) {
       </div>
     </Transition>
   );
+}
+
+function useBannerDismissal({ id, message, cta }: BannerProps, locale: string) {
+  const storageKey = `lapuertahostels:banner-dismissal:v1:${JSON.stringify([id ?? null, locale])}`;
+  const signature = JSON.stringify([
+    message ?? "",
+    Boolean(cta?.show),
+    cta?.show && isObject(cta.link)
+      ? [cta.label ?? "", getPageLinkHref(cta.link, locale)]
+      : null,
+  ]);
+  const [dismissal, setDismissal] = useState<{
+    key: string;
+    signature: string | null;
+  }>();
+
+  useEffect(() => {
+    let dismissedSignature: string | null = null;
+    if (id) {
+      try {
+        dismissedSignature = window.localStorage.getItem(storageKey);
+      } catch {
+        // Storage may be blocked; dismissal still works for this mount.
+      }
+    }
+    setDismissal({ key: storageKey, signature: dismissedSignature });
+  }, [id, storageKey]);
+
+  function dismiss() {
+    setDismissal({ key: storageKey, signature });
+    if (id) {
+      try {
+        window.localStorage.setItem(storageKey, signature);
+      } catch {
+        // Keep the in-memory dismissal even when storage is unavailable or full.
+      }
+    }
+  }
+
+  return {
+    // Wait until hydration has checked storage to avoid flashing dismissed content.
+    isVisible:
+      dismissal?.key === storageKey && dismissal.signature !== signature,
+    dismiss,
+  };
 }
