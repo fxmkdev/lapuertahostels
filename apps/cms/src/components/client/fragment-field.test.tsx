@@ -224,6 +224,42 @@ it("keeps manual entry available without a target page", () => {
   expect(form.setValue).not.toHaveBeenCalled();
 });
 
+it("keeps manual entry available while loading and cancels on unmount", () => {
+  vi.mocked(fetch).mockReturnValue(new Promise(() => {}));
+  const { unmount } = render(<FragmentField {...props} />);
+  expect(screen.getByText("Loading anchors")).toBeTruthy();
+  fireEvent.change(screen.getByLabelText("Search anchors"), {
+    target: { value: "manual-while-loading" },
+  });
+  fireEvent.change(screen.getByRole("combobox"), {
+    target: { value: "manual-while-loading" },
+  });
+  expect(form.setValue).toHaveBeenLastCalledWith("manual-while-loading");
+  const signal = vi.mocked(fetch).mock.calls[0][1]?.signal;
+  unmount();
+  expect(signal?.aborted).toBe(true);
+});
+
+it("removes suggestions when the target is cleared without changing the fragment", async () => {
+  const { rerender } = render(<FragmentField {...props} />);
+  await screen.findByRole("option", { name: "#rooms" });
+  form.fields = {};
+  rerender(<FragmentField {...props} />);
+  expect(screen.queryByRole("option", { name: "#rooms" })).toBeNull();
+  expect(screen.queryByText("Loading anchors")).toBeNull();
+  expect(form.setValue).not.toHaveBeenCalled();
+});
+
+it("retains the stored value when the network request fails", async () => {
+  vi.mocked(fetch).mockRejectedValue(new Error("Network unavailable"));
+  render(<FragmentField {...props} />);
+  expect(await screen.findByRole("status")).toBeTruthy();
+  expect((screen.getByRole("combobox") as HTMLSelectElement).value).toBe(
+    "legacy-fragment",
+  );
+  expect(form.setValue).not.toHaveBeenCalled();
+});
+
 it.each(["readOnly", "disabled"])("respects %s", async (mode) => {
   form.disabled = mode === "disabled";
   render(<FragmentField {...props} readOnly={mode === "readOnly"} />);

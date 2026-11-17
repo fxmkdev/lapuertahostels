@@ -20,3 +20,8 @@ Fragments remain plain strings; no content migration is needed.
 Run `pnpm --filter @lapuertahostels/cms test` for anchor extraction and fragment
 field tests. Frontend link-rendering regressions are covered by
 `pnpm --filter @lapuertahostels/frontend test --run`.
+
+CI runs the CMS unit suite in the **Build / CMS: Unit Tests** job. Browser
+regressions for structured and rich-text links run in the existing E2E suite.
+The E2E CMS advertises `http://localhost:3001` so the host browser can reach its
+API; container-to-container requests use `http://cms:3001`.

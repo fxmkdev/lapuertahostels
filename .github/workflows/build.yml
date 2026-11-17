@@ -199,6 +199,19 @@ jobs:
       - name: Check format in frontend
         run: pnpm --filter cms check-format
 
+  cms-unit-tests:
+    name: "Build / CMS: Unit Tests"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Install dependencies
+        run: pnpm --filter cms install
+      - name: Run unit tests in CMS
+        run: pnpm --filter cms test
+
   cms-build-push:
     name: "Build / CMS: Build and Push"
     runs-on: ubuntu-latest
@@ -369,6 +382,7 @@ jobs:
       - frontend-build-push
       - cms-lint
       - cms-check-format
+      - cms-unit-tests
       - cms-build-push
       - e2e-tests
     uses: ./.github/workflows/deploy-version.yml

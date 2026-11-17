@@ -7,26 +7,19 @@ import {
   FieldError,
   FieldLabel,
   ReactSelect,
-  useConfig,
   useField,
   useFormFields,
-  useLocale,
   useTranslation,
 } from "@payloadcms/ui";
-import { useCallback, useEffect, useId, useState } from "react";
+import { useCallback, useId, useState } from "react";
 
 import type {
   TranslationsKey,
   TranslationsObject,
 } from "../../translations/types";
 
-import { getPageFragmentOptions, getTargetPageId } from "./fragment-options";
-
-type FragmentResult = {
-  url: string;
-  options: ReturnType<typeof getPageFragmentOptions>;
-  failed: boolean;
-};
+import { getTargetPageId } from "./fragment-options";
+import { usePageFragments } from "./use-page-fragments";
 
 export function FragmentField({
   field,
@@ -56,55 +49,10 @@ export function FragmentField({
   const pageId = useFormFields(([fields]) =>
     getTargetPageId(fields[docPath]?.value),
   );
-  const { config } = useConfig();
-  const { code: locale } = useLocale();
+  const { options, failed, isLoading } = usePageFragments(pageId);
   const { t } = useTranslation<TranslationsObject, TranslationsKey>();
   const inputId = useId();
   const [input, setInput] = useState("");
-  const [result, setResult] = useState<FragmentResult>();
-
-  const params = new URLSearchParams({
-    depth: "0",
-    "select[hero]": "true",
-    "select[content]": "true",
-    ...(locale ? { locale } : {}),
-  });
-  const url = pageId
-    ? `${config.serverURL}${config.routes.api}/pages/${encodeURIComponent(pageId)}?${params}`
-    : undefined;
-
-  useEffect(() => {
-    if (!url) return;
-    const controller = new AbortController();
-
-    async function loadOptions(requestUrl: string) {
-      try {
-        const response = await fetch(requestUrl, {
-          credentials: "include",
-          signal: controller.signal,
-        });
-        if (!response.ok) throw new Error("Unable to load page anchors");
-        const page: unknown = await response.json();
-        if (!controller.signal.aborted) {
-          setResult({
-            url: requestUrl,
-            options: getPageFragmentOptions(page),
-            failed: false,
-          });
-        }
-      } catch {
-        if (!controller.signal.aborted) {
-          setResult({ url: requestUrl, options: [], failed: true });
-        }
-      }
-    }
-
-    void loadOptions(url);
-    return () => controller.abort();
-  }, [url]);
-
-  const currentResult = result?.url === url ? result : undefined;
-  const options = currentResult?.options ?? [];
   // Payload's isCreatable adapter assumes array values. Offer a custom option
   // through the single-select so this field continues to store a plain string.
   const selectableOptions =
@@ -139,7 +87,7 @@ export function FragmentField({
         disabled={isReadOnly}
         inputId={inputId}
         isClearable
-        isLoading={Boolean(url && !currentResult)}
+        isLoading={isLoading}
         isSearchable
         noOptionsMessage={() => t("cmsPlugin:fields:link:fragment:noAnchors")}
         onChange={(selected) => {
@@ -156,7 +104,7 @@ export function FragmentField({
         value={value ? { label: `#${value}`, value } : []}
       />
       <FieldDescription description={field.admin?.description} path={path} />
-      {currentResult?.failed && (
+      {failed && (
         <p role="status">{t("cmsPlugin:fields:link:fragment:loadError")}</p>
       )}
     </div>

@@ -16,7 +16,8 @@ services:
     ports:
       - "3001:3001"
     environment:
-      SERVER_URL: http://cms:3001
+      # The admin UI runs in the host browser and needs a browser-reachable URL.
+      SERVER_URL: http://localhost:3001
       DATABASE_URI: mongodb://mongo:27017/website-cms
       PAYLOAD_SECRET: ${PAYLOAD_SECRET}
       E2E_TESTS_API_KEY: ${CMS_API_KEY}
