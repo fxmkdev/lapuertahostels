@@ -241,11 +241,13 @@ no stale fallback.
 Provision matching Fly secrets on both staging/production apps before rollout.
 Deploy the frontend before the CMS so the callback exists before saves notify
 it. The deployment workflow derives the callback URL from `LIVE_PREVIEW_URL`
-(configure that URL without a trailing slash). Preview apps use the shared
-GitHub Actions secret `PREVIEW_CMS_CACHE_INVALIDATION_SECRET`; provision it
-before creating the preview. A missing secret fails preview deployment before
-any apps are modified. The e2e Compose stack uses a local test secret and
-callback URL.
+(configure that URL without a trailing slash). For each preview app pair, a
+shared provisioning job generates a fresh 32-byte invalidation secret, masks it,
+and stages the same value on both Fly apps before deployment. Only the app names
+are passed between jobs; the generated secret stays within provisioning. Preview
+deployments do not require a separately configured invalidation secret. Staging
+and production continue to use their persistent Fly secrets. The e2e Compose
+stack uses a local test secret and callback URL.
 
 After rollout, warm a page, save a related banner, reload once, and confirm the
 new content. Check CMS logs for invalidation warnings and frontend logs for
