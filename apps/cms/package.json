@@ -12,10 +12,10 @@
     "generate:importmap": "touch \"src/app/(payload)/admin/importMap.js\" && cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
     "lint": "cross-env NODE_OPTIONS=--no-deprecation eslint .",
+    "test": "vitest run",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "start": "cross-env NODE_OPTIONS=--no-deprecation PORT=3001 next start",
-    "check-format": "prettier --check .",
-    "test": "vitest run"
+    "check-format": "prettier --check ."
   },
   "dependencies": {
     "@payloadcms/db-mongodb": "^3.94.0",
@@ -37,6 +37,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@testing-library/react": "^16.3.2",
     "@types/jsdom": "^28.0.3",
     "@types/node": "^24.12.4",
     "@types/react": "^19.2.15",
@@ -45,7 +46,7 @@
     "eslint-config-next": "~16.4.6",
     "prettier": "3.8.3",
     "typescript": "^6.0.3",
-    "vite": "^8.1.6",
+    "vite": "8.1.6",
     "vitest": "^4.1.12"
   },
   "engines": {

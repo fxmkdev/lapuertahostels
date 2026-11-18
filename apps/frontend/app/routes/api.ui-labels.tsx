@@ -2,11 +2,11 @@ import type { LoaderFunctionArgs } from "react-router";
 import { getCommon } from "~/cms-data.server";
 import { getRequestUrl } from "~/common/routing";
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  const url = getRequestUrl(request);
+export async function loader({ request, url }: LoaderFunctionArgs) {
+  const requestUrl = getRequestUrl(request, url);
 
   // using 'lng' instead of 'locale' for consistency as this is the default in i18next (consider changing this)
-  const lng = url.searchParams.get("lng");
+  const lng = requestUrl.searchParams.get("lng");
   if (!lng) {
     return Response.json(
       { message: "'lng' parameter is required" },

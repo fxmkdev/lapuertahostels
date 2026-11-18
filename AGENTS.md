@@ -72,7 +72,7 @@ pnpm --filter @lapuertahostels/frontend build-storybook  # Build Storybook
 pnpm --filter @lapuertahostels/cms dev                   # Start CMS dev server on port 3001
 pnpm --filter @lapuertahostels/cms build                 # Generate Payload artifacts and build CMS
 pnpm --filter @lapuertahostels/cms lint                  # Next lint check
-pnpm --filter @lapuertahostels/cms test                  # CMS hook regression tests
+pnpm --filter @lapuertahostels/cms test                  # Vitest tests
 pnpm --filter @lapuertahostels/cms check-format          # Prettier check
 pnpm --filter @lapuertahostels/cms generate:types        # Generate Payload TypeScript types
 pnpm --filter @lapuertahostels/cms generate:importmap    # Generate Payload admin import map
@@ -112,6 +112,7 @@ pnpm --filter @lapuertahostels/e2e e2e                   # Run Playwright e2e UI
   CMS config, CMS custom components, or generated Payload artifacts.
 - Run `pnpm --filter @lapuertahostels/cms lint` and
   `pnpm --filter @lapuertahostels/cms check-format` when touching CMS source.
+- Run `pnpm --filter @lapuertahostels/cms test` when touching tested CMS logic.
 - Run `pnpm --filter @lapuertahostels/payload-types pull-payload-types` when
   Payload type changes need to be reflected in `libs/payload-types`.
 - Run `pnpm --filter @lapuertahostels/e2e e2e` for changes with significant

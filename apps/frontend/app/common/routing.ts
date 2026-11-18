@@ -28,8 +28,8 @@ export function buildLocalizedRelativeUrl(
   return toRelativeUrl(url);
 }
 
-export function getRequestUrl(request: Request) {
-  const url = new URL(request.url);
+export function getRequestUrl(request: Request, routeUrl?: URL) {
+  const url = new URL(routeUrl ?? request.url);
   if (request.headers.get("X-Forwarded-Proto") === "https") {
     url.protocol = "https";
   }
@@ -37,11 +37,11 @@ export function getRequestUrl(request: Request) {
   return url;
 }
 
-export function getCanonicalRequestUrl(request: Request) {
+export function getCanonicalRequestUrl(request: Request, routeUrl?: URL) {
   if (!process.env.CANONICAL_HOSTNAME) {
     throw new Error("Missing CANONICAL_HOSTNAME");
   }
-  const url = getRequestUrl(request);
+  const url = getRequestUrl(request, routeUrl);
   url.hostname = process.env.CANONICAL_HOSTNAME;
   return url;
 }
