@@ -54,3 +54,60 @@ app server is production-ready.
 Make sure to deploy the output of `react-router build`
 
 - `build/`
+
+## CMS content freshness
+
+CMS content is cached in Redis for one minute. Once an entry reaches one minute
+old, the request waits for fresh CMS data. If the CMS is unreachable, times out
+(after five seconds), or returns HTTP 5xx, the request may return the previous
+value only while it is less than five minutes old in total. Failed refreshes do
+not reset that age. Redis entries expire at five minutes; missing content and
+non-transient errors such as 401/403 do not use stale fallback. Malformed cache
+entries are treated as misses. Redis failures bypass caching.
+
+CMS content saves and deletes invalidate the whole content cache across locales,
+including populated relationships: editing a banner invalidates brands that
+embed it, and editing a page invalidates links pointing to it. Saves inside a
+transaction notify the frontend only after the outer commit, including nested
+brand home-link updates. Rollbacks do not notify. Without transactions,
+notification runs at the end of the save/delete hooks. Notifications are awaited
+with a three-second timeout. Failure logs a CMS warning but does not fail the
+save; the one-minute freshness check remains the fallback. During a simultaneous
+CMS outage, the five-minute stale limit still applies.
+
+The next page request after successful invalidation loads current content. An
+already-running request may finish with its prior result. Open pages require
+navigation or reload to request new data; this does not change banner dismissal.
+
+Cache keys are isolated by CMS origin and a random Redis generation.
+Invalidation rotates that generation, so an earlier in-flight request cannot
+restore active stale content. Old generations expire naturally. The
+authenticated manual purge uses the same operation and no longer flushes
+unrelated Redis data. `?skipcache=true` bypasses cache reads and writes and has
+no stale fallback.
+
+### Configuration and rollout
+
+- Frontend: set `CMS_CACHE_INVALIDATION_SECRET` to a random secret.
+- CMS: set the same `CMS_CACHE_INVALIDATION_SECRET` and set
+  `FRONTEND_CACHE_INVALIDATION_URL` to the frontend's complete
+  `/api/invalidate-cms-cache` URL.
+- The callback is a server-to-server `POST` with
+  `Authorization: Bearer <secret>`. It returns 204 on success, 401 on invalid
+  credentials, and 503 when unconfigured or Redis invalidation fails. It
+  authenticates locally without calling the CMS.
+- Missing CMS configuration logs a startup warning and disables immediate
+  invalidation; timed expiry still works.
+
+Provision matching Fly secrets on both staging/production apps before rollout.
+Deploy the frontend before the CMS so the callback exists before saves notify
+it. The deployment workflow derives the callback URL from `LIVE_PREVIEW_URL`
+(configure that URL without a trailing slash). Preview apps use the shared
+GitHub Actions secret `PREVIEW_CMS_CACHE_INVALIDATION_SECRET`; provision it
+before creating the preview. The e2e Compose stack uses a local test secret and
+callback URL.
+
+After rollout, warm a page, save a related banner, reload once, and confirm the
+new content. Check CMS logs for invalidation warnings and frontend logs for
+Redis failures. No Payload schema migration is required. Legacy cache keys are
+ignored; they had no Redis TTL and can be removed separately during maintenance.

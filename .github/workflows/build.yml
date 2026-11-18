@@ -186,6 +186,19 @@ jobs:
       - name: Run lint
         run: pnpm --filter cms lint --max-warnings=0
 
+  cms-unit-tests:
+    name: "Build / CMS: Unit Tests"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Install dependencies
+        run: pnpm --filter cms install
+      - name: Run CMS unit tests
+        run: pnpm --filter cms test
+
   cms-check-format:
     name: "Build / CMS: Check Format"
     runs-on: ubuntu-latest
@@ -368,6 +381,7 @@ jobs:
       - frontend-unit-tests
       - frontend-build-push
       - cms-lint
+      - cms-unit-tests
       - cms-check-format
       - cms-build-push
       - e2e-tests

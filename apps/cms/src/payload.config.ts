@@ -15,6 +15,7 @@ import { RoomListBlock } from "./blocks/room-list/config";
 import { AccommodationSelectorBlock } from "./blocks/accommodation-selector/config";
 import { footer } from "./globals/footer/config";
 import { additionalUiLabelFields } from "./ui-labels";
+import { frontendCacheInvalidationPlugin } from "./plugins/frontend-cache-invalidation";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -70,6 +71,10 @@ export default buildConfig({
         { label: { en: "Aqua", es: "Aqua" }, value: "aqua" },
         { label: { en: "Azul", es: "Azul" }, value: "azul" },
       ],
+    }),
+    frontendCacheInvalidationPlugin({
+      url: process.env.FRONTEND_CACHE_INVALIDATION_URL,
+      secret: process.env.CMS_CACHE_INVALIDATION_SECRET,
     }),
   ],
   db: mongooseAdapter({
