@@ -18,19 +18,19 @@ import { PAGE_DEPTH } from "~/cms-data";
 import { getSettings, tryGetLocalizedPathname } from "~/cms-data.server";
 import type { LocaleConfig } from "@lapuertahostels/payload-types";
 
-export const meta: MetaFunction<typeof loader> = ({ data, matches }) => {
-  if (!data) throw new Error("No loader data");
+export const meta: MetaFunction<typeof loader> = ({ loaderData, matches }) => {
+  if (!loaderData) throw new Error("No loader data");
 
   const rootLoaderData = matches.find((m) => m.id === "root")
-    ?.data as SerializeFromLoader<typeof rootLoader>;
+    ?.loaderData as SerializeFromLoader<typeof rootLoader>;
   if (!rootLoaderData) throw new Error("No root loader data");
 
   const parentMeta = matches.flatMap((match) => match.meta ?? []);
 
-  const description = data.content.seo?.description ?? "";
+  const description = loaderData.content.seo?.description ?? "";
   return [
     ...parentMeta,
-    ...data.alternateUrls.map((alternateUrl) => ({
+    ...loaderData.alternateUrls.map((alternateUrl) => ({
       tagName: "link",
       rel: "alternate",
       href: alternateUrl.href,
@@ -39,16 +39,16 @@ export const meta: MetaFunction<typeof loader> = ({ data, matches }) => {
     {
       tagName: "link",
       rel: "canonical",
-      href: data?.canonicalUrl,
+      href: loaderData.canonicalUrl,
     },
-    { title: getPageTitle(data.content) },
+    { title: getPageTitle(loaderData.content) },
     {
       name: "description",
       content: description,
     },
     {
       name: "og:title",
-      content: getPageTitle(data.content),
+      content: getPageTitle(loaderData.content),
     },
     {
       name: "og:description",
@@ -58,7 +58,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, matches }) => {
       name: "og:locale",
       content: rootLoaderData.locale,
     },
-    ...data.publishedLocaleCodes
+    ...loaderData.publishedLocaleCodes
       .filter((lng) => lng !== rootLoaderData.locale)
       .map((lng) => ({
         name: "og:locale:alternate",
@@ -74,22 +74,22 @@ export const meta: MetaFunction<typeof loader> = ({ data, matches }) => {
     },
     {
       name: "og:url",
-      content: data.canonicalUrl,
+      content: loaderData.canonicalUrl,
     },
-    ...getOpenGraphImageMeta(data, rootLoaderData),
+    ...getOpenGraphImageMeta(loaderData, rootLoaderData),
     {
       name: "twitter:card",
       content: "summary_large_image",
     },
     {
       name: "twitter:title",
-      content: getPageTitle(data.content),
+      content: getPageTitle(loaderData.content),
     },
     {
       name: "twitter:description",
       content: description,
     },
-    ...getTwitterCardImageMeta(data, rootLoaderData),
+    ...getTwitterCardImageMeta(loaderData, rootLoaderData),
   ];
 };
 
@@ -165,10 +165,10 @@ function getSocialImageUrl(
   return `${rootLoaderData.environment.imagekitBaseUrl.toString()}/${toImagekitTransformationString({ width, height })}/${image.filename}`;
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  const { pageUrl, locale } = await handleIncomingRequest(request);
+export async function loader({ request, url }: LoaderFunctionArgs) {
+  const { pageUrl, locale } = await handleIncomingRequest(request, url);
 
-  const requestUrl = getRequestUrl(request);
+  const requestUrl = getRequestUrl(request, url);
 
   const content = await handlePathname(
     request,
@@ -187,6 +187,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     request,
     content.pathname,
     publishedLocaleCodes,
+    url,
   );
 
   const fallbackLocaleCode = (
@@ -195,7 +196,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   return {
     origin: requestUrl.origin,
-    canonicalUrl: getCanonicalRequestUrl(request).href,
+    canonicalUrl: getCanonicalRequestUrl(request, url).href,
     pageUrl,
     dataPath,
     content,
@@ -228,6 +229,7 @@ async function getAlternateHrefsByLocale(
   request: Request,
   pathname: string,
   publishedLocaleCodes: string[],
+  routeUrl: URL,
 ) {
   return Object.fromEntries(
     await Promise.all(
@@ -240,7 +242,7 @@ async function getAlternateHrefsByLocale(
         if (!localizedPathname) {
           throw new Error("Localized pathname not found");
         }
-        const requestUrl = getRequestUrl(request);
+        const requestUrl = getRequestUrl(request, routeUrl);
         requestUrl.pathname = buildLocalizedRelativeUrl(lng, localizedPathname);
         return [lng, requestUrl.toString()];
       }),

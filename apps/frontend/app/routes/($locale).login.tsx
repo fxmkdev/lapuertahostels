@@ -66,8 +66,8 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  await handleIncomingRequest(request);
+export async function loader({ request, url }: LoaderFunctionArgs) {
+  await handleIncomingRequest(request, url);
 
   const session = await getSession(request.headers.get("Cookie"));
   if (session.has("userId")) {

@@ -34,8 +34,7 @@ import type { Brand, LocaleConfig } from "@lapuertahostels/payload-types";
 import { GlobalErrorBoundary } from "./global-error-boundary";
 import { AnalyticsScript } from "./analytics-script";
 import { PreviewBar } from "./layout/preview-bar";
-import { LanguageDetector } from "remix-i18next/server";
-import { createRemixI18Next } from "./i18next.server";
+import { getHeaderLocale, i18nextMiddleware } from "./i18next.server";
 import { isAuthenticated } from "./common/auth";
 import { getVersion } from "./common/version.server";
 import { APIProvider as GoogleMapsAPIProvider } from "@vis.gl/react-google-maps";
@@ -57,8 +56,8 @@ export const links: LinksFunction = () => [
   },
 ];
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
-  const brandId = (data?.brand?.id as BrandId) ?? "puerta";
+export const meta: MetaFunction<typeof loader> = ({ loaderData }) => {
+  const brandId = (loaderData?.brand?.id as BrandId) ?? "puerta";
   return [
     {
       tagName: "link",
@@ -93,7 +92,9 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   ];
 };
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export const middleware = [i18nextMiddleware];
+
+export async function loader({ request, url }: LoaderFunctionArgs) {
   if (!process.env.PAYLOAD_CMS_BASE_URL) {
     throw new Error("PAYLOAD_CMS_BASE_URL is not set");
   }
@@ -101,8 +102,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
     throw new Error("IMAGEKIT_BASE_URL is not set");
   }
 
-  const url = getRequestUrl(request);
-  const { pageUrl, locale } = getLocaleAndPageUrl(toRelativeUrl(url));
+  const requestUrl = getRequestUrl(request, url);
+  const { pageUrl, locale } = getLocaleAndPageUrl(toRelativeUrl(requestUrl));
   if (!locale) throw new Error("Locale has not been determined");
 
   const [page, allBrands, common, settings, footer] = await Promise.all([
@@ -129,7 +130,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     isAuthorized,
     locale,
     adminLocale: settings.maintenanceScreen?.show
-      ? await loadAdminLocale()
+      ? await getHeaderLocale(request)
       : undefined,
     brand,
     allBrands,
@@ -141,23 +142,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
       version: getVersion(),
       payloadCmsBaseUrl: process.env.PAYLOAD_CMS_BASE_URL,
       imagekitBaseUrl: process.env.IMAGEKIT_BASE_URL,
-      preview: getRequestUrl(request).searchParams.get("preview") || undefined,
+      preview: requestUrl.searchParams.get("preview") || undefined,
       useImageCacheBuster: false, // Cache busting is only used in Storybook for Chromatic
     },
     analyticsDomain: process.env.ANALYTICS_DOMAIN,
     publishedLocales: settings.publishedLocales
       .publishedLocales as LocaleConfig[],
   };
-
-  async function loadAdminLocale() {
-    const remixI18Next = await createRemixI18Next(request);
-    // The admin should be able to test the page in any locale, but see the admin controls in their preferred locale.
-    // Therefore only using header for the admin locale (unfortunately we cannot get the user's locale from Payload CMS)
-    return await new LanguageDetector({
-      ...remixI18Next["options"].detection,
-      order: ["header"],
-    }).detect(request);
-  }
 }
 
 export const handle = {
