@@ -1,0 +1,141 @@
+"use client";
+
+import type { TextFieldClientProps, Validate } from "payload";
+
+import {
+  FieldDescription,
+  FieldError,
+  ReactSelect,
+  RenderCustomComponent,
+  useField,
+  useFormFields,
+  useTranslation,
+} from "@payloadcms/ui";
+import { type CSSProperties, useCallback, useId, useState } from "react";
+
+import type {
+  TranslationsKey,
+  TranslationsObject,
+} from "../../translations/types";
+
+import { getTargetPageId } from "./fragment-options";
+import styles from "./fragment-field.module.css";
+import { LinkFieldLabel } from "./link-field-label";
+import { usePageFragments } from "./use-page-fragments";
+
+export function FragmentField({
+  field,
+  path: pathFromProps,
+  readOnly,
+  validate,
+}: TextFieldClientProps) {
+  const validateFragment: Validate = useCallback(
+    (value, options) =>
+      validate
+        ? validate(value, {
+            ...options,
+            type: "text",
+            name: field.name,
+            required: field.required,
+            minLength: field.minLength,
+            maxLength: field.maxLength,
+          })
+        : true,
+    [validate, field.name, field.required, field.minLength, field.maxLength],
+  );
+  const { customComponents, disabled, path, setValue, showError, value } =
+    useField<string>({
+      potentiallyStalePath: pathFromProps,
+      validate: validateFragment,
+    });
+  const docPath = `${path.slice(0, path.lastIndexOf(".") + 1)}doc`;
+  const pageId = useFormFields(([fields]) =>
+    getTargetPageId(fields[docPath]?.value),
+  );
+  const { options, failed, isLoading } = usePageFragments(pageId);
+  const { t } = useTranslation<TranslationsObject, TranslationsKey>();
+  const inputId = useId();
+  const [input, setInput] = useState("");
+  // Payload's isCreatable adapter assumes array values. Offer a custom option
+  // through the single-select so this field continues to store a plain string.
+  const selectableOptions =
+    input.trim() && !options.some((option) => option.value === input)
+      ? [
+          ...options,
+          {
+            label: t("cmsPlugin:fields:link:fragment:useCustom", {
+              fragment: input,
+            }),
+            value: input,
+          },
+        ]
+      : options;
+  const isReadOnly = Boolean(readOnly || disabled);
+  const fieldStyle: CSSProperties & {
+    "--field-width"?: CSSProperties["width"];
+  } = {
+    ...field.admin?.style,
+    ...(field.admin?.width
+      ? { "--field-width": field.admin.width }
+      : { flex: "1 1 auto" }),
+    ...(field.admin?.style?.flex ? { flex: field.admin.style.flex } : {}),
+  };
+
+  return (
+    <div
+      className={[
+        "field-type",
+        "select",
+        styles.field,
+        field.admin?.className,
+        showError && "error",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      style={fieldStyle}
+    >
+      <LinkFieldLabel
+        helpLabel={t("cmsPlugin:fields:link:fragment:helpLabel")}
+        helpText={t("cmsPlugin:fields:link:fragment:help")}
+        htmlFor={inputId}
+        label={field.label}
+        localized={field.localized}
+        path={path}
+        required={field.required}
+      />
+      <FieldError path={path} showError={showError} />
+      <ReactSelect
+        disabled={isReadOnly}
+        inputId={inputId}
+        isClearable
+        isLoading={isLoading}
+        isSearchable
+        noOptionsMessage={() => t("cmsPlugin:fields:link:fragment:noAnchors")}
+        onChange={(selected) => {
+          if (!isReadOnly) {
+            setValue(
+              selected && !Array.isArray(selected) ? selected.value : "",
+            );
+          }
+        }}
+        onInputChange={setInput}
+        options={selectableOptions}
+        placeholder={t("cmsPlugin:fields:link:fragment:placeholder")}
+        showError={showError}
+        value={value ? { label: `#${value}`, value } : []}
+      />
+      <RenderCustomComponent
+        CustomComponent={customComponents?.Description}
+        Fallback={
+          <FieldDescription
+            description={field.admin?.description}
+            path={path}
+          />
+        }
+      />
+      {failed && (
+        <p role="status">{t("cmsPlugin:fields:link:fragment:loadError")}</p>
+      )}
+    </div>
+  );
+}
