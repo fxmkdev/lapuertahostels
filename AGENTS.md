@@ -113,6 +113,7 @@ pnpm --filter @lapuertahostels/e2e typecheck             # Check E2E sources wit
   frontend logic.
 - Run `pnpm --filter @lapuertahostels/frontend check-format` when touching
   frontend formatting-sensitive files.
+- Run `pnpm --filter @lapuertahostels/cms test` when touching CMS cache hooks.
 - Run `pnpm --filter @lapuertahostels/cms build` when touching Payload schema,
   CMS config, CMS custom components, or generated Payload artifacts.
 - Run `pnpm --filter @lapuertahostels/cms typecheck` after generating the admin
