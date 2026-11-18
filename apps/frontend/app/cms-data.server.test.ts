@@ -125,6 +125,31 @@ describe("CMS data cache", () => {
     },
   );
 
+  test.each([404, 503])(
+    "cancels unread HTTP %s response bodies",
+    async (status) => {
+      await loadPage();
+      advance(60_000);
+      const cancel = vi.fn();
+      fetchMock.mockResolvedValueOnce(
+        new Response(new ReadableStream({ cancel }), { status }),
+      );
+      expect(await loadPage()).toEqual(status === 404 ? null : oldPage);
+      expect(cancel).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  test("preserves missing-content behavior if response cleanup fails", async () => {
+    const cancel = vi.fn(() => {
+      throw new Error("cleanup failed");
+    });
+    fetchMock.mockResolvedValueOnce(
+      new Response(new ReadableStream({ cancel }), { status: 404 }),
+    );
+    expect(await loadPage()).toBeNull();
+    expect(cancel).toHaveBeenCalledTimes(1);
+  });
+
   test("does not fall back if a slow refresh crosses the maximum age", async () => {
     await loadPage();
     advance(299_999);

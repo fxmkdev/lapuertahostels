@@ -95,6 +95,7 @@ jobs:
         if: inputs.environment == 'preview'
         id: create-app
         run: |
+          : "${CMS_CACHE_INVALIDATION_SECRET:?Set PREVIEW_CMS_CACHE_INVALIDATION_SECRET before deploying previews}"
           APP_NAME=${{ vars.FLY_PREVIEW_FRONTEND_APP_PREFIX }}-${{ inputs.sha }}
           CMS_APP_NAME=${{ vars.FLY_PREVIEW_CMS_APP_PREFIX }}-${{ inputs.sha }}
 
@@ -170,6 +171,7 @@ jobs:
         if: inputs.environment == 'preview'
         id: create-app
         run: |
+          : "${CMS_CACHE_INVALIDATION_SECRET:?Set PREVIEW_CMS_CACHE_INVALIDATION_SECRET before deploying previews}"
           APP_NAME=${{ vars.FLY_PREVIEW_CMS_APP_PREFIX }}-${{ inputs.sha }}
           FRONTEND_APP_NAME=${{ vars.FLY_PREVIEW_FRONTEND_APP_PREFIX }}-${{ inputs.sha }}
 

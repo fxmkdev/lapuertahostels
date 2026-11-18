@@ -63,6 +63,33 @@ async function getCachedData<T>(key: string): Promise<CacheEntry<T> | null> {
   return null;
 }
 
+async function cacheResult<T>(key: string, result: T | null, cachedAt: number) {
+  if (result === null) {
+    await deleteCachedData(key);
+  } else {
+    const remainingLifetime = CACHE_MAX_AGE_IN_MS - (Date.now() - cachedAt);
+    if (remainingLifetime > 0) {
+      try {
+        await runRedisCommand((redis) =>
+          redis.set(
+            key,
+            JSON.stringify({
+              version: 1,
+              data: result,
+              cachedAt,
+            } satisfies CacheEntry<T>),
+            { PX: remainingLifetime },
+          ),
+        );
+      } catch (error) {
+        console.warn(
+          `Failed to write CMS cache entry ${key}: ${formatError(error)}`,
+        );
+      }
+    }
+  }
+}
+
 async function getData<TData, TResult>(
   req: Request,
   pathname: string,
@@ -107,32 +134,7 @@ async function getData<TData, TResult>(
     throw error;
   }
 
-  if (key) {
-    if (result === null) {
-      await deleteCachedData(key);
-    } else {
-      const remainingLifetime = CACHE_MAX_AGE_IN_MS - (Date.now() - cachedAt);
-      if (remainingLifetime > 0) {
-        try {
-          await runRedisCommand((redis) =>
-            redis.set(
-              key,
-              JSON.stringify({
-                version: 1,
-                data: result,
-                cachedAt,
-              } satisfies CacheEntry<TResult>),
-              { PX: remainingLifetime },
-            ),
-          );
-        } catch (error) {
-          console.warn(
-            `Failed to write CMS cache entry ${key}: ${formatError(error)}`,
-          );
-        }
-      }
-    }
-  }
+  if (key) await cacheResult(key, result, cachedAt);
   return result;
 }
 
@@ -160,9 +162,12 @@ export async function loadData(
   });
 
   console.log(`Loading data from CMS for ${url.toString()} in ${locale}`);
-  let response: Response;
+  return await readCmsResponse(await fetchCmsResponse(url));
+}
+
+async function fetchCmsResponse(url: URL) {
   try {
-    response = await fetch(url, {
+    return await fetch(url, {
       cache: "no-store",
       signal: AbortSignal.timeout(5000),
       headers: {
@@ -172,8 +177,12 @@ export async function loadData(
   } catch (error) {
     throw new CmsLoadError("Failed to reach CMS", true, { cause: error });
   }
+}
 
+async function readCmsResponse(response: Response) {
   if (!response.ok) {
+    // Release unread error bodies without masking the authoritative HTTP status.
+    await response.body?.cancel().catch(() => undefined);
     if (response.status === 404) return null;
 
     throw new CmsLoadError(

@@ -243,7 +243,8 @@ Deploy the frontend before the CMS so the callback exists before saves notify
 it. The deployment workflow derives the callback URL from `LIVE_PREVIEW_URL`
 (configure that URL without a trailing slash). Preview apps use the shared
 GitHub Actions secret `PREVIEW_CMS_CACHE_INVALIDATION_SECRET`; provision it
-before creating the preview. The e2e Compose stack uses a local test secret and
+before creating the preview. A missing secret fails preview deployment before
+any apps are modified. The e2e Compose stack uses a local test secret and
 callback URL.
 
 After rollout, warm a page, save a related banner, reload once, and confirm the
