@@ -75,6 +75,22 @@ export async function getRequestLocale(request: Request) {
   return detectLocale(request, supportedLanguages, fallbackLanguage);
 }
 
+export async function getHeaderLocale(request: Request) {
+  const settings = await getSettings(request);
+  const supportedLanguages = (
+    settings.publishedLocales.publishedLocales as LocaleConfig[]
+  ).map((locale) => locale.id);
+  const fallbackLanguage = (
+    settings.publishedLocales.fallbackLocale as LocaleConfig
+  ).id;
+
+  return (
+    getAcceptedLanguages(request.headers.get("Accept-Language"))
+      .map((locale) => matchSupportedLocale(locale, supportedLanguages))
+      .find((locale) => locale !== undefined) ?? fallbackLanguage
+  );
+}
+
 async function detectLocale(
   request: Request,
   supportedLanguages: string[],

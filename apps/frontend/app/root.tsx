@@ -34,7 +34,7 @@ import type { Brand, LocaleConfig } from "@lapuertahostels/payload-types";
 import { GlobalErrorBoundary } from "./global-error-boundary";
 import { AnalyticsScript } from "./analytics-script";
 import { PreviewBar } from "./layout/preview-bar";
-import { getLocale, i18nextMiddleware } from "./i18next.server";
+import { getHeaderLocale, i18nextMiddleware } from "./i18next.server";
 import { isAuthenticated } from "./common/auth";
 import { getVersion } from "./common/version.server";
 import { APIProvider as GoogleMapsAPIProvider } from "@vis.gl/react-google-maps";
@@ -94,7 +94,7 @@ export const meta: MetaFunction<typeof loader> = ({ loaderData }) => {
 
 export const middleware = [i18nextMiddleware];
 
-export async function loader({ request, url, context }: LoaderFunctionArgs) {
+export async function loader({ request, url }: LoaderFunctionArgs) {
   if (!process.env.PAYLOAD_CMS_BASE_URL) {
     throw new Error("PAYLOAD_CMS_BASE_URL is not set");
   }
@@ -130,7 +130,7 @@ export async function loader({ request, url, context }: LoaderFunctionArgs) {
     isAuthorized,
     locale,
     adminLocale: settings.maintenanceScreen?.show
-      ? getLocale(context)
+      ? await getHeaderLocale(request)
       : undefined,
     brand,
     allBrands,
