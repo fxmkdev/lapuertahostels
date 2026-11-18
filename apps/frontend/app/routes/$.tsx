@@ -17,9 +17,14 @@ import { getAltFromMedia } from "~/common/media";
 import { PAGE_DEPTH } from "~/cms-data";
 import { getSettings, tryGetLocalizedPathname } from "~/cms-data.server";
 import type { LocaleConfig } from "@lapuertahostels/payload-types";
+import { buildStructuredData } from "~/common/structured-data";
 
-export const meta: MetaFunction<typeof loader> = ({ loaderData, matches }) => {
-  if (!loaderData) throw new Error("No loader data");
+export const meta: MetaFunction<typeof loader> = ({
+  loaderData,
+  matches,
+  error,
+}) => {
+  if (error || !loaderData) return [];
 
   const rootLoaderData = matches.find((m) => m.id === "root")
     ?.loaderData as SerializeFromLoader<typeof rootLoader>;
@@ -28,8 +33,21 @@ export const meta: MetaFunction<typeof loader> = ({ loaderData, matches }) => {
   const parentMeta = matches.flatMap((match) => match.meta ?? []);
 
   const description = loaderData.content.seo?.description ?? "";
+  const structuredData = loaderData.includeStructuredData
+    ? buildStructuredData({
+        page: loaderData.content,
+        brand: rootLoaderData.brand,
+        parentBrand: rootLoaderData.allBrands.find((b) => b.id === "puerta"),
+        footer: rootLoaderData.footer,
+        canonicalUrl: loaderData.canonicalUrl,
+        locale: rootLoaderData.locale,
+        publishedLocaleCodes: loaderData.publishedLocaleCodes,
+        imagekitBaseUrl: rootLoaderData.environment.imagekitBaseUrl,
+      })
+    : undefined;
   return [
     ...parentMeta,
+    ...(structuredData ? [{ "script:ld+json": structuredData }] : []),
     ...loaderData.alternateUrls.map((alternateUrl) => ({
       tagName: "link",
       rel: "alternate",
@@ -194,9 +212,16 @@ export async function loader({ request, url }: LoaderFunctionArgs) {
     settings.publishedLocales.fallbackLocale as LocaleConfig
   ).id;
 
+  const canonicalUrl = getCanonicalRequestUrl(request, url);
+  canonicalUrl.search = "";
+  canonicalUrl.hash = "";
+
   return {
     origin: requestUrl.origin,
-    canonicalUrl: getCanonicalRequestUrl(request, url).href,
+    canonicalUrl: canonicalUrl.href,
+    includeStructuredData:
+      !requestUrl.searchParams.has("preview") &&
+      !settings.maintenanceScreen?.show,
     pageUrl,
     dataPath,
     content,
