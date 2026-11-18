@@ -193,6 +193,36 @@ async function expectLinkHelp(scope: Locator, page: BrowserPage) {
   }
 }
 
+async function expectHoverHelp(scope: Locator, page: BrowserPage) {
+  for (const name of ["About query strings", "About anchors"]) {
+    // Remove focus/click state so this exercises hover alone.
+    await scope.getByLabel("Query string", { exact: true }).focus();
+    await page.mouse.move(0, 0);
+    const button = scope.getByRole("button", { name, exact: true });
+    await button.hover();
+    const tooltip = scope.getByRole("tooltip");
+    await expect(tooltip).toBeVisible();
+    const triggerBox = await button.boundingBox();
+    const tooltipBox = await tooltip.boundingBox();
+    expect(triggerBox).not.toBeNull();
+    expect(tooltipBox).not.toBeNull();
+    const x = triggerBox!.x + triggerBox!.width / 2;
+    const gapY = (triggerBox!.y + triggerBox!.height + tooltipBox!.y) / 2;
+    await page.mouse.move(x, gapY, { steps: 8 });
+    await expect(tooltip).toBeVisible();
+    await page.mouse.move(tooltipBox!.x + 16, tooltipBox!.y + 16, { steps: 8 });
+    await expect(tooltip).toBeVisible();
+    await page.mouse.move(
+      tooltipBox!.x + tooltipBox!.width / 2,
+      tooltipBox!.y + tooltipBox!.height / 2,
+      { steps: 8 },
+    );
+    await expect(tooltip).toBeVisible();
+    await page.mouse.move(0, 0);
+    await expect(tooltip).toHaveCount(0);
+  }
+}
+
 for (const theme of ["light", "dark"] as const) {
   for (const mobile of [false, true]) {
     test(`internal-link layout and help: ${theme}, ${mobile ? "mobile" : "desktop"}`, async ({
@@ -209,10 +239,12 @@ for (const theme of ["light", "dark"] as const) {
       await expect(
         block.getByText(`#${longAnchor}`, { exact: true }),
       ).toBeVisible();
+      if (!mobile) await expectHoverHelp(block, page);
       await expectLinkHelp(block, page);
       await openRichLinkDrawer(page);
       const drawer = page.locator(".lexical-link-edit-drawer");
       await expectAlignedLinkFields(drawer, mobile, "rich-text-link-fields");
+      if (!mobile) await expectHoverHelp(drawer, page);
       await expectLinkHelp(drawer, page);
       await expect(
         drawer.getByRole("heading", { name: "Edit Link", exact: true }),

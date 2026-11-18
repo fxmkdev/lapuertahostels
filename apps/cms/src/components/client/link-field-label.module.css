@@ -63,3 +63,12 @@
   white-space: normal;
   overflow-wrap: anywhere;
 }
+
+.tooltip::before {
+  /* Keep the pointer inside the help region across the label's bottom padding. */
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 100%;
+  height: calc(var(--base) * 0.5);
+}
