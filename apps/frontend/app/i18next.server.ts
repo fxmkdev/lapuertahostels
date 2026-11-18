@@ -9,6 +9,11 @@ import { initReactI18next } from "react-i18next";
 import i18nConfig from "~/i18n";
 import { getSettings } from "./cms-data.server";
 import { I18NextBackend } from "./i18next-backend.server";
+import {
+  getLocaleAndPageUrl,
+  getRequestUrl,
+  toRelativeUrl,
+} from "./common/routing";
 import type { LocaleConfig } from "@lapuertahostels/payload-types";
 
 export const localeCookie = createCookie("locale");
@@ -35,11 +40,12 @@ export async function createI18next(request: Request) {
   const fallbackLanguage = (
     settings.publishedLocales.fallbackLocale as LocaleConfig
   ).id;
-  const locale = await detectLocale(
-    request,
-    supportedLanguages,
-    fallbackLanguage,
+  const { locale: urlLocale } = getLocaleAndPageUrl(
+    toRelativeUrl(getRequestUrl(request)),
   );
+  const locale =
+    matchSupportedLocale(urlLocale, supportedLanguages) ??
+    (await detectLocale(request, supportedLanguages, fallbackLanguage));
 
   const instance = createInstance();
   instance.use(initReactI18next).use(I18NextBackend);
@@ -112,10 +118,28 @@ async function detectLocale(
 
 function getAcceptedLanguages(header: string | null) {
   if (!header) return [];
+
   return header
     .split(",")
-    .map((value) => value.split(";", 1)[0]?.trim())
-    .filter((value): value is string => Boolean(value));
+    .map((value, index) => {
+      const [language, ...parameters] = value.split(";");
+      const qualityParameter = parameters.find((parameter) =>
+        parameter.trim().startsWith("q="),
+      );
+      const quality = qualityParameter
+        ? Number.parseFloat(qualityParameter.trim().slice(2))
+        : 1;
+
+      return { index, language: language?.trim(), quality };
+    })
+    .filter(
+      (value): value is { index: number; language: string; quality: number } =>
+        Boolean(value.language) &&
+        Number.isFinite(value.quality) &&
+        value.quality > 0,
+    )
+    .sort((a, b) => b.quality - a.quality || a.index - b.index)
+    .map((value) => value.language);
 }
 
 function matchSupportedLocale(
