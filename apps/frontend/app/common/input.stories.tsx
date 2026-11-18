@@ -1,6 +1,6 @@
 import { allModes } from "../../.storybook/modes";
 import { Input } from "./input";
-import { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 
 const meta = {
   title: "common/Input",

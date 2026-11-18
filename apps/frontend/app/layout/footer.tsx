@@ -1,14 +1,17 @@
 import { Button } from "../common/button";
 import { BrandLogo } from "../common/brand-logo";
-import { RichTextObject } from "@lapuertahostels/rich-text";
+import type { RichTextObject } from "@lapuertahostels/rich-text";
 import { useTranslation } from "react-i18next";
 import { socials } from "~/common/socials";
 import { useTheme } from "~/themes";
 import { getBrandHomeHref, PageLink } from "~/common/page-link";
 import { Input } from "~/common/input";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { isEmptyRichText, RichText } from "~/common/rich-text";
-import { Brand, Footer as FooterType } from "@lapuertahostels/payload-types";
+import type {
+  Brand,
+  Footer as FooterType,
+} from "@lapuertahostels/payload-types";
 import { Link } from "~/common/link";
 
 type FooterProps = {

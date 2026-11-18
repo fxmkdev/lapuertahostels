@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 import { OverlayTextBox } from "./overlay-text-box";
 import { customLink, media } from "~/common/cms-data.builders";
 import {

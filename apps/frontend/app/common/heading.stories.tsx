@@ -4,7 +4,7 @@ import { Heading, HeadingHighlight } from "./heading";
 import { cn } from "./cn";
 import { allModes } from "../../.storybook/modes";
 import { themesByBrand } from "~/themes";
-import { BrandId } from "~/brands";
+import type { BrandId } from "~/brands";
 
 const meta = {
   title: "common/Heading",

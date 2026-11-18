@@ -1,7 +1,7 @@
 "use client";
 
-import { Footer } from "@/payload-types";
-import { TranslationsKey, TranslationsObject } from "@/translations";
+import type { Footer } from "@/payload-types";
+import type { TranslationsKey, TranslationsObject } from "@/translations";
 import { useRowLabel, useTranslation } from "@payloadcms/ui";
 import { socialPlatformOptions } from "./social-platforms";
 

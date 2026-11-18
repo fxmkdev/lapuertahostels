@@ -5,7 +5,7 @@ import { Transition } from "@headlessui/react";
 import { OverlayTitle } from "../common/overlay-title";
 import { useEnvironment } from "~/common/environment";
 import { useSwipeable } from "react-swipeable";
-import { Page } from "@lapuertahostels/payload-types";
+import type { Page } from "@lapuertahostels/payload-types";
 import { useTranslation } from "react-i18next";
 
 export type HeroSlidesBlockProps = Partial<

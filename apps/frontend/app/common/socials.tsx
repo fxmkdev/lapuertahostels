@@ -1,5 +1,5 @@
-import { ComponentType, SVGProps } from "react";
-import { Footer } from "@lapuertahostels/payload-types";
+import type { ComponentType, SVGProps } from "react";
+import type { Footer } from "@lapuertahostels/payload-types";
 
 export const socials = {
   facebook: {

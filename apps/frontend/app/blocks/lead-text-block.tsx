@@ -1,10 +1,10 @@
 import { RichTextParagraph } from "~/common/paragraph";
 import { Button } from "~/common/button";
 import { Heading } from "~/common/heading";
-import { LeadText } from "@lapuertahostels/payload-types";
+import type { LeadText } from "@lapuertahostels/payload-types";
 import { cn } from "~/common/cn";
 import { PageLink } from "~/common/page-link";
-import { RichTextObject } from "@lapuertahostels/rich-text";
+import type { RichTextObject } from "@lapuertahostels/rich-text";
 
 export type LeadBlockProps = LeadText;
 

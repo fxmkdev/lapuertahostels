@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { StoryBlock, StoryBlockProps } from "./story-block";
+import type { StoryBlockProps } from "./story-block";
+import { StoryBlock } from "./story-block";
 import { media } from "~/common/cms-data.builders";
 import {
   bold,

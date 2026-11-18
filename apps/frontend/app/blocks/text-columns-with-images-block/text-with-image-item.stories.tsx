@@ -1,8 +1,6 @@
-import { Meta, StoryObj } from "@storybook/react";
-import {
-  TextWithImageItem,
-  TextWithImageItemProps,
-} from "./text-with-image-item";
+import type { Meta, StoryObj } from "@storybook/react";
+import type { TextWithImageItemProps } from "./text-with-image-item";
+import { TextWithImageItem } from "./text-with-image-item";
 import { paragraph, richTextRoot, text } from "@lapuertahostels/rich-text";
 import { callToAction, media } from "~/common/cms-data.builders";
 import { createId } from "@paralleldrive/cuid2";

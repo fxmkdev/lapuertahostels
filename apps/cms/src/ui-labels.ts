@@ -1,5 +1,5 @@
 import { optionalTextField } from "./fields/index";
-import { Field } from "payload";
+import type { Field } from "payload";
 
 export const additionalUiLabelFields: Field[] = [
   {

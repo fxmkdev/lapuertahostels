@@ -1,5 +1,5 @@
-import { LocaleConfig } from "@/payload-types";
-import { MigrateDownArgs, MigrateUpArgs } from "@payloadcms/db-mongodb";
+import type { LocaleConfig } from "@/payload-types";
+import type { MigrateDownArgs, MigrateUpArgs } from "@payloadcms/db-mongodb";
 
 export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
   const localeConfigs: Omit<LocaleConfig, "id" | "createdAt" | "updatedAt">[] =

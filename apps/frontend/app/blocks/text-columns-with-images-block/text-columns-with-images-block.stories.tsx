@@ -1,9 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
-import {
-  TextColumnsWithImagesBlock,
-  TextColumnsWithImagesBlockProps,
-} from "./text-columns-with-images-block";
+import type { TextColumnsWithImagesBlockProps } from "./text-columns-with-images-block";
+import { TextColumnsWithImagesBlock } from "./text-columns-with-images-block";
 import { callToAction, media } from "~/common/cms-data.builders";
 import { createId } from "@paralleldrive/cuid2";
 import {

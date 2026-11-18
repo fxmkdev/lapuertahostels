@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
-import { HeroSlidesBlock, HeroSlidesBlockProps } from "./hero-slides-block";
+import type { HeroSlidesBlockProps } from "./hero-slides-block";
+import { HeroSlidesBlock } from "./hero-slides-block";
 import { callToAction, media } from "~/common/cms-data.builders";
 import { paragraph, richTextRoot, text } from "@lapuertahostels/rich-text";
 

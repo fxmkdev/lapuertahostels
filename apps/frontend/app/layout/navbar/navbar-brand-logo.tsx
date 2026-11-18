@@ -1,9 +1,9 @@
 import { Transition } from "@headlessui/react";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { BrandLogo } from "~/common/brand-logo";
 import { cn } from "~/common/cn";
 import { getBrandHomeHref } from "~/common/page-link";
-import { Brand } from "@lapuertahostels/payload-types";
+import type { Brand } from "@lapuertahostels/payload-types";
 import { Link } from "~/common/link";
 import { useTranslation } from "react-i18next";
 

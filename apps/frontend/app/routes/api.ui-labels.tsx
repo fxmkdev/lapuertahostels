@@ -1,4 +1,4 @@
-import { LoaderFunctionArgs } from "react-router";
+import type { LoaderFunctionArgs } from "react-router";
 import { getCommon } from "~/cms-data.server";
 import { getRequestUrl } from "~/common/routing";
 

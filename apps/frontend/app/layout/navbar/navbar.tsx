@@ -5,17 +5,20 @@ import { LocaleSwitcher } from "./locale-switcher";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { XMarkIcon, Bars3Icon } from "@heroicons/react/24/outline";
 import { CalendarDateRangeIcon, LanguageIcon } from "@heroicons/react/20/solid";
-import { Ref, RefObject, useEffect, useRef, useState } from "react";
-import { Brand, LocaleConfig } from "@lapuertahostels/payload-types";
+import type { Ref, RefObject } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { Brand, LocaleConfig } from "@lapuertahostels/payload-types";
 import { MobileLocaleSwitcher } from "./mobile-locale-switcher";
-import { PageLink, PageLinkProps } from "~/common/page-link";
+import type { PageLinkProps } from "~/common/page-link";
+import { PageLink } from "~/common/page-link";
 import { useLocation } from "react-router";
 import {
   buildLocalizedRelativeUrl,
   getLocaleAndPageUrl,
   toRelativeUrl,
 } from "~/common/routing";
-import { Button, ButtonProps } from "~/common/button";
+import type { ButtonProps } from "~/common/button";
+import { Button } from "~/common/button";
 import { mergeRefs } from "~/common/utils";
 
 export type NavbarProps = {

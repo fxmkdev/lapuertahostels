@@ -70,6 +70,15 @@ need to be strictly Conventional Commit formatted.
 - Keep `@types/node` on the Node 24 line until the next runtime migration is
   scheduled.
 
+## TypeScript Imports
+
+Frontend and CMS TypeScript files must mark imports used only as types with
+`import type` or an inline `type` modifier. Prefer separate `import type`
+declarations when a module supplies both types and runtime values. ESLint's
+`@typescript-eslint/consistent-type-imports` rule requires type-only imports and
+uses separate declarations when automatically fixing mixed imports; existing
+inline `type` modifiers also satisfy the rule.
+
 ## Review Comment Workflow
 
 - If the current Codex/chat thread is linked to an open pull request, push newly

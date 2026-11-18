@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { LeadBlockProps, LeadTextBlock } from "./lead-text-block";
+import type { LeadBlockProps } from "./lead-text-block";
+import { LeadTextBlock } from "./lead-text-block";
 import { callToAction } from "~/common/cms-data.builders";
 import { createId } from "@paralleldrive/cuid2";
 import {

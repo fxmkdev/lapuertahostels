@@ -1,4 +1,4 @@
-import { Page } from "@lapuertahostels/payload-types";
+import type { Page } from "@lapuertahostels/payload-types";
 import { OverlayTitle } from "./common/overlay-title";
 import { useEnvironment } from "~/common/environment";
 import { MediaPlaceholder } from "~/common/media";

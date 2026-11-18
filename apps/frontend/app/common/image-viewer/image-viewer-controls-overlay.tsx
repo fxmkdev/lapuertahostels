@@ -7,7 +7,7 @@ import {
   XMarkIcon,
 } from "@heroicons/react/20/solid";
 import { cn } from "../cn";
-import { ElementType, Ref } from "react";
+import type { ElementType, Ref } from "react";
 
 export type ImageViewerControlsOverlayProps = {
   supportsFullscreen: boolean;

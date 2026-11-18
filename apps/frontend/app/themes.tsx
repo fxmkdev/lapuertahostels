@@ -1,4 +1,5 @@
-import { PropsWithChildren, createContext, useContext } from "react";
+import type { PropsWithChildren } from "react";
+import { createContext, useContext } from "react";
 
 export type Theme = {
   loadingBarColor: string;

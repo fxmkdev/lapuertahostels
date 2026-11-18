@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { WideImageBlock, WideImageBlockProps } from "./wide-image-block";
+import type { WideImageBlockProps } from "./wide-image-block";
+import { WideImageBlock } from "./wide-image-block";
 import { callToAction, media } from "~/common/cms-data.builders";
 import { createId } from "@paralleldrive/cuid2";
 import {

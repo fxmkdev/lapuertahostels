@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 import { ImageViewerPanel } from "./image-viewer-panel";
 import { Transition } from "@headlessui/react";
 

@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, test } from "vitest";
 import { isEmptyRichText, RichText } from "./rich-text";
-import { PropsWithChildren } from "react";
+import type { PropsWithChildren } from "react";
 import {
   text,
   bold,

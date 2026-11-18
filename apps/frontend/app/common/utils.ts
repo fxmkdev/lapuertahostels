@@ -1,4 +1,4 @@
-import { Ref, RefCallback } from "react";
+import type { Ref, RefCallback } from "react";
 
 type AcceptedRef<T> = Ref<T> | undefined;
 
