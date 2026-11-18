@@ -256,3 +256,30 @@ test("logs unconfigured invalidation at initialization and continues saving", as
   );
   expect(fetchMock).not.toHaveBeenCalled();
 });
+
+test.each([200, 503])(
+  "cancels unread invalidation response bodies (HTTP %s)",
+  async (status) => {
+    const h = await harness();
+    const cancel = vi.fn();
+    fetchMock.mockResolvedValueOnce(
+      new Response(new ReadableStream({ cancel }), { status }),
+    );
+    await h.change("banners");
+    expect(cancel).toHaveBeenCalledTimes(1);
+    expect(h.warn).toHaveBeenCalledTimes(status === 200 ? 0 : 1);
+  },
+);
+
+test("does not report successful invalidation as failed when body cleanup fails", async () => {
+  const h = await harness();
+  const cancel = vi.fn(() => {
+    throw new Error("cleanup failed");
+  });
+  fetchMock.mockResolvedValueOnce(
+    new Response(new ReadableStream({ cancel }), { status: 200 }),
+  );
+  await h.change("banners");
+  expect(cancel).toHaveBeenCalledTimes(1);
+  expect(h.warn).not.toHaveBeenCalled();
+});
