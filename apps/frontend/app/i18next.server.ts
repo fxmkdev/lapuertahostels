@@ -148,9 +148,12 @@ function matchSupportedLocale(
 ) {
   if (typeof requestedLocale !== "string") return undefined;
   const normalizedLocale = requestedLocale.toLowerCase();
-  return supportedLanguages.find(
-    (locale) =>
-      locale.toLowerCase() === normalizedLocale ||
-      normalizedLocale.startsWith(`${locale.toLowerCase()}-`),
+  const exactLocale = supportedLanguages.find(
+    (locale) => locale.toLowerCase() === normalizedLocale,
+  );
+  if (exactLocale) return exactLocale;
+
+  return supportedLanguages.find((locale) =>
+    normalizedLocale.startsWith(`${locale.toLowerCase()}-`),
   );
 }
