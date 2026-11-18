@@ -7,7 +7,7 @@ import type { LoaderFunctionArgs } from "react-router";
 import { isAuthenticated } from "~/common/auth";
 import type { LocaleConfig } from "@lapuertahostels/payload-types";
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request, url }: LoaderFunctionArgs) {
   const settings = await getSettings(request);
   if (settings.maintenanceScreen?.show && !(await isAuthenticated(request))) {
     throw new Response(null, {
@@ -24,7 +24,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       .flatMap((l) =>
         pages.map(
           (p) => `  <url>
-    <loc>${getCanonicalRequestUrl(request).origin}${buildLocalizedRelativeUrl(l.id, p.pathname[l.id])}</loc>
+    <loc>${getCanonicalRequestUrl(request, url).origin}${buildLocalizedRelativeUrl(l.id, p.pathname[l.id])}</loc>
     <lastmod>${p.updatedAt.split("T")[0]}</lastmod>
   </url>`,
         ),

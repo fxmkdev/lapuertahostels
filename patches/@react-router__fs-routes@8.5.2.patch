@@ -1,0 +1,52 @@
+diff --git a/dist/index.js b/dist/index.js
+index 212e455eb364ad9597f14c70169ad34f0be6d728..344a9b7523c53f49961cca359c3c06082ef2863e 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -11,7 +11,7 @@
+ import fs from "node:fs";
+ import path from "node:path";
+ import { getAppDirectory } from "@react-router/dev/routes";
+-import { makeRe } from "minimatch";
++import { filter } from "minimatch";
+ //#region manifest.ts
+ function routeManifestToRouteConfig(routeManifest, rootId = "root") {
+ 	let routeConfigById = {};
+@@ -85,7 +85,7 @@ var PrefixLookupTrie = class {
+ 	}
+ };
+ function flatRoutes$1(appDirectory, ignoredFilePatterns = [], prefix = "routes") {
+-	let ignoredFileRegex = Array.from(new Set(["**/.*", ...ignoredFilePatterns])).map((re) => makeRe(re)).filter((re) => !!re);
++	let ignoredFileFilters = Array.from(new Set(["**/.*", ...ignoredFilePatterns])).map((pattern) => filter(pattern));
+ 	let routesDir = path.join(appDirectory, prefix);
+ 	if (!findFile(appDirectory, "root", routeModuleExts)) throw new Error(`Could not find a root route module in the app directory: ${appDirectory}`);
+ 	if (!fs.existsSync(routesDir)) throw new Error(`Could not find the routes directory: ${routesDir}. Did you forget to create it?`);
+@@ -97,8 +97,8 @@ function flatRoutes$1(appDirectory, ignoredFilePatterns = [], prefix = "routes")
+ 	for (let entry of entries) {
+ 		let filepath = normalizeSlashes(path.join(routesDir, entry.name));
+ 		let route = null;
+-		if (entry.isDirectory()) route = findRouteModuleForFolder(appDirectory, filepath, ignoredFileRegex);
+-		else if (entry.isFile()) route = findRouteModuleForFile(appDirectory, filepath, ignoredFileRegex);
++		if (entry.isDirectory()) route = findRouteModuleForFolder(appDirectory, filepath, ignoredFileFilters);
++		else if (entry.isFile()) route = findRouteModuleForFile(appDirectory, filepath, ignoredFileFilters);
+ 		if (route) routes.push(route);
+ 	}
+ 	return flatRoutesUniversal(appDirectory, routes, prefix);
+@@ -215,14 +215,14 @@ function flatRoutesUniversal(appDirectory, routes, prefix = "routes") {
+ 	}
+ 	return routeManifest;
+ }
+-function findRouteModuleForFile(appDirectory, filepath, ignoredFileRegex) {
++function findRouteModuleForFile(appDirectory, filepath, ignoredFileFilters) {
+ 	let relativePath = normalizeSlashes(path.relative(appDirectory, filepath));
+-	if (ignoredFileRegex.some((regex) => regex.test(relativePath))) return null;
++	if (ignoredFileFilters.some((matches) => matches(relativePath))) return null;
+ 	return filepath;
+ }
+-function findRouteModuleForFolder(appDirectory, filepath, ignoredFileRegex) {
++function findRouteModuleForFolder(appDirectory, filepath, ignoredFileFilters) {
+ 	let relativePath = path.relative(appDirectory, filepath);
+-	if (ignoredFileRegex.some((regex) => regex.test(relativePath))) return null;
++	if (ignoredFileFilters.some((matches) => matches(relativePath))) return null;
+ 	let routeRouteModule = findFile(filepath, "route", routeModuleExts);
+ 	let routeIndexModule = findFile(filepath, "index", routeModuleExts);
+ 	if (routeRouteModule && routeIndexModule) {

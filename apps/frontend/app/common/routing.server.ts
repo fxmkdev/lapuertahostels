@@ -1,5 +1,5 @@
 import { redirect } from "react-router";
-import { createRemixI18Next } from "~/i18next.server";
+import { getRequestLocale } from "~/i18next.server";
 import {
   getLocaleAndPageUrl,
   toRelativeUrl,
@@ -16,20 +16,19 @@ import {
 import { isAuthenticated } from "./auth";
 import { getPageLinkHref } from "./page-link";
 
-export async function handleIncomingRequest(request: Request) {
-  const url = getRequestUrl(request);
+export async function handleIncomingRequest(request: Request, routeUrl?: URL) {
+  const url = getRequestUrl(request, routeUrl);
 
   redirectIfBrandSubdomain(url, "aqua");
   redirectIfBrandSubdomain(url, "azul");
 
-  redirectIfNonCanonicalHostname(request);
+  redirectIfNonCanonicalHostname(request, routeUrl);
   redirectIfPathnameEndsWithSlash(url);
 
   const { locale, pageUrl } = getLocaleAndPageUrl(toRelativeUrl(url));
 
   if (!locale) {
-    const remixI18Next = await createRemixI18Next(request);
-    const locale = await remixI18Next.getLocale(request);
+    const locale = await getRequestLocale(request);
     await redirectToLocalizedRoute(request, url, locale);
   }
 
@@ -60,9 +59,11 @@ function redirectIfBrandSubdomain(url: URL, brandName: string) {
   }
 }
 
-function redirectIfNonCanonicalHostname(request: Request) {
-  const canonicalRequestUrl = getCanonicalRequestUrl(request);
-  if (getRequestUrl(request).hostname !== canonicalRequestUrl.hostname) {
+function redirectIfNonCanonicalHostname(request: Request, routeUrl?: URL) {
+  const canonicalRequestUrl = getCanonicalRequestUrl(request, routeUrl);
+  if (
+    getRequestUrl(request, routeUrl).hostname !== canonicalRequestUrl.hostname
+  ) {
     throw redirect(canonicalRequestUrl.href, { status: 301 });
   }
 }

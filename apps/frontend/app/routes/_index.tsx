@@ -1,8 +1,8 @@
 import type { LoaderFunctionArgs } from "react-router";
 import { handleIncomingRequest } from "~/common/routing.server";
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  await handleIncomingRequest(request);
+export async function loader({ request, url }: LoaderFunctionArgs) {
+  await handleIncomingRequest(request, url);
 
   throw new Error("Redirection to localized route failed");
 }
