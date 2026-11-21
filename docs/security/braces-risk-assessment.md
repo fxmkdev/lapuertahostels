@@ -1,5 +1,20 @@
 # Braces Advisory Risk Assessment
 
+## Current Status — 2026-11-21
+
+[GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm) was
+withdrawn on **2026-10-23**. GitHub states that it is not a practically
+exploitable vulnerability and retains the advisory for historical references.
+The current full and production pnpm audits no longer report it. Braces remains
+at 3.0.3; this update introduces no suppression, alert dismissal, package patch,
+or dependency change.
+
+The sections below preserve the original assessment and the subsequent Payload
+review as historical evidence. Statements that the advisory remains visible or
+unresolved describe those assessments, rather than its current status. The
+upstream withdrawal predates the Payload review below; that review did not
+incorporate the withdrawal status.
+
 ## Decision
 
 Assessed on 2026-10-09 for
