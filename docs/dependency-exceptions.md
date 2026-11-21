@@ -53,12 +53,12 @@ dependency constraints. No upstream major upgrade is included.
 
 ## Retained overrides
 
-Each row gives the blocking consumers, security/compatibility purpose, and
-removal condition. The minimum in the last column is a conservative safe floor
-for the relevant release line; other major lines require their own advisory
-range review. All listed consumer constraints must meet that condition before
-removal, including peers. The linked advisory is representative where several
-fixes have accumulated; check the full current audit before changing any pin.
+Each entry gives the blocking consumers, security/compatibility purpose, and
+removal condition. The stated minimum is a conservative safe floor for the
+relevant release line; other major lines require their own advisory range
+review. All listed consumer constraints must meet that condition before removal,
+including peers. The linked advisory is representative where several fixes have
+accumulated; check the full current audit before changing any pin.
 
 ### `@babel/core` → `7.29.7`
 
@@ -176,10 +176,9 @@ successor.
 Latest stable: `0.28.2`.
 
 Consumers: [storybook@10.6.2](https://registry.npmjs.org/storybook/10.6.2)
-`^0.18.0 \|\| ^0.19.0 \|\| ^0.20.0 \|\| ^0.21.0 \|\| ^0.22.0 \|\| ^0.23.0 \|\| ^0.24.0 \|\| ^0.25.0 \|\| ^0.26.0 \|\| ^0.27.0 \|\| ^0.28.0`;
+`^0.18.0 || ^0.19.0 || ^0.20.0 || ^0.21.0 || ^0.22.0 || ^0.23.0 || ^0.24.0 || ^0.25.0 || ^0.26.0 || ^0.27.0 || ^0.28.0`;
 [tsx@4.23.15](https://registry.npmjs.org/tsx/4.23.15) `~0.28.0`;
-[vite@8.1.6](https://registry.npmjs.org/vite/8.1.6) `^0.27.0 \|\| ^0.28.0`
-(peer).
+[vite@8.1.6](https://registry.npmjs.org/vite/8.1.6) `^0.27.0 || ^0.28.0` (peer).
 
 [development-server security fixes](https://github.com/advisories/GHSA-g7r4-m6w7-qqqr).
 Remove when every matching consumer requires `0.28.1` or a verified secure
@@ -383,10 +382,10 @@ Consumers:
 [@rollup/pluginutils@5.4.0](https://registry.npmjs.org/@rollup/pluginutils/5.4.0)
 `^4.0.2`;
 [@tanstack/devtools-vite@0.7.0](https://registry.npmjs.org/@tanstack/devtools-vite/0.7.0)
-`^4.0.3`; [fdir@6.5.0](https://registry.npmjs.org/fdir/6.5.0) `^3 \|\| ^4`
-(peer); [tinyglobby@0.2.17](https://registry.npmjs.org/tinyglobby/0.2.17)
-`^4.0.4`; [unplugin@2.3.11](https://registry.npmjs.org/unplugin/2.3.11)
-`^4.0.3`; [vite@8.1.6](https://registry.npmjs.org/vite/8.1.6) `^4.0.5`;
+`^4.0.3`; [fdir@6.5.0](https://registry.npmjs.org/fdir/6.5.0) `^3 || ^4` (peer);
+[tinyglobby@0.2.17](https://registry.npmjs.org/tinyglobby/0.2.17) `^4.0.4`;
+[unplugin@2.3.11](https://registry.npmjs.org/unplugin/2.3.11) `^4.0.3`;
+[vite@8.1.6](https://registry.npmjs.org/vite/8.1.6) `^4.0.5`;
 [vitest@4.1.12](https://registry.npmjs.org/vitest/4.1.12) `^4.0.3`.
 
 [POSIX method injection and extglob ReDoS](https://github.com/advisories/GHSA-c2c7-rcm5-vvqj).
@@ -493,22 +492,22 @@ Latest stable: `8.3.8`.
 
 Consumers:
 [@joshwooding/vite-plugin-react-docgen-typescript@0.7.0](https://registry.npmjs.org/@joshwooding/vite-plugin-react-docgen-typescript/0.7.0)
-`^3.0.0 \|\| ^4.0.0 \|\| ^5.0.0 \|\| ^6.0.0 \|\| ^7.0.0 \|\| ^8.0.0` (peer);
+`^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0` (peer);
 [@storybook/builder-vite@10.6.2](https://registry.npmjs.org/@storybook/builder-vite/10.6.2)
-`^5.0.0 \|\| ^6.0.0 \|\| ^7.0.0 \|\| ^8.0.0` (peer);
+`^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0` (peer);
 [@storybook/react-vite@10.6.2](https://registry.npmjs.org/@storybook/react-vite/10.6.2)
-`^5.0.0 \|\| ^6.0.0 \|\| ^7.0.0 \|\| ^8.0.0` (peer);
+`^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0` (peer);
 [@tailwindcss/vite@4.3.0](https://registry.npmjs.org/@tailwindcss/vite/4.3.0)
-`^5.2.0 \|\| ^6 \|\| ^7 \|\| ^8` (peer);
+`^5.2.0 || ^6 || ^7 || ^8` (peer);
 [@tanstack/devtools-vite@0.7.0](https://registry.npmjs.org/@tanstack/devtools-vite/0.7.0)
-`^6.0.0 \|\| ^7.0.0 \|\| ^8.0.0` (peer);
+`^6.0.0 || ^7.0.0 || ^8.0.0` (peer);
 [@vitest/mocker@4.1.12](https://registry.npmjs.org/@vitest/mocker/4.1.12)
-`^6.0.0 \|\| ^7.0.0 \|\| ^8.0.0` (peer);
+`^6.0.0 || ^7.0.0 || ^8.0.0` (peer);
 [react-router-devtools@6.2.3](https://registry.npmjs.org/react-router-devtools/6.2.3)
 `>=5.0.0` (peer); [vitest@4.1.12](https://registry.npmjs.org/vitest/4.1.12)
-`^6.0.0 \|\| ^7.0.0 \|\| ^8.0.0`;
+`^6.0.0 || ^7.0.0 || ^8.0.0`;
 [vitest@4.1.12](https://registry.npmjs.org/vitest/4.1.12)
-`^6.0.0 \|\| ^7.0.0 \|\| ^8.0.0` (peer).
+`^6.0.0 || ^7.0.0 || ^8.0.0` (peer).
 
 [development-server security fixes](https://github.com/advisories/GHSA-8g5g-mxqh-grgj).
 Remove when matching peer ranges stop admitting vulnerable 6.4.2, or those paths
@@ -520,27 +519,27 @@ Latest stable: `8.3.8`.
 
 Consumers:
 [@joshwooding/vite-plugin-react-docgen-typescript@0.7.0](https://registry.npmjs.org/@joshwooding/vite-plugin-react-docgen-typescript/0.7.0)
-`^3.0.0 \|\| ^4.0.0 \|\| ^5.0.0 \|\| ^6.0.0 \|\| ^7.0.0 \|\| ^8.0.0` (peer);
+`^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0` (peer);
 [@react-router/dev@8.5.2](https://registry.npmjs.org/@react-router/dev/8.5.2)
-`^7.0.0 \|\| ^8.0.0` (peer);
+`^7.0.0 || ^8.0.0` (peer);
 [@storybook/builder-vite@10.6.2](https://registry.npmjs.org/@storybook/builder-vite/10.6.2)
-`^5.0.0 \|\| ^6.0.0 \|\| ^7.0.0 \|\| ^8.0.0` (peer);
+`^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0` (peer);
 [@storybook/react-vite@10.6.2](https://registry.npmjs.org/@storybook/react-vite/10.6.2)
-`^5.0.0 \|\| ^6.0.0 \|\| ^7.0.0 \|\| ^8.0.0` (peer);
+`^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0` (peer);
 [@tailwindcss/vite@4.3.0](https://registry.npmjs.org/@tailwindcss/vite/4.3.0)
-`^5.2.0 \|\| ^6 \|\| ^7 \|\| ^8` (peer);
+`^5.2.0 || ^6 || ^7 || ^8` (peer);
 [@tanstack/devtools-vite@0.7.0](https://registry.npmjs.org/@tanstack/devtools-vite/0.7.0)
-`^6.0.0 \|\| ^7.0.0 \|\| ^8.0.0` (peer);
+`^6.0.0 || ^7.0.0 || ^8.0.0` (peer);
 [@vitejs/plugin-react@6.0.2](https://registry.npmjs.org/@vitejs/plugin-react/6.0.2)
 `^8.0.0` (peer);
 [@vitest/mocker@4.1.12](https://registry.npmjs.org/@vitest/mocker/4.1.12)
-`^6.0.0 \|\| ^7.0.0 \|\| ^8.0.0` (peer);
+`^6.0.0 || ^7.0.0 || ^8.0.0` (peer);
 [react-router-devtools@6.2.3](https://registry.npmjs.org/react-router-devtools/6.2.3)
 `>=5.0.0` (peer); [vite-node@6.0.0](https://registry.npmjs.org/vite-node/6.0.0)
 `^8.0.0`; [vitest@4.1.12](https://registry.npmjs.org/vitest/4.1.12)
-`^6.0.0 \|\| ^7.0.0 \|\| ^8.0.0`;
+`^6.0.0 || ^7.0.0 || ^8.0.0`;
 [vitest@4.1.12](https://registry.npmjs.org/vitest/4.1.12)
-`^6.0.0 \|\| ^7.0.0 \|\| ^8.0.0` (peer); `apps/cms` `8.1.6`; `apps/frontend`
+`^6.0.0 || ^7.0.0 || ^8.0.0` (peer); `apps/cms` `8.1.6`; `apps/frontend`
 `8.1.6`.
 
 [development-server security fixes](https://github.com/advisories/GHSA-698v-4r3x-3vcv).
@@ -580,10 +579,10 @@ Consumers:
 [@eslint-react/shared@5.8.3](https://registry.npmjs.org/@eslint-react/shared/5.8.3)
 `^4.4.3`;
 [eslint-plugin-react-hooks@7.1.1](https://registry.npmjs.org/eslint-plugin-react-hooks/7.1.1)
-`^3.25.0 \|\| ^4.0.0`; [openai@6.38.0](https://registry.npmjs.org/openai/6.38.0)
-`^3.25 \|\| ^4.0` (peer);
+`^3.25.0 || ^4.0.0`; [openai@6.38.0](https://registry.npmjs.org/openai/6.38.0)
+`^3.25 || ^4.0` (peer);
 [zod-validation-error@4.0.2](https://registry.npmjs.org/zod-validation-error/4.0.2)
-`^3.25.0 \|\| ^4.0.0` (peer); `apps/cms` `^4.4.3`.
+`^3.25.0 || ^4.0.0` (peer); `apps/cms` `^4.4.3`.
 
 [schema-validation security fix](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5).
 Remove when every matching consumer requires `4.6.6` or a verified secure
