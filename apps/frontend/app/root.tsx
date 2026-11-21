@@ -1,12 +1,15 @@
 import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 import {
   type LinksFunction,
+  isRouteErrorResponse,
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
   useLoaderData,
+  useRouteLoaderData,
+  useRouteError,
 } from "react-router";
 
 import styles from "./global.css?url";
@@ -22,7 +25,8 @@ import {
 } from "./cms-data.server";
 import { OptInLivePreview } from "./common/live-preview";
 import { ThemeProvider } from "./themes";
-import { useState } from "react";
+import type { ReactNode } from "react";
+import { createContext, useContext, useState } from "react";
 import { Header } from "./layout/header";
 import {
   getLocaleAndPageUrl,
@@ -159,12 +163,51 @@ export const handle = {
   i18n: "ui-labels",
 };
 
+const HeaderHeightContext = createContext<(height: number) => void>(() => {});
+
+export function Layout({ children }: { children: ReactNode }) {
+  const rootLoaderData = useRouteLoaderData<typeof loader>("root");
+  const error = useRouteError();
+  const { i18n } = useTranslation();
+  const [headerHeight, setHeaderHeight] = useState(0);
+  const isMaintenanceError =
+    isRouteErrorResponse(error) && error.status === 503;
+
+  return (
+    <html
+      lang={i18n.language}
+      dir={i18n.dir()}
+      style={
+        error
+          ? undefined
+          : { scrollPaddingTop: getScrollTopPadding(headerHeight) }
+      }
+    >
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <Meta />
+        <Links />
+        {rootLoaderData && !isMaintenanceError && (
+          <AnalyticsScript analyticsDomain={rootLoaderData.analyticsDomain} />
+        )}
+      </head>
+      <body className="bg-white text-neutral-900 antialiased">
+        <HeaderHeightContext value={setHeaderHeight}>
+          {children}
+        </HeaderHeightContext>
+        {!error && <ScrollRestoration />}
+        <Scripts />
+      </body>
+    </html>
+  );
+}
+
 export default function App() {
   const {
     brand,
     settings,
     footer,
-    analyticsDomain,
     allBrands,
     isAuthorized,
     adminLocale,
@@ -172,70 +215,47 @@ export default function App() {
     publishedLocales,
   } = useLoaderData<typeof loader>();
   const { i18n } = useTranslation();
-
-  const [headerHeight, setHeaderHeight] = useState(0);
+  const setHeaderHeight = useContext(HeaderHeightContext);
 
   return (
-    <html
-      lang={i18n.language}
-      dir={i18n.dir()}
-      style={{ scrollPaddingTop: getScrollTopPadding(headerHeight) }}
+    <GoogleMapsAPIProvider
+      apiKey={environment.googleMapsApiKey}
+      language={
+        publishedLocales.find((l) => l.id === i18n.language)
+          ?.googleMapsLanguage ?? undefined
+      }
+      region={settings.maps?.region || undefined}
     >
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <Meta />
-        <Links />
-        <AnalyticsScript analyticsDomain={analyticsDomain} />
-      </head>
-      <body className="bg-white text-neutral-900 antialiased">
-        <GoogleMapsAPIProvider
-          apiKey={environment.googleMapsApiKey}
-          language={
-            publishedLocales.find((l) => l.id === i18n.language)
-              ?.googleMapsLanguage ?? undefined
-          }
-          region={settings.maps?.region || undefined}
+      <ThemeProvider themeColor={brand.themeColor}>
+        {settings.maintenanceScreen?.show && isAuthorized && (
+          <PreviewBar adminLocale={adminLocale!} />
+        )}
+        <OptInLivePreview
+          path={`brands/${brand.id}`}
+          data={brand}
+          depth={BRANDS_DEPTH}
         >
-          <ThemeProvider themeColor={brand.themeColor}>
-            {settings.maintenanceScreen?.show && isAuthorized && (
-              <PreviewBar adminLocale={adminLocale!} />
-            )}
-            <OptInLivePreview
-              path={`brands/${brand.id}`}
-              data={brand}
-              depth={BRANDS_DEPTH}
-            >
-              {(brand) => (
-                <>
-                  {isAuthorized && (
-                    <Header
-                      brand={brand}
-                      allBrands={allBrands}
-                      publishedLocales={publishedLocales}
-                      onHeightChanged={setHeaderHeight}
-                    />
-                  )}
-                  <main>
-                    <Outlet />
-                  </main>
-                  {isAuthorized && (
-                    <Footer
-                      brand={brand}
-                      allBrands={allBrands}
-                      content={footer}
-                    />
-                  )}
-                </>
+          {(brand) => (
+            <>
+              {isAuthorized && (
+                <Header
+                  brand={brand}
+                  allBrands={allBrands}
+                  publishedLocales={publishedLocales}
+                  onHeightChanged={setHeaderHeight}
+                />
               )}
-            </OptInLivePreview>
-          </ThemeProvider>
-        </GoogleMapsAPIProvider>
-
-        <ScrollRestoration />
-        <Scripts />
-      </body>
-    </html>
+              <main>
+                <Outlet />
+              </main>
+              {isAuthorized && (
+                <Footer brand={brand} allBrands={allBrands} content={footer} />
+              )}
+            </>
+          )}
+        </OptInLivePreview>
+      </ThemeProvider>
+    </GoogleMapsAPIProvider>
   );
 }
 

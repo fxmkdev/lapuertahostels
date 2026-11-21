@@ -12,6 +12,14 @@ pnpm dev
 
 This starts your app in development mode, rebuilding assets on file changes.
 
+## Root document layout
+
+The root route's `Layout` export owns the shared HTML document for normal,
+maintenance, and error screens. Keep document metadata and framework scripts in
+`Layout`; screen components render content and their own titles. Read loader
+data in `Layout` with `useRouteLoaderData("root")` and handle missing data so
+root loader failures can still render the fatal error screen.
+
 ## Banner dismissal
 
 Banner dismissals are stored in `localStorage` under
