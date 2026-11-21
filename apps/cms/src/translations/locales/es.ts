@@ -69,6 +69,22 @@ export const es: TranslationsObject = {
       },
       image: { label: "Imagen" },
       link: {
+        behaviorOptions: { default: "Predeterminado", yes: "Sí", no: "No" },
+        openInNewTab: {
+          label: "Abrir en una pestaña nueva",
+          description:
+            "Para enlaces HTTP/HTTPS. Por defecto, los enlaces estructurados y de texto largo se abren en una pestaña nueva; los de texto enriquecido simple, en la misma pestaña.",
+        },
+        suppressReferrer: {
+          label: "Ocultar referente",
+          description:
+            "Para enlaces HTTP/HTTPS. Por defecto, se oculta el referente en enlaces estructurados y de texto largo, y se permite en texto enriquecido simple. Elige No para permitir la atribución de tráfico en el destino.",
+        },
+        noFollow: {
+          label: "Nofollow",
+          description:
+            "Para enlaces HTTP/HTTPS. Añade rel=nofollow para pedir a los rastreadores que no sigan el enlace. Desactivado por defecto.",
+        },
         doc: { label: "Elige un documento a enlazar" },
         fragment: {
           description:

@@ -7,6 +7,7 @@ import type {
   ListElementNode,
   TextNode,
   Node,
+  ExternalLinkOptions,
 } from "@lapuertahostels/rich-text";
 import {
   IS_BOLD,
@@ -17,6 +18,7 @@ import {
 } from "@lapuertahostels/rich-text";
 import { useTranslation } from "react-i18next";
 import { getPageLinkHref } from "./page-link";
+import { getExternalLinkAttributes } from "./external-link";
 import type { Page } from "@lapuertahostels/payload-types";
 
 export type RichTextProps = {
@@ -36,7 +38,14 @@ type CustomElementConfig = {
   li: ElementType;
   h4: ElementType;
   h5: ElementType;
-  link: ComponentType<PropsWithChildren<{ to: string }>> | "a";
+  link:
+    | ComponentType<
+        PropsWithChildren<{
+          to: string;
+          externalLinkOptions?: ExternalLinkOptions;
+        }>
+      >
+    | "a";
   paragraph: ComponentType<PropsWithChildren<{ indent?: number }>> | "p";
   linebreak: ElementType;
 };
@@ -144,9 +153,19 @@ function RenderedElementNode({
             );
 
       return elements.link === "a" ? (
-        <a href={href}>{renderedChildren}</a>
+        <a
+          href={href}
+          {...getExternalLinkAttributes(href, node.fields, {
+            newTab: false,
+            suppressReferrer: false,
+          })}
+        >
+          {renderedChildren}
+        </a>
       ) : (
-        <elements.link to={href}>{renderedChildren}</elements.link>
+        <elements.link to={href} externalLinkOptions={node.fields}>
+          {renderedChildren}
+        </elements.link>
       );
     }
     default:

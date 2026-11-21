@@ -71,6 +71,22 @@ export const en = {
       },
       image: { label: "Image" },
       link: {
+        behaviorOptions: { default: "Default", yes: "Yes", no: "No" },
+        openInNewTab: {
+          label: "Open in a new tab",
+          description:
+            "For HTTP/HTTPS links. Default opens structured and long-form links in a new tab, and plain rich-text links in the same tab.",
+        },
+        suppressReferrer: {
+          label: "Suppress referrer",
+          description:
+            "For HTTP/HTTPS links. Default suppresses referrers for structured and long-form links, and allows them for plain rich-text links. Choose No to allow traffic attribution at the destination.",
+        },
+        noFollow: {
+          label: "Nofollow",
+          description:
+            "For HTTP/HTTPS links. Add rel=nofollow to ask crawlers not to follow the link. Off by default.",
+        },
         doc: { label: "Choose a document to link" },
         fragment: {
           description: "Choose a page section or enter a custom anchor.",
