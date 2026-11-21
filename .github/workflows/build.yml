@@ -396,6 +396,11 @@ jobs:
 
   deploy-preview:
     name: Deploy Preview
+    # Hold this lock across provisioning and both app deployments.
+    concurrency:
+      group: fly-preview-lifecycle
+      queue: max
+      cancel-in-progress: false
     if: github.event_name == 'pull_request'
     needs:
       - verify-cms-types
