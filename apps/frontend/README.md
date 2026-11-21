@@ -110,6 +110,17 @@ deployments do not require a separately configured invalidation secret. Staging
 and production continue to use their persistent Fly secrets. The e2e Compose
 stack uses a local test secret and callback URL.
 
+Preview deployments and both cleanup paths share the `fly-preview-lifecycle`
+concurrency group. The lock covers provisioning and both app deployments, so
+cleanup cannot delete a newly created app while it is waiting to be deployed.
+Pending operations queue with `queue: max` (up to GitHub's 100-item limit) and
+do not cancel running operations. Builds, tests, staging, and production remain
+outside this queue; cleanup retention rules are unchanged.
+
+When rolling out this coordination, let workflows using the old definitions
+finish first. Refresh older PR branches before rerunning their preview workflows
+so all deployments and cleanup jobs use the same concurrency group.
+
 After rollout, warm a page, save a related banner, reload once, and confirm the
 new content. Check CMS logs for invalidation warnings and frontend logs for
 Redis failures. No Payload schema migration is required. Legacy cache keys are

@@ -10,6 +10,11 @@ env:
 jobs:
   clean-preview:
     name: Clean Preview
+    # Use the deployment group before listing or deleting preview apps.
+    concurrency:
+      group: fly-preview-lifecycle
+      queue: max
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
