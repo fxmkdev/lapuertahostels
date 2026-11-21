@@ -61,24 +61,22 @@ volumes for disposable test data, or back up valuable development data and
 follow the database's supported migration procedure before switching versions.
 Do not delete existing development volumes as part of verification.
 
-## Dependency Patches
+## Dependency Exceptions
 
-`patches/payload@3.94.1.patch` preserves `overrideAccess` during field
-validation in Payload global updates. Without it, CMS initialization on an empty
-database rejects the default fallback locale before creating the E2E API key.
-The patch keeps normal relationship access checks intact; the E2E setup checks
-both trusted initialization and denied anonymous locale access.
+See the [dependency exception inventory](docs/dependency-exceptions.md) for
+every retained pnpm override and local patch, its upstream evidence, and its
+removal condition. The inventory also records exceptions removed after upstream
+fixes.
 
 Both application Dockerfiles copy `patches/` before installing dependencies.
-When upgrading Payload, check whether upstream global updates now pass
-`overrideAccess` to `beforeChange`, then remove the patch and its
-`patchedDependencies` entry if the fix is included.
+Keep that setup while either patch remains, and follow the inventory's removal
+checks when upgrading Payload or React Router.
 
 ## Dependency Security
 
-The remaining `braces` advisory has been assessed as low practical risk for the
-current application and accepted for PR #410. The package remains flagged by
-audit; it has not been patched or suppressed. See the
-[security assessment](docs/security/braces-risk-assessment.md) for the
-dependency paths, evidence, limitations, and conditions that require
-reassessment.
+The previously assessed Braces advisory was withdrawn on October 23, 2026. The
+package remains at 3.0.3; no audit suppression or custom patch was added. See
+the [historical security assessment](docs/security/braces-risk-assessment.md)
+for the original evidence and the dated withdrawal update, and the
+[dependency exception inventory](docs/dependency-exceptions.md) for current
+security fixes and audit results.
