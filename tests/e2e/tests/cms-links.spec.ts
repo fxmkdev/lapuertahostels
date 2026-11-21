@@ -93,6 +93,10 @@ async function createLinkedPage(fragment = "legacy-fragment") {
 
 async function openContent(page: BrowserPage, source: Page) {
   await page.goto(cmsUrl(`/admin/collections/pages/${source.id}`));
+  await expect(page.locator("form.collection-edit__form")).toHaveAttribute(
+    "data-form-ready",
+    "true",
+  );
   await page
     .getByRole("main")
     .getByRole("button", { name: "Content", exact: true })
@@ -103,11 +107,23 @@ async function openContent(page: BrowserPage, source: Page) {
     .getByRole("main")
     .getByRole("button", { name: "Show All", exact: true })
     .click();
-  // Payload mounts off-screen field groups only after they enter the viewport.
-  await block
-    .getByRole("heading", { name: "Call to Action (CTA)", exact: true })
-    .scrollIntoViewIfNeeded();
-  await expect(page.getByLabel("Anchor", { exact: true })).toBeVisible();
+  const cta = block.locator("#field-content__0__cta");
+  await expect(cta).toBeVisible();
+  // Payload observes the field bodies, separately from their headings. Recenter
+  // the deepest body as nested groups mount and change the block's layout.
+  const anchor = cta.getByLabel("Anchor", { exact: true });
+  await expect
+    .poll(async () => {
+      await cta
+        .locator(".render-fields")
+        .last()
+        .evaluate((element) =>
+          element.scrollIntoView({ block: "center", behavior: "instant" }),
+        );
+      return anchor.isVisible();
+    })
+    .toBe(true);
+  await expect(anchor).toBeVisible();
 }
 
 async function savePage(page: BrowserPage, source: Page) {
