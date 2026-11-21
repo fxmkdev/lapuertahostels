@@ -1,6 +1,6 @@
 import type { Media } from "@lapuertahostels/payload-types";
-import type { ImageProps } from "./image";
-import { Image } from "./image";
+import type { ImageProps, ImageTransformation } from "./image";
+import { Image, toImagekitTransformationString } from "./image";
 import { PhotoIcon } from "@heroicons/react/24/outline";
 import { useLayoutEffect } from "react";
 import { gracefully, isObject } from "./utils";
@@ -12,6 +12,39 @@ export function getSrcFromMedia(media: Media | string | undefined | null) {
 
 export function getAltFromMedia(media: Media | string | undefined | null) {
   return gracefully(media, "alt") || "";
+}
+
+export function getMediaImageUrl(
+  media: Media | string | null | undefined,
+  imagekitBaseUrl: string,
+  transformation?: ImageTransformation,
+) {
+  if (
+    typeof media !== "object" ||
+    !media?.filename?.trim() ||
+    !media.mimeType?.startsWith("image/")
+  ) {
+    return undefined;
+  }
+
+  try {
+    const baseUrl = new URL(imagekitBaseUrl);
+    if (
+      !["http:", "https:"].includes(baseUrl.protocol) ||
+      baseUrl.username ||
+      baseUrl.password ||
+      baseUrl.search ||
+      baseUrl.hash
+    ) {
+      return undefined;
+    }
+    const imageTransformation = transformation
+      ? `/${toImagekitTransformationString(transformation)}`
+      : "";
+    return `${baseUrl.href.replace(/\/$/, "")}${imageTransformation}${getSrcFromMedia(media)}`;
+  } catch {
+    return undefined;
+  }
 }
 
 export type MediaImageProps = Omit<ImageProps, "src" | "alt"> & {

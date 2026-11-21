@@ -48,7 +48,8 @@ page has its own canonical `#webpage` ID. Canonical links and JSON-LD URLs
 exclude query strings and fragments. Images use the configured ImageKit base;
 page images use the same 1200×630 transformation as Open Graph images.
 Unavailable images, unresolved home links, blank values and invalid URLs are
-omitted.
+omitted. JSON-LD and social metadata share image validation and URL encoding; an
+unresolved SEO image does not prevent page metadata from rendering.
 
 Preview requests (including an empty `preview` parameter), maintenance mode,
 login pages and error pages emit no graph. Client navigation replaces the graph.

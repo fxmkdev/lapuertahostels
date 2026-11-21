@@ -12,8 +12,7 @@ import {
 } from "~/common/routing";
 import type { SerializeFromLoader } from "~/common/types";
 import { type loader as rootLoader } from "~/root";
-import { toImagekitTransformationString } from "~/common/image";
-import { getAltFromMedia } from "~/common/media";
+import { getAltFromMedia, getMediaImageUrl } from "~/common/media";
 import { PAGE_DEPTH } from "~/cms-data";
 import { getSettings, tryGetLocalizedPathname } from "~/cms-data.server";
 import type { LocaleConfig } from "@lapuertahostels/payload-types";
@@ -116,18 +115,20 @@ function getTwitterCardImageMeta(
   rootLoaderData: SerializeFromLoader<typeof rootLoader>,
 ): { name: string; content: string }[] {
   const image = data.content.seo?.image;
-  if (!image) {
-    return [];
-  }
-
-  if (typeof image !== "object") {
-    throw new Error("Invalid image");
-  }
+  const imageUrl = getMediaImageUrl(
+    image,
+    rootLoaderData.environment.imagekitBaseUrl,
+    {
+      width: 2400,
+      height: 1200,
+    },
+  );
+  if (!imageUrl) return [];
 
   return [
     {
       name: "twitter:image",
-      content: getSocialImageUrl(data, rootLoaderData, 2400, 1200),
+      content: imageUrl,
     },
     {
       name: "twitter:image:alt",
@@ -141,21 +142,24 @@ function getOpenGraphImageMeta(
   rootLoaderData: SerializeFromLoader<typeof rootLoader>,
 ): { name: string; content: string }[] {
   const image = data.content.seo?.image;
-  if (!image) {
-    return [];
-  }
-
-  if (typeof image !== "object") {
-    throw new Error("Invalid image");
-  }
+  if (!image || typeof image !== "object") return [];
 
   const width = 1200;
   const height = 630;
+  const imageUrl = getMediaImageUrl(
+    image,
+    rootLoaderData.environment.imagekitBaseUrl,
+    {
+      width,
+      height,
+    },
+  );
+  if (!imageUrl) return [];
 
   return [
     {
       name: "og:image",
-      content: getSocialImageUrl(data, rootLoaderData, width, height),
+      content: imageUrl,
     },
     {
       name: "og:image:alt",
@@ -165,22 +169,6 @@ function getOpenGraphImageMeta(
     { name: "og:image:width", content: width.toString() },
     { name: "og:image:height", content: height.toString() },
   ];
-}
-
-function getSocialImageUrl(
-  data: SerializeFromLoader<typeof loader>,
-  rootLoaderData: SerializeFromLoader<typeof rootLoader>,
-  width: number,
-  height: number,
-) {
-  const image = data.content.seo?.image;
-  if (typeof image !== "object") {
-    throw new Error("Invalid image");
-  }
-
-  if (!image) return "";
-
-  return `${rootLoaderData.environment.imagekitBaseUrl.toString()}/${toImagekitTransformationString({ width, height })}/${image.filename}`;
 }
 
 export async function loader({ request, url }: LoaderFunctionArgs) {

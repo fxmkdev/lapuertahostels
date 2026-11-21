@@ -1,4 +1,9 @@
 import { expect, test } from "@playwright/test";
+import type {
+  Page as BrowserPage,
+  Response as BrowserResponse,
+} from "@playwright/test";
+import type { Page as CmsPage } from "@lapuertahostels/payload-types";
 import { paragraph, richTextRoot, text } from "@lapuertahostels/rich-text";
 import { createPage, getPuertaBrand } from "../common/cms";
 
@@ -37,8 +42,30 @@ test("serves CMS-backed JSON-LD and replaces it on client navigation", async ({
   const response = await page.goto(
     `/en${firstPage.pathname}?utm_source=structured-data-test`,
   );
-  expect(response?.status()).toBe(200);
-  const html = await response!.text();
+  const graph = await expectServerGraph(page, response!, firstPage, brand.name);
+  const nextTitle = brand.baseTitle
+    ? `${nextPage.title} · ${brand.baseTitle}`
+    : nextPage.title!;
+  await expectClientNavigation(page, nextPage.pathname, nextTitle);
+
+  await page.goto(`/es${firstPage.pathname}`);
+  const spanish: Graph = JSON.parse(
+    (await page.locator('script[type="application/ld+json"]').textContent())!,
+  );
+  expect(spanish["@graph"].slice(0, 3).map((node) => node["@id"])).toEqual(
+    graph["@graph"].slice(0, 3).map((node) => node["@id"]),
+  );
+  expect(spanish["@graph"][3].inLanguage).toBe("es");
+});
+
+async function expectServerGraph(
+  page: BrowserPage,
+  response: BrowserResponse,
+  content: Pick<CmsPage, "title" | "pathname">,
+  brandName: string,
+) {
+  expect(response.status()).toBe(200);
+  const html = await response.text();
   const scripts = [
     ...html.matchAll(
       /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g,
@@ -53,26 +80,33 @@ test("serves CMS-backed JSON-LD and replaces it on client navigation", async ({
     "WebSite",
     "WebPage",
   ]);
-  expect(graph["@graph"][0].name).toBe(brand.name);
-  expect(graph["@graph"][1].name).toBe(brand.name);
+  expect(graph["@graph"][0].name).toBe(brandName);
+  expect(graph["@graph"][1].name).toBe(brandName);
   const webpage = graph["@graph"][3];
   expect(webpage.name).toBe(await page.title());
-  expect(webpage.name).toContain(firstPage.title);
-  expect(webpage.url).toBe(
-    new URL(`/en${firstPage.pathname}`, page.url()).href,
-  );
+  expect(webpage.name).toContain(content.title);
+  expect(webpage.url).toBe(new URL(`/en${content.pathname}`, page.url()).href);
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
     "href",
     webpage.url!,
   );
   expect(await page.evaluate(() => "jsonLdInjected" in window)).toBe(false);
+  return graph;
+}
 
+async function expectClientNavigation(
+  page: BrowserPage,
+  pathname: string,
+  title: string,
+) {
+  const url = new URL(`/en${pathname}`, page.url()).href;
   // A document-only marker survives SPA navigation, proving this did not reload.
   await page.evaluate(() => {
     document.documentElement.dataset.spaMarker = "present";
   });
   await page.getByRole("link", { name: "Next structured data page" }).click();
-  await expect(page).toHaveURL(new RegExp(`/en${nextPage.pathname}$`));
+  await expect(page).toHaveURL(url);
+  await expect(page).toHaveTitle(title);
   await expect(page.locator("html")).toHaveAttribute(
     "data-spa-marker",
     "present",
@@ -82,17 +116,10 @@ test("serves CMS-backed JSON-LD and replaces it on client navigation", async ({
   await expect
     .poll(
       async () =>
-        (JSON.parse((await jsonLd.textContent())!) as Graph)["@graph"][3].name,
+        (JSON.parse((await jsonLd.textContent())!) as Graph)["@graph"][3],
     )
-    .toBe(await page.title());
-
-  await page.goto(`/es${firstPage.pathname}`);
-  const spanish: Graph = JSON.parse((await jsonLd.textContent())!);
-  expect(spanish["@graph"].slice(0, 3).map((node) => node["@id"])).toEqual(
-    graph["@graph"].slice(0, 3).map((node) => node["@id"]),
-  );
-  expect(spanish["@graph"][3].inLanguage).toBe("es");
-});
+    .toMatchObject({ name: title, url, "@id": `${url}#webpage` });
+}
 
 test("omits structured data on preview, login, and missing pages", async ({
   page,

@@ -36,7 +36,7 @@ const content = {
     'Rooms "with a view" — ¡Bienvenidos! </script><script>alert(1)</script>',
   seo: {
     description: 'A <b>CMS</b> description with "quotes"',
-    image: media("room.jpg"),
+    image: media("room photo.jpg"),
   },
 };
 const rootData = {
@@ -197,6 +197,40 @@ test("client navigation replaces the JSON-LD graph without leaving duplicates", 
     router.dispose();
   }
 });
+
+test.each([
+  "unresolved-media-id",
+  null,
+  media(""),
+  { ...media("document.pdf"), mimeType: "application/pdf" },
+])(
+  "omits unavailable SEO media without failing page metadata: %j",
+  async (image) => {
+    vi.mocked(handlePathname).mockResolvedValue({
+      ...content,
+      seo: { ...content.seo, image },
+    });
+    const { router, ui } = createTestRouter(await load());
+    try {
+      const document = new DOMParser().parseFromString(
+        renderToString(ui),
+        "text/html",
+      );
+      expect(document.title).toContain(content.title);
+      expect(document.querySelector('meta[name="og:image"]')).toBeNull();
+      expect(document.querySelector('meta[name="twitter:image"]')).toBeNull();
+      const script = document.querySelector(
+        'script[type="application/ld+json"]',
+      );
+      expect(script).not.toBeNull();
+      expect(
+        JSON.parse(script!.textContent!)["@graph"].at(-1).image,
+      ).toBeUndefined();
+    } finally {
+      router.dispose();
+    }
+  },
+);
 
 test.each(["?preview=pages/test", "?preview="])(
   "suppresses preview markup for %s",

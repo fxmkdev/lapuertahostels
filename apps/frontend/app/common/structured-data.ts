@@ -1,10 +1,5 @@
-import type {
-  Brand,
-  Footer,
-  Media,
-  Page,
-} from "@lapuertahostels/payload-types";
-import { toImagekitTransformationString } from "./image";
+import type { Brand, Footer, Page } from "@lapuertahostels/payload-types";
+import { getMediaImageUrl } from "./media";
 import { getPageTitle } from "./meta";
 import { getBrandHomeHref } from "./page-link";
 
@@ -42,77 +37,88 @@ type StructuredDataInput = {
   imagekitBaseUrl: string;
 };
 
-export function buildStructuredData({
-  page,
-  brand,
-  parentBrand,
-  footer,
-  canonicalUrl,
-  locale,
-  publishedLocaleCodes,
-  imagekitBaseUrl,
-}: StructuredDataInput): StructuredData | undefined {
-  const pageUrl = getPublicUrl(canonicalUrl);
+export function buildStructuredData(
+  input: StructuredDataInput,
+): StructuredData | undefined {
+  const pageUrl = getPublicUrl(input.canonicalUrl);
   if (!pageUrl) return undefined;
 
   const canonical = new URL(pageUrl);
   canonical.search = "";
   canonical.hash = "";
   const origin = canonical.origin;
-  const organizationId = `${origin}/#organization`;
   const websiteId = `${origin}/#website`;
-  const brandId = `${origin}/#brand-${encodeURIComponent(brand.id)}`;
-  const parentName = getText(parentBrand?.name);
-  const brandName = getText(brand.name);
-  const sameAs = getSocialProfiles(footer);
-  const graph: StructuredDataNode[] = [];
+  const brand = buildBrandNode(input, origin);
+  const about = brand ? { "@id": brand["@id"] } : undefined;
+  const organization = buildOrganizationNode(input, origin, about);
+  const publisher = organization ? { "@id": organization["@id"] } : undefined;
 
-  if (parentBrand && parentName) {
-    graph.push({
-      "@type": "Organization",
-      "@id": organizationId,
-      name: parentName,
-      url: getBrandUrl(parentBrand, locale, origin),
-      logo: getImageUrl(parentBrand.logo, imagekitBaseUrl),
-      ...(sameAs.length ? { sameAs } : {}),
-      ...(brandName ? { brand: { "@id": brandId } } : {}),
-    });
-  }
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      ...(organization ? [organization] : []),
+      ...(brand ? [brand] : []),
+      {
+        "@type": "WebSite",
+        "@id": websiteId,
+        name: getText(input.parentBrand?.name),
+        url: `${origin}/`,
+        inLanguage: input.publishedLocaleCodes,
+        publisher,
+      },
+      {
+        "@type": "WebPage",
+        "@id": `${canonical.href}#webpage`,
+        url: canonical.href,
+        name: getText(getPageTitle(input.page)),
+        description: getText(input.page.seo?.description),
+        image: getMediaImageUrl(input.page.seo?.image, input.imagekitBaseUrl, {
+          width: 1200,
+          height: 630,
+        }),
+        inLanguage: input.locale,
+        isPartOf: { "@id": websiteId },
+        publisher,
+        about,
+      },
+    ],
+  };
+}
 
-  if (brandName) {
-    graph.push({
-      "@type": "Brand",
-      "@id": brandId,
-      name: brandName,
-      url: getBrandUrl(brand, locale, origin),
-      logo: getImageUrl(brand.logo, imagekitBaseUrl),
-    });
-  }
+function buildOrganizationNode(
+  input: StructuredDataInput,
+  origin: string,
+  brand: Reference | undefined,
+): StructuredDataNode | undefined {
+  const name = getText(input.parentBrand?.name);
+  if (!input.parentBrand || !name) return undefined;
+  const sameAs = getSocialProfiles(input.footer);
 
-  graph.push(
-    {
-      "@type": "WebSite",
-      "@id": websiteId,
-      name: parentName,
-      url: `${origin}/`,
-      inLanguage: publishedLocaleCodes,
-      ...(parentName ? { publisher: { "@id": organizationId } } : {}),
-    },
-    {
-      "@type": "WebPage",
-      "@id": `${canonical.href}#webpage`,
-      url: canonical.href,
-      name: getText(getPageTitle(page)),
-      description: getText(page.seo?.description),
-      image: getImageUrl(page.seo?.image, imagekitBaseUrl, true),
-      inLanguage: locale,
-      isPartOf: { "@id": websiteId },
-      ...(parentName ? { publisher: { "@id": organizationId } } : {}),
-      ...(brandName ? { about: { "@id": brandId } } : {}),
-    },
-  );
+  return {
+    "@type": "Organization",
+    "@id": `${origin}/#organization`,
+    name,
+    url: getBrandUrl(input.parentBrand, input.locale, origin),
+    logo: getMediaImageUrl(input.parentBrand.logo, input.imagekitBaseUrl),
+    ...(sameAs.length ? { sameAs } : {}),
+    brand,
+  };
+}
 
-  return { "@context": "https://schema.org", "@graph": graph };
+function buildBrandNode(
+  input: StructuredDataInput,
+  origin: string,
+): StructuredDataNode | undefined {
+  const name = getText(input.brand.name);
+  if (!name) return undefined;
+
+  return {
+    "@type": "Brand",
+    "@id": `${origin}/#brand-${encodeURIComponent(input.brand.id)}`,
+    name,
+    url: getBrandUrl(input.brand, input.locale, origin),
+    logo: getMediaImageUrl(input.brand.logo, input.imagekitBaseUrl),
+  };
 }
 
 function getText(value: string | null | undefined) {
@@ -148,24 +154,6 @@ function getBrandUrl(brand: Brand, locale: string, origin: string) {
   url.search = "";
   url.hash = "";
   return url.href;
-}
-
-function getImageUrl(
-  media: Media | string | null | undefined,
-  imagekitBaseUrl: string,
-  socialImage = false,
-) {
-  const baseUrl = getPublicUrl(imagekitBaseUrl);
-  if (!baseUrl || typeof media !== "object" || !media?.filename?.trim()) {
-    return undefined;
-  }
-  if (new URL(baseUrl).search || new URL(baseUrl).hash) return undefined;
-  if (!media.mimeType?.startsWith("image/")) return undefined;
-
-  const transformation = socialImage
-    ? `/${toImagekitTransformationString({ width: 1200, height: 630 })}`
-    : "";
-  return `${baseUrl.replace(/\/$/, "")}${transformation}/${encodeURIComponent(media.filename)}`;
 }
 
 function getSocialProfiles(footer: Footer) {
