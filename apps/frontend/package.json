@@ -20,7 +20,7 @@
     "@lapuertahostels/payload-types": "workspace:../../libs/payload-types",
     "@lapuertahostels/rich-text": "workspace:../../libs/rich-text",
     "@paralleldrive/cuid2": "^3.3.0",
-    "@payloadcms/live-preview-react": "^3.94.0",
+    "@payloadcms/live-preview-react": "^3.94.1",
     "@react-router/node": "^8.5.2",
     "@react-router/serve": "^8.5.2",
     "@tailwindcss/vite": "^4.3.0",
