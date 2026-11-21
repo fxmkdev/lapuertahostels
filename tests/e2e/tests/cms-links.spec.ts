@@ -7,6 +7,7 @@ import {
 } from "@playwright/test";
 import type { Page } from "@lapuertahostels/payload-types";
 import {
+  customUrlLink,
   internalLink,
   paragraph,
   richTextRoot,
@@ -91,7 +92,11 @@ async function createLinkedPage(fragment = "legacy-fragment") {
   return source;
 }
 
-async function openContent(page: BrowserPage, source: Page) {
+async function openContent(
+  page: BrowserPage,
+  source: Page,
+  expectAnchor = true,
+) {
   await page.goto(cmsUrl(`/admin/collections/pages/${source.id}`));
   await page
     .getByRole("main")
@@ -107,7 +112,16 @@ async function openContent(page: BrowserPage, source: Page) {
   await block
     .getByRole("heading", { name: "Call to Action (CTA)", exact: true })
     .scrollIntoViewIfNeeded();
-  await expect(page.getByLabel("Anchor", { exact: true })).toBeVisible();
+  if (expectAnchor) {
+    await expect(page.getByLabel("Anchor", { exact: true })).toBeVisible();
+    await expect(
+      block.getByLabel("Open in a new tab", { exact: true }),
+    ).toHaveCount(0);
+    await expect(
+      block.getByLabel("Suppress referrer", { exact: true }),
+    ).toHaveCount(0);
+    await expect(block.getByLabel("Nofollow", { exact: true })).toHaveCount(0);
+  }
 }
 
 async function savePage(page: BrowserPage, source: Page) {
@@ -339,4 +353,127 @@ test("rich-text link drawers select anchors and retain them after saving and reo
       .locator(".lexical-link-edit-drawer")
       .getByText("#contact", { exact: true }),
   ).toBeVisible();
+});
+
+async function chooseExternalBehavior(
+  scope: Locator,
+  page: BrowserPage,
+  label: string,
+  value: string,
+) {
+  await scope
+    .locator(".field-type.select")
+    .filter({ hasText: label })
+    .getByRole("combobox")
+    .click();
+  await page.getByRole("option", { name: value, exact: true }).click();
+}
+
+test("external link controls retain defaults and persist overrides in structured and rich-text links", async ({
+  page,
+  request,
+}) => {
+  // Seed missing settings directly, so an unrelated save exercises legacy content.
+  const source = await createPage({
+    content: [
+      {
+        blockType: "LeadText",
+        text: richTextRoot(
+          paragraph(
+            customUrlLink("https://example.com", text("Rich external")),
+          ),
+        ),
+        cta: {
+          show: true,
+          label: "Structured external",
+          link: { linkType: "custom", url: "https://example.com" },
+        },
+      },
+    ],
+  });
+  await openContent(page, source, false);
+  await page
+    .getByRole("textbox", { name: /^Title/ })
+    .fill("Unrelated external title edit");
+  await savePage(page, source);
+  await openContent(page, source, false);
+  const legacySaved = await request.get(
+    cmsUrl(`/api/pages/${source.id}?depth=0&locale=en`),
+  );
+  const legacyContent = (await legacySaved.json()).content[0];
+  for (const settings of [
+    legacyContent.cta.link,
+    legacyContent.text.root.children[0].children[0].fields,
+  ]) {
+    expect(settings.openInNewTab ?? "default").toBe("default");
+    expect(settings.suppressReferrer ?? "default").toBe("default");
+    expect(settings.noFollow ?? false).toBe(false);
+  }
+  const block = page.locator("#content-row-0");
+  for (const label of ["Open in a new tab", "Suppress referrer"]) {
+    await expect(
+      block
+        .locator(".field-type.select")
+        .filter({ hasText: label })
+        .getByRole("combobox"),
+    ).toBeVisible();
+  }
+  await expect(block.getByLabel("Nofollow", { exact: true })).not.toBeChecked();
+
+  await chooseExternalBehavior(block, page, "Open in a new tab", "No");
+  await chooseExternalBehavior(block, page, "Suppress referrer", "No");
+  await block.getByLabel("Nofollow", { exact: true }).check();
+  await openRichLinkDrawer(page);
+  const drawer = page.locator(".lexical-link-edit-drawer");
+  await chooseExternalBehavior(drawer, page, "Open in a new tab", "Yes");
+  await chooseExternalBehavior(drawer, page, "Suppress referrer", "No");
+  await drawer.getByLabel("Nofollow", { exact: true }).check();
+  await drawer
+    .getByRole("button", { name: "Save changes", exact: true })
+    .click();
+  await savePage(page, source);
+
+  const saved = await request.get(
+    cmsUrl(`/api/pages/${source.id}?depth=0&locale=en`),
+  );
+  const content = (await saved.json()).content[0];
+  expect(content.cta.link).toMatchObject({
+    openInNewTab: "no",
+    suppressReferrer: "no",
+    noFollow: true,
+  });
+  expect(content.text.root.children[0].children[0].fields).toMatchObject({
+    openInNewTab: "yes",
+    suppressReferrer: "no",
+    noFollow: true,
+  });
+
+  await openContent(page, source, false);
+  await expect(block.getByLabel("Nofollow", { exact: true })).toBeChecked();
+  await chooseExternalBehavior(block, page, "Open in a new tab", "Default");
+  await chooseExternalBehavior(block, page, "Suppress referrer", "Default");
+  await block.getByLabel("Nofollow", { exact: true }).uncheck();
+  await openRichLinkDrawer(page);
+  await expect(drawer.getByLabel("Nofollow", { exact: true })).toBeChecked();
+  await chooseExternalBehavior(drawer, page, "Open in a new tab", "Default");
+  await chooseExternalBehavior(drawer, page, "Suppress referrer", "Default");
+  await drawer.getByLabel("Nofollow", { exact: true }).uncheck();
+  await drawer
+    .getByRole("button", { name: "Save changes", exact: true })
+    .click();
+  await savePage(page, source);
+  const reset = await request.get(
+    cmsUrl(`/api/pages/${source.id}?depth=0&locale=en`),
+  );
+  const resetContent = (await reset.json()).content[0];
+  for (const settings of [
+    resetContent.cta.link,
+    resetContent.text.root.children[0].children[0].fields,
+  ]) {
+    expect(settings).toMatchObject({
+      openInNewTab: "default",
+      suppressReferrer: "default",
+      noFollow: false,
+    });
+  }
 });

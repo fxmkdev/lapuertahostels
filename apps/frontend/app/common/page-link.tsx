@@ -14,6 +14,7 @@ export function PageLink({ link, ...props }: PageLinkProps) {
   const { i18n } = useTranslation();
   return (
     <Link
+      externalLinkOptions={link}
       {...props}
       to={isObject(link) ? getPageLinkHref(link, i18n.language) : "about:blank"}
     />

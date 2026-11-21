@@ -1,4 +1,4 @@
-import type { GroupField, RowField, TextField } from "payload";
+import type { Field, GroupField, RowField, TextField } from "payload";
 
 import { validateUrl } from "@payloadcms/richtext-lexical";
 import { text } from "payload/shared";
@@ -84,6 +84,7 @@ export function linkField({
           return true;
         },
       } satisfies TextField,
+      ...externalLinkFields(),
     ],
     interfaceName: "NewLink", // TODO rename interface once Link collection is removed
     label: translated("cmsPlugin:fields:link:label"),
@@ -121,4 +122,38 @@ export function queryStringAndFragmentField(): RowField {
       },
     ],
   };
+}
+
+/** Shared by structured links and Lexical drawers; defaults remain renderer-specific. */
+export function externalLinkFields(): Field[] {
+  const admin = {
+    condition: (_: unknown, siblingData: Record<string, unknown>) =>
+      siblingData.linkType === "custom",
+  };
+  return [
+    ...(["openInNewTab", "suppressReferrer"] as const).map((name) => ({
+      name,
+      type: "select" as const,
+      defaultValue: "default",
+      label: translated(`cmsPlugin:fields:link:${name}:label`),
+      admin: {
+        ...admin,
+        description: translated(`cmsPlugin:fields:link:${name}:description`),
+      },
+      options: (["default", "yes", "no"] as const).map((value) => ({
+        value,
+        label: translated(`cmsPlugin:fields:link:behaviorOptions:${value}`),
+      })),
+    })),
+    {
+      name: "noFollow",
+      type: "checkbox",
+      defaultValue: false,
+      label: translated("cmsPlugin:fields:link:noFollow:label"),
+      admin: {
+        ...admin,
+        description: translated("cmsPlugin:fields:link:noFollow:description"),
+      },
+    },
+  ];
 }

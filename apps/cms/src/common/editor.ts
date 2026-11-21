@@ -20,7 +20,10 @@ import {
 } from "@payloadcms/richtext-lexical";
 import { createHeadlessEditor } from "@payloadcms/richtext-lexical/lexical/headless";
 
-import { queryStringAndFragmentField } from "../fields/link";
+import {
+  externalLinkFields,
+  queryStringAndFragmentField,
+} from "../fields/link";
 
 const features = [
   BoldFeature(),
@@ -36,9 +39,10 @@ const features = [
   LinkFeature({
     enabledCollections: ["pages"],
     fields: ({ defaultFields }) => [
-      // Not using the 'newTab' field, as our external links are automatically opened in a new tab and for internal we don't want this (yet).
+      // Use our shared controls so missing settings preserve each renderer's defaults.
       ...defaultFields.filter((f) => f.name !== "newTab"),
       queryStringAndFragmentField(),
+      ...externalLinkFields(),
     ],
   }),
 

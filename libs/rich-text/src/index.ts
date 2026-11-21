@@ -56,24 +56,32 @@ export type HeadingElementNode = BaseElementNode & {
   tag: "h4" | "h5";
 };
 
+export type ExternalLinkOptions = {
+  openInNewTab?: "default" | "yes" | "no" | null;
+  suppressReferrer?: "default" | "yes" | "no" | null;
+  noFollow?: boolean | null;
+};
+
 export type LinkElementNode = BaseElementNode & {
   type: "link";
-  fields:
-    | {
-        linkType: "custom";
-        url: string;
-      }
-    | {
-        linkType: "internal";
-        doc: {
-          relationTo: "pages";
-          value: {
-            pathname: string;
+  fields: ExternalLinkOptions &
+    (
+      | {
+          linkType: "custom";
+          url: string;
+        }
+      | {
+          linkType: "internal";
+          doc: {
+            relationTo: "pages";
+            value: {
+              pathname: string;
+            };
           };
-        };
-        queryString?: string;
-        fragment?: string;
-      };
+          queryString?: string;
+          fragment?: string;
+        }
+    );
 };
 
 export type ListElementNode = BaseElementNode & {

@@ -6,7 +6,7 @@ import type { RichTextObject } from "@lapuertahostels/rich-text";
 import { TextHighlight } from "./text-highlight";
 import { useTheme } from "~/themes";
 import { cn } from "./cn";
-import { Link } from "./link";
+import { Link, type LinkProps } from "./link";
 import { isEmptyRichText, RichText } from "./rich-text";
 
 export type LongFormRichTextProps = {
@@ -66,7 +66,7 @@ export function LongFormRichText({
         li: (props: PropsWithChildren) => (
           <li {...props} className="ms-6 mt-1.5 md:mt-2" />
         ),
-        link: ({ to, ...props }: PropsWithChildren<{ to: string }>) => (
+        link: ({ to, ...props }: PropsWithChildren<LinkProps>) => (
           <Link
             {...props}
             className={cn(
