@@ -3,13 +3,14 @@
 Audited on **2026-11-21**, starting at `origin/main` commit `cec99f9df`, using
 Node 24.22.3 and pnpm 11.1.2. Reviewed all **52 overrides and two patches**. The
 result retains **39 overrides and both patches**, removes **13 overrides**, and
-raises three retained pins to satisfy their consumers.
+raises three retained pins to satisfy their consumers. The subsequent CMS editor
+timing fix adds the third local patch documented below.
 
 ## Evidence and removal policy
 
 Sources are published npm manifests (linked by consumer/version below), registry
 release tags, the repository's Dependabot advisory history, current npm advisory
-ranges, and the shipped package code for both patches. Latest means the stable
+ranges, and the shipped package code for local patches. Latest means the stable
 `latest` tag on the audit date, not a recommendation to adopt a new major.
 Package paths below start at workspace dependencies and show the immediate
 consumer; `pnpm why --recursive <package>` expands their ancestors.
@@ -617,15 +618,17 @@ successor.
 
 ## Retained local patches
 
-| Patch                                                                                   | Published upstream evidence and purpose                                                                                                                                                                                                                                                                            | Removal condition                                                                                                                                                                                                    |
-| --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [Payload 3.94.1](../patches/payload@3.94.1.patch)                                       | [Latest published Payload](https://registry.npmjs.org/payload/3.94.1) still omits `overrideAccess` from `beforeChangeArgs` in `dist/globals/operations/update.js`. Forwarding the caller's value allows trusted global initialization and relationship validation without changing anonymous access policy.        | A published compatible release forwards `overrideAccess` at this call site, and fresh-database initialization plus denied anonymous locale/global access pass without the patch.                                     |
-| [React Router filesystem routes 8.5.2](../patches/@react-router__fs-routes@8.5.2.patch) | [Latest published filesystem routes](https://registry.npmjs.org/@react-router/fs-routes/8.5.2) still imports `makeRe` from minimatch. The secure minimatch 11 override removes that API; the patch uses supported `filter` matching. [Tracking issue #423](https://github.com/fxmkdev/lapuertahostels/issues/423). | A published compatible release supports secure minimatch without this patch, and route type generation, production build, and route/ignore matching pass. Never restore vulnerable minimatch 10 to remove the patch. |
+| Patch                                                                                   | Published upstream evidence and purpose                                                                                                                                                                                                                                                                                                                            | Removal condition                                                                                                                                                                                                    |
+| --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Payload 3.94.1](../patches/payload@3.94.1.patch)                                       | [Latest published Payload](https://registry.npmjs.org/payload/3.94.1) still omits `overrideAccess` from `beforeChangeArgs` in `dist/globals/operations/update.js`. Forwarding the caller's value allows trusted global initialization and relationship validation without changing anonymous access policy.                                                        | A published compatible release forwards `overrideAccess` at this call site, and fresh-database initialization plus denied anonymous locale/global access pass without the patch.                                     |
+| [Payload UI 3.94.1](../patches/@payloadcms__ui@3.94.1.patch)                            | Shipped `useIntersect` reads only the first queued intersection entry. A batched non-intersecting entry followed by an intersecting entry can leave lazy CTA field bodies empty. The patch consumes the latest entry in both the standalone hook and client bundle. [Reproduction and validation in PR #429](https://github.com/fxmkdev/lapuertahostels/pull/429). | A published compatible release consumes the latest entry in both shipped implementations, and the batch regression plus CMS layout/help and structured/rich-text anchor persistence tests pass without the patch.    |
+| [React Router filesystem routes 8.5.2](../patches/@react-router__fs-routes@8.5.2.patch) | [Latest published filesystem routes](https://registry.npmjs.org/@react-router/fs-routes/8.5.2) still imports `makeRe` from minimatch. The secure minimatch 11 override removes that API; the patch uses supported `filter` matching. [Tracking issue #423](https://github.com/fxmkdev/lapuertahostels/issues/423).                                                 | A published compatible release supports secure minimatch without this patch, and route type generation, production build, and route/ignore matching pass. Never restore vulnerable minimatch 10 to remove the patch. |
 
 Recheck published tarballs, not only a merged upstream change or release notes.
 When a fix ships, remove the patch file and its `patchedDependencies` entry
 together, then regenerate the lockfile and run the affected regression checks.
-Both Dockerfiles must continue copying `patches/` while either patch remains.
+Both Dockerfiles must continue copying `patches/` while any local patches
+remain.
 
 ## Security documentation
 

@@ -69,8 +69,8 @@ removal condition. The inventory also records exceptions removed after upstream
 fixes.
 
 Both application Dockerfiles copy `patches/` before installing dependencies.
-Keep that setup while either patch remains, and follow the inventory's removal
-checks when upgrading Payload or React Router.
+Keep that setup while any local patches remain, and follow the inventory's
+removal checks when upgrading Payload or React Router.
 
 ## Dependency Security
 
