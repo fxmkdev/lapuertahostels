@@ -32,7 +32,7 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
 
   mongo:
-    image: mongo:latest
+    image: mongo:8.0.38
     ports:
       - "27017:27017"
     command:
@@ -43,7 +43,7 @@ services:
       driver: none
 
   redis:
-    image: redis:latest
+    image: redis:8.4.8
     ports:
       - "6379:6379"
     volumes:
