@@ -107,6 +107,7 @@ pnpm --filter @lapuertahostels/e2e e2e                   # Run Playwright e2e UI
   frontend logic.
 - Run `pnpm --filter @lapuertahostels/frontend check-format` when touching
   frontend formatting-sensitive files.
+- Run `pnpm --filter @lapuertahostels/cms test` when touching CMS cache hooks.
 - Run `pnpm --filter @lapuertahostels/cms build` when touching Payload schema,
   CMS config, CMS custom components, or generated Payload artifacts.
 - Run `pnpm --filter @lapuertahostels/cms lint` and
