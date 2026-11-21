@@ -27,7 +27,7 @@ switch your runtime; select a supported Node version before running pnpm.
 
 ## Dependency Patches
 
-`patches/payload@3.94.0.patch` preserves `overrideAccess` during field
+`patches/payload@3.94.1.patch` preserves `overrideAccess` during field
 validation in Payload global updates. Without it, CMS initialization on an empty
 database rejects the default fallback locale before creating the E2E API key.
 The patch keeps normal relationship access checks intact; the E2E setup checks

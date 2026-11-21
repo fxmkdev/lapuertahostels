@@ -66,5 +66,5 @@ allowBuilds:
   unrs-resolver: false
 
 patchedDependencies:
-  '@react-router/fs-routes@8.5.2': patches/@react-router__fs-routes@8.5.2.patch
-  payload@3.94.0: patches/payload@3.94.0.patch
+  "@react-router/fs-routes@8.5.2": patches/@react-router__fs-routes@8.5.2.patch
+  payload@3.94.1: patches/payload@3.94.1.patch
