@@ -5,7 +5,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "build": "pnpm generate:types && pnpm generate:importmap && cross-env NODE_OPTIONS=--no-deprecation next build",
+    "build": "pnpm generate:importmap && cross-env NODE_OPTIONS=--no-deprecation next build",
     "prod-preview": "pnpm build && mv .next/static .next/standalone/.next/static && cross-env PORT=3001 node .next/standalone/server.js",
     "dev": "cross-env NODE_OPTIONS=--no-deprecation PORT=3001 next dev --turbopack",
     "devsafe": "rm -rf .next && cross-env NODE_OPTIONS=--no-deprecation next dev",
