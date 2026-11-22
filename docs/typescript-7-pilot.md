@@ -3,9 +3,11 @@
 ## Current workspace setup
 
 This follow-up extends native checking beyond the frontend. **TypeScript 6 is
-still required and has not been removed from the workspace.** Node 24.22.3, Node
-24 typings, pnpm 12.21.0, application behavior, and Payload schemas remain
-unchanged.
+still required and has not been removed from the workspace.** The PR preserves
+main's Node 26.13.1 runtime baseline and Node 26 typings from the separately
+merged runtime migration (#434). pnpm 12.21.0, application behavior, and Payload
+schemas remain unchanged. The original follow-up benchmarks below were recorded
+on Node 24 before that migration; they have not been relabeled as Node 26 runs.
 
 | Workspace                | Checking                                                  | Compiler API / integrated build                                    |
 | ------------------------ | --------------------------------------------------------- | ------------------------------------------------------------------ |
@@ -79,25 +81,28 @@ the frontend executable alone is insufficient evidence.
 
 ## Follow-up validation and rollback
 
-The [follow-up raw evidence](typescript-native-workspace-results.json) records
-all 156 timing invocations, CLI/API resolution, and every reachable compiler
-edge after a clean install. Both lockfile documents were inspected, including
-all 20 TS7 platform packages. The only compiler/API versions are TS7.0.2,
-`@typescript/typescript6@6.0.2`, and its TS6.0.3 implementation. All five
-workspaces resolve `tsc` to 7.0.2. Frontend/CMS tooling resolves functional
-TS6.0.3 APIs; Next's bin metadata selects `tsc6` and reports 6.0.3. No package
-versions were added, removed, or upgraded relative to PR #433; only direct
-compiler declarations and peer snapshots changed.
+The [follow-up raw evidence](typescript-native-workspace-results.json) preserves
+all 156 original Node 24 timing invocations and the original clean-install
+CLI/API audit. Self-review rebased onto the separately merged Node 26 migration;
+the `selfReviewNode26` section records the refreshed resolution audit and
+focused runtime-integration checks. Both lockfile documents were inspected,
+including all 20 TS7 platform packages. The only compiler/API versions are
+TS7.0.2, `@typescript/typescript6@6.0.2`, and its TS6.0.3 implementation. All
+five workspaces resolve `tsc` to 7.0.2. Frontend/CMS tooling resolves functional
+TS6.0.3 APIs; Next's bin metadata selects `tsc6` and reports 6.0.3. Relative to
+current Node 26 main, this PR adds, removes, or upgrades no package versions;
+only direct compiler declarations and peer snapshots change. The original Node
+24 audit separately records the same comparison against PR #433.
 
-Local checks passed: a clean frozen install, frontend/CMS/E2E native checking, a
-non-incremental CMS check, Payload types and import map, shared-type refresh,
-both apps' lint with zero warnings, frontend tests (89 in 8 files), CMS tests
-(36 in 4 files), and formatting. The runner also passed failure checks for
-package-manager, compiler, typegen, wrong compiler version, and missing output.
-`pnpm peers check` still exits 1 for the same existing Vite peer-range
-mismatches as PR #433. These are not TypeScript peer failures. Production
-builds, Storybook, and browser E2E use CI; final-head results and run links are
-recorded in the PR description.
+Original Node 24 local checks passed: a clean frozen install, frontend/CMS/E2E
+native checking, a non-incremental CMS check, Payload types and import map,
+shared-type refresh, both apps' lint with zero warnings, frontend tests (89 in 8
+files), CMS tests (36 in 4 files), and formatting. The runner also passed
+failure checks for package-manager, compiler, typegen, wrong compiler version,
+and missing output. `pnpm peers check` still exits 1 for the same existing Vite
+peer-range mismatches as PR #433. These are not TypeScript peer failures.
+Production builds, Storybook, and browser E2E use CI; final-head results and run
+links are recorded in the PR description.
 
 Performance was measured on the same Apple M2 / 8 GiB machine with Node 24.22.3
 and pnpm 12.21.0, sequentially without competing local validation commands. The
@@ -133,11 +138,37 @@ establish a precise speed difference, and these local samples are not a Linux CI
 performance claim. Original pilot measurements and raw data below remain
 historical and unchanged.
 
+### Self-review integration with Node 26 main
+
+Main advanced to Node 26 through PR #434 while this PR was under review.
+Self-review resolved the lockfile conflict against `67313ba66`, preserving its
+Node 26.13.1 minimum, Node 26 typings, CI runtime, and Docker images. No runtime
+change is introduced relative to that main revision. The Node 24 evidence above
+and all original raw samples remain historical.
+
+On Node 26.13.1 and pinned pnpm 12.21.0, frozen installation, Payload
+generation, shared-type refresh, import-map generation, and frontend/CMS/E2E
+native checking passed, including a non-incremental CMS check. A fresh reference
+worktree and the candidate matched source, generated types, compiler, runtime,
+and pnpm fingerprints. One warm-up pair and three alternating measured pairs per
+scenario produced 24 successful timing invocations:
+
+| Scenario           | Reference median (s) | Candidate median (s) | Median paired candidate/reference |
+| ------------------ | -------------------- | -------------------- | --------------------------------- |
+| compiler           | 1.063                | 1.060                | 1.005×                            |
+| routes-warm        | 1.521                | 1.517                | 0.997×                            |
+| routes-regenerated | 1.537                | 1.535                | 1.001×                            |
+
+This targeted integration control found no material timing change; it does not
+replace the original two-batch protocol or establish Linux CI performance. The
+`selfReviewNode26` raw section contains its samples and updated dependency/API
+audit. Final rebased CI results are recorded in the PR description.
+
 Rollback this follow-up by reverting its commits, installing the restored
 lockfile with `pnpm install --frozen-lockfile`, refreshing shared Payload types,
-and rerunning checking. This restores PR #433's compiler setup and frontend
-fallback. Do not revert the original frontend adoption to roll back only this
-follow-up. No data migration is involved.
+and rerunning checking. This restores main's pre-follow-up compiler setup and
+frontend fallback while retaining the separately merged Node 26 runtime. No data
+migration is involved.
 
 ## Historical frontend adoption: PR #433
 

@@ -2544,5 +2544,1156 @@
     "benchmarkFailureReporting": "package-manager failure, compiler failure, non-TS7 compiler, typegen failure, missing output argument passed",
     "peerCheck": "same pre-existing Vite peer mismatches as PR #433; exit 1",
     "expensiveSuites": "CI on final PR revision"
+  },
+  "selfReviewNode26": {
+    "reason": "Resolve integration conflict with independently merged Node 26 migration #434, preserving its runtime and typing versions",
+    "baseCommit": "67313ba6689195615b39888b288d73029b81ebb7",
+    "compilerAudit": {
+      "recordedAt": "2026-11-22T12:19:20.168Z",
+      "node": "v26.13.1",
+      "pnpm": "12.21.0",
+      "baselineCommit": "67313ba6689195615b39888b288d73029b81ebb7",
+      "lockSha256": "8f9bbe62f1e8a26b52d52b869c5f9e76e5666c1321dbd6b2412f3f06f8d7c9a6",
+      "lockfileCompilerPackages": [
+        "@typescript/typescript-aix-ppc64@7.0.2",
+        "@typescript/typescript-darwin-arm64@7.0.2",
+        "@typescript/typescript-darwin-x64@7.0.2",
+        "@typescript/typescript-freebsd-arm64@7.0.2",
+        "@typescript/typescript-freebsd-x64@7.0.2",
+        "@typescript/typescript-linux-arm64@7.0.2",
+        "@typescript/typescript-linux-arm@7.0.2",
+        "@typescript/typescript-linux-loong64@7.0.2",
+        "@typescript/typescript-linux-mips64el@7.0.2",
+        "@typescript/typescript-linux-ppc64@7.0.2",
+        "@typescript/typescript-linux-riscv64@7.0.2",
+        "@typescript/typescript-linux-s390x@7.0.2",
+        "@typescript/typescript-linux-x64@7.0.2",
+        "@typescript/typescript-netbsd-arm64@7.0.2",
+        "@typescript/typescript-netbsd-x64@7.0.2",
+        "@typescript/typescript-openbsd-arm64@7.0.2",
+        "@typescript/typescript-openbsd-x64@7.0.2",
+        "@typescript/typescript-sunos-x64@7.0.2",
+        "@typescript/typescript-win32-arm64@7.0.2",
+        "@typescript/typescript-win32-x64@7.0.2",
+        "@typescript/typescript6@6.0.2",
+        "typescript@6.0.3",
+        "typescript@7.0.2"
+      ],
+      "packageVersionChanges": {
+        "added": [],
+        "removed": []
+      },
+      "reachablePackageInstances": 1172,
+      "reachableCompilerPackages": [
+        "@typescript/typescript-darwin-arm64@7.0.2",
+        "@typescript/typescript6@6.0.2",
+        "typescript@6.0.3",
+        "typescript@7.0.2"
+      ],
+      "workspaceResolution": [
+        {
+          "workspace": "apps/frontend",
+          "declarations": {
+            "@typescript/native": "npm:typescript@7.0.2",
+            "typescript": "npm:@typescript/typescript6@6.0.2"
+          },
+          "cliVersion": "Version 7.0.2",
+          "cliTarget": "../../../../node_modules/.pnpm/typescript@7.0.2/node_modules/typescript/bin/tsc",
+          "api": {
+            "package": "@typescript/typescript6",
+            "version": "6.0.3",
+            "createProgram": "function",
+            "createSourceFile": "function"
+          }
+        },
+        {
+          "workspace": "apps/cms",
+          "declarations": {
+            "@types/node": "^26.6.6",
+            "@typescript/native": "npm:typescript@7.0.2",
+            "typescript": "npm:@typescript/typescript6@6.0.2"
+          },
+          "cliVersion": "Version 7.0.2",
+          "cliTarget": "../../../../node_modules/.pnpm/typescript@7.0.2/node_modules/typescript/bin/tsc",
+          "api": {
+            "package": "@typescript/typescript6",
+            "version": "6.0.3",
+            "createProgram": "function",
+            "createSourceFile": "function"
+          }
+        },
+        {
+          "workspace": "libs/payload-types",
+          "declarations": {
+            "typescript": "7.0.2"
+          },
+          "cliVersion": "Version 7.0.2",
+          "cliTarget": "../../../../node_modules/.pnpm/typescript@7.0.2/node_modules/typescript/bin/tsc",
+          "api": {
+            "package": "typescript",
+            "version": "7.0.2",
+            "createProgram": "undefined",
+            "createSourceFile": "undefined"
+          }
+        },
+        {
+          "workspace": "libs/rich-text",
+          "declarations": {
+            "typescript": "7.0.2"
+          },
+          "cliVersion": "Version 7.0.2",
+          "cliTarget": "../../../../node_modules/.pnpm/typescript@7.0.2/node_modules/typescript/bin/tsc",
+          "api": {
+            "package": "typescript",
+            "version": "7.0.2",
+            "createProgram": "undefined",
+            "createSourceFile": "undefined"
+          }
+        },
+        {
+          "workspace": "tests/e2e",
+          "declarations": {
+            "@types/node": "^26.6.6",
+            "typescript": "7.0.2"
+          },
+          "cliVersion": "Version 7.0.2",
+          "cliTarget": "../../../../node_modules/.pnpm/typescript@7.0.2/node_modules/typescript/bin/tsc",
+          "api": {
+            "package": "typescript",
+            "version": "7.0.2",
+            "createProgram": "undefined",
+            "createSourceFile": "undefined"
+          }
+        }
+      ],
+      "toolingResolution": [
+        {
+          "consumer": "@typescript-eslint/typescript-estree",
+          "consumerVersion": "8.59.3",
+          "typescriptPeer": ">=4.8.4 <6.1.0",
+          "apiVersion": "6.0.3",
+          "createProgram": "function",
+          "createSourceFile": "function"
+        },
+        {
+          "consumer": "ts-api-utils",
+          "consumerVersion": "2.5.0",
+          "typescriptPeer": ">=4.8.4",
+          "apiVersion": "6.0.3",
+          "createProgram": "function",
+          "createSourceFile": "function"
+        },
+        {
+          "consumer": "@typescript-eslint/typescript-estree",
+          "consumerVersion": "8.71.1",
+          "typescriptPeer": ">=4.8.4 <6.1.0",
+          "apiVersion": "6.0.3",
+          "createProgram": "function",
+          "createSourceFile": "function"
+        },
+        {
+          "consumer": "@eslint-react/ast",
+          "consumerVersion": "5.8.3",
+          "typescriptPeer": "*",
+          "apiVersion": "6.0.3",
+          "createProgram": "function",
+          "createSourceFile": "function"
+        },
+        {
+          "consumer": "@eslint-react/core",
+          "consumerVersion": "5.8.3",
+          "typescriptPeer": "*",
+          "apiVersion": "6.0.3",
+          "createProgram": "function",
+          "createSourceFile": "function"
+        },
+        {
+          "consumer": "@react-router/dev",
+          "consumerVersion": "8.5.2",
+          "typescriptPeer": "^5.1.0 || ^6.0.0 || ^7.0.0",
+          "apiVersion": "6.0.3",
+          "createProgram": "function",
+          "createSourceFile": "function"
+        },
+        {
+          "consumer": "react-docgen-typescript",
+          "consumerVersion": "2.4.0",
+          "typescriptPeer": ">= 4.3.x",
+          "apiVersion": "6.0.3",
+          "createProgram": "function",
+          "createSourceFile": "function"
+        },
+        {
+          "consumer": "@storybook/react-vite",
+          "consumerVersion": "10.6.2",
+          "typescriptPeer": ">= 4.9.x",
+          "apiVersion": "6.0.3",
+          "createProgram": "function",
+          "createSourceFile": "function"
+        },
+        {
+          "consumer": "typescript-eslint",
+          "consumerVersion": "8.59.4",
+          "typescriptPeer": ">=4.8.4 <6.1.0",
+          "apiVersion": "6.0.3",
+          "createProgram": "function",
+          "createSourceFile": "function"
+        },
+        {
+          "consumer": "@typescript-eslint/typescript-estree",
+          "consumerVersion": "8.59.4",
+          "typescriptPeer": ">=4.8.4 <6.1.0",
+          "apiVersion": "6.0.3",
+          "createProgram": "function",
+          "createSourceFile": "function"
+        },
+        {
+          "consumer": "@typescript-eslint/parser",
+          "consumerVersion": "8.59.4",
+          "typescriptPeer": ">=4.8.4 <6.1.0",
+          "apiVersion": "6.0.3",
+          "createProgram": "function",
+          "createSourceFile": "function"
+        },
+        {
+          "consumer": "payload",
+          "consumerVersion": "3.94.1",
+          "apiVersion": "6.0.3",
+          "createProgram": "function",
+          "createSourceFile": "function"
+        },
+        {
+          "consumer": "json-schema-to-typescript",
+          "consumerVersion": "15.0.3",
+          "apiVersion": "6.0.3",
+          "createProgram": "function",
+          "createSourceFile": "function"
+        },
+        {
+          "consumer": "eslint-config-next",
+          "consumerVersion": "16.4.6",
+          "typescriptPeer": ">=3.3.1",
+          "apiVersion": "6.0.3",
+          "createProgram": "function",
+          "createSourceFile": "function"
+        },
+        {
+          "consumer": "typescript-eslint",
+          "consumerVersion": "8.71.1",
+          "typescriptPeer": ">=4.8.4 <6.1.0",
+          "apiVersion": "6.0.3",
+          "createProgram": "function",
+          "createSourceFile": "function"
+        },
+        {
+          "consumer": "@typescript-eslint/parser",
+          "consumerVersion": "8.71.1",
+          "typescriptPeer": ">=4.8.4 <6.1.0",
+          "apiVersion": "6.0.3",
+          "createProgram": "function",
+          "createSourceFile": "function"
+        }
+      ],
+      "next": {
+        "version": "16.4.6",
+        "useTypeScriptCliDefault": true,
+        "selectedPackage": "@typescript/typescript6",
+        "selectedVersion": "6.0.2",
+        "cliVersion": "Version 6.0.3",
+        "cliPath": "node_modules/.pnpm/@typescript+typescript6@6.0.2/node_modules/@typescript/typescript6/bin/tsc6"
+      },
+      "compilerDependencyEdges": [
+        {
+          "consumer": "@react-router/node",
+          "consumerVersion": "8.5.2",
+          "name": "typescript",
+          "spec": "^5.1.0 || ^6.0.0 || ^7.0.0",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@typescript/typescript6",
+          "consumerVersion": "6.0.2",
+          "name": "@typescript/old",
+          "spec": "npm:typescript@^6",
+          "resolved": "typescript@6.0.3"
+        },
+        {
+          "consumer": "@react-router/express",
+          "consumerVersion": "8.5.2",
+          "name": "typescript",
+          "spec": "^5.1.0 || ^6.0.0 || ^7.0.0",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "i18next",
+          "consumerVersion": "26.2.0",
+          "name": "typescript",
+          "spec": "^5 || ^6",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "react-i18next",
+          "consumerVersion": "17.0.8",
+          "name": "typescript",
+          "spec": "^5 || ^6",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "ts-api-utils",
+          "consumerVersion": "2.5.0",
+          "name": "typescript",
+          "spec": ">=4.8.4",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@typescript-eslint/tsconfig-utils",
+          "consumerVersion": "8.59.3",
+          "name": "typescript",
+          "spec": ">=4.8.4 <6.1.0",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@typescript-eslint/tsconfig-utils",
+          "consumerVersion": "8.71.1",
+          "name": "typescript",
+          "spec": ">=4.8.4 <6.1.0",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@typescript-eslint/project-service",
+          "consumerVersion": "8.59.3",
+          "name": "typescript",
+          "spec": ">=4.8.4 <6.1.0",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@typescript-eslint/typescript-estree",
+          "consumerVersion": "8.59.3",
+          "name": "typescript",
+          "spec": ">=4.8.4 <6.1.0",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@typescript-eslint/utils",
+          "consumerVersion": "8.59.3",
+          "name": "typescript",
+          "spec": ">=4.8.4 <6.1.0",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@typescript-eslint/project-service",
+          "consumerVersion": "8.71.1",
+          "name": "typescript",
+          "spec": ">=4.8.4 <6.1.0",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@typescript-eslint/typescript-estree",
+          "consumerVersion": "8.71.1",
+          "name": "typescript",
+          "spec": ">=4.8.4 <6.1.0",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@typescript-eslint/utils",
+          "consumerVersion": "8.71.1",
+          "name": "typescript",
+          "spec": ">=4.8.4 <6.1.0",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@eslint-react/eslint",
+          "consumerVersion": "5.8.3",
+          "name": "typescript",
+          "spec": "*",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@eslint-react/shared",
+          "consumerVersion": "5.8.3",
+          "name": "typescript",
+          "spec": "*",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@eslint-react/ast",
+          "consumerVersion": "5.8.3",
+          "name": "typescript",
+          "spec": "*",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@eslint-react/var",
+          "consumerVersion": "5.8.3",
+          "name": "typescript",
+          "spec": "*",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@eslint-react/jsx",
+          "consumerVersion": "5.8.3",
+          "name": "typescript",
+          "spec": "*",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "eslint-plugin-react-dom",
+          "consumerVersion": "5.8.3",
+          "name": "typescript",
+          "spec": "*",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@eslint-react/core",
+          "consumerVersion": "5.8.3",
+          "name": "typescript",
+          "spec": "*",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "eslint-plugin-react-jsx",
+          "consumerVersion": "5.8.3",
+          "name": "typescript",
+          "spec": "*",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "eslint-plugin-react-naming-convention",
+          "consumerVersion": "5.8.3",
+          "name": "typescript",
+          "spec": "*",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "eslint-plugin-react-rsc",
+          "consumerVersion": "5.8.3",
+          "name": "typescript",
+          "spec": "*",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "eslint-plugin-react-web-api",
+          "consumerVersion": "5.8.3",
+          "name": "typescript",
+          "spec": "*",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@typescript-eslint/type-utils",
+          "consumerVersion": "8.59.3",
+          "name": "typescript",
+          "spec": ">=4.8.4 <6.1.0",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "eslint-plugin-react-x",
+          "consumerVersion": "5.8.3",
+          "name": "typescript",
+          "spec": "*",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@eslint-react/eslint-plugin",
+          "consumerVersion": "5.8.3",
+          "name": "typescript",
+          "spec": "*",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "valibot",
+          "consumerVersion": "1.4.2",
+          "name": "typescript",
+          "spec": ">=5",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@react-router/dev",
+          "consumerVersion": "8.5.2",
+          "name": "typescript",
+          "spec": "^5.1.0 || ^6.0.0 || ^7.0.0",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@react-router/fs-routes",
+          "consumerVersion": "8.5.2",
+          "name": "typescript",
+          "spec": "^5.1.0 || ^6.0.0 || ^7.0.0",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "react-docgen-typescript",
+          "consumerVersion": "2.4.0",
+          "name": "typescript",
+          "spec": ">= 4.3.x",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@storybook/react",
+          "consumerVersion": "10.6.2",
+          "name": "typescript",
+          "spec": ">= 4.9.x",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@joshwooding/vite-plugin-react-docgen-typescript",
+          "consumerVersion": "0.7.0",
+          "name": "typescript",
+          "spec": ">= 4.3.x",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@storybook/react-vite",
+          "consumerVersion": "10.6.2",
+          "name": "typescript",
+          "spec": ">= 4.9.x",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@lapuertahostels/frontend",
+          "consumerVersion": "0.0.0-unknown",
+          "name": "@typescript/native",
+          "spec": "npm:typescript@7.0.2",
+          "resolved": "typescript@7.0.2"
+        },
+        {
+          "consumer": "typescript",
+          "consumerVersion": "7.0.2",
+          "name": "@typescript/typescript-darwin-arm64",
+          "spec": "7.0.2",
+          "resolved": "@typescript/typescript-darwin-arm64@7.0.2"
+        },
+        {
+          "consumer": "@lapuertahostels/frontend",
+          "consumerVersion": "0.0.0-unknown",
+          "name": "typescript",
+          "spec": "npm:@typescript/typescript6@6.0.2",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@typescript-eslint/tsconfig-utils",
+          "consumerVersion": "8.59.4",
+          "name": "typescript",
+          "spec": ">=4.8.4 <6.1.0",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@typescript-eslint/project-service",
+          "consumerVersion": "8.59.4",
+          "name": "typescript",
+          "spec": ">=4.8.4 <6.1.0",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@typescript-eslint/typescript-estree",
+          "consumerVersion": "8.59.4",
+          "name": "typescript",
+          "spec": ">=4.8.4 <6.1.0",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@typescript-eslint/utils",
+          "consumerVersion": "8.59.4",
+          "name": "typescript",
+          "spec": ">=4.8.4 <6.1.0",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@typescript-eslint/type-utils",
+          "consumerVersion": "8.59.4",
+          "name": "typescript",
+          "spec": ">=4.8.4 <6.1.0",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@typescript-eslint/eslint-plugin",
+          "consumerVersion": "8.59.4",
+          "name": "typescript",
+          "spec": ">=4.8.4 <6.1.0",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@typescript-eslint/parser",
+          "consumerVersion": "8.59.4",
+          "name": "typescript",
+          "spec": ">=4.8.4 <6.1.0",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "typescript-eslint",
+          "consumerVersion": "8.59.4",
+          "name": "typescript",
+          "spec": ">=4.8.4 <6.1.0",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "ts-essentials",
+          "consumerVersion": "10.0.3",
+          "name": "typescript",
+          "spec": ">=4.5.0",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@lexical/internal",
+          "consumerVersion": "0.50.0",
+          "name": "typescript",
+          "spec": ">=5.2",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "lexical",
+          "consumerVersion": "0.50.0",
+          "name": "typescript",
+          "spec": ">=5.2",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@lexical/selection",
+          "consumerVersion": "0.50.0",
+          "name": "typescript",
+          "spec": ">=5.2",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@lexical/utils",
+          "consumerVersion": "0.50.0",
+          "name": "typescript",
+          "spec": ">=5.2",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@lexical/extension",
+          "consumerVersion": "0.50.0",
+          "name": "typescript",
+          "spec": ">=5.2",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@lexical/html",
+          "consumerVersion": "0.50.0",
+          "name": "typescript",
+          "spec": ">=5.2",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@lexical/list",
+          "consumerVersion": "0.50.0",
+          "name": "typescript",
+          "spec": ">=5.2",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@lexical/clipboard",
+          "consumerVersion": "0.50.0",
+          "name": "typescript",
+          "spec": ">=5.2",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@lexical/headless",
+          "consumerVersion": "0.50.0",
+          "name": "typescript",
+          "spec": ">=5.2",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@lexical/a11y",
+          "consumerVersion": "0.50.0",
+          "name": "typescript",
+          "spec": ">=5.2",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@lexical/link",
+          "consumerVersion": "0.50.0",
+          "name": "typescript",
+          "spec": ">=5.2",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@lexical/mark",
+          "consumerVersion": "0.50.0",
+          "name": "typescript",
+          "spec": ">=5.2",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@lexical/table",
+          "consumerVersion": "0.50.0",
+          "name": "typescript",
+          "spec": ">=5.2",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@lexical/devtools-core",
+          "consumerVersion": "0.50.0",
+          "name": "typescript",
+          "spec": ">=5.2",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@lexical/dragon",
+          "consumerVersion": "0.50.0",
+          "name": "typescript",
+          "spec": ">=5.2",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@lexical/text",
+          "consumerVersion": "0.50.0",
+          "name": "typescript",
+          "spec": ">=5.2",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@lexical/hashtag",
+          "consumerVersion": "0.50.0",
+          "name": "typescript",
+          "spec": ">=5.2",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@lexical/history",
+          "consumerVersion": "0.50.0",
+          "name": "typescript",
+          "spec": ">=5.2",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@lexical/code-core",
+          "consumerVersion": "0.50.0",
+          "name": "typescript",
+          "spec": ">=5.2",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@lexical/rich-text",
+          "consumerVersion": "0.50.0",
+          "name": "typescript",
+          "spec": ">=5.2",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@lexical/markdown",
+          "consumerVersion": "0.50.0",
+          "name": "typescript",
+          "spec": ">=5.2",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@lexical/overflow",
+          "consumerVersion": "0.50.0",
+          "name": "typescript",
+          "spec": ">=5.2",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@lexical/plain-text",
+          "consumerVersion": "0.50.0",
+          "name": "typescript",
+          "spec": ">=5.2",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@lexical/yjs",
+          "consumerVersion": "0.50.0",
+          "name": "typescript",
+          "spec": ">=5.2",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@lexical/react",
+          "consumerVersion": "0.50.0",
+          "name": "typescript",
+          "spec": ">=5.2",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@lapuertahostels/cms",
+          "consumerVersion": "0.0.0-unknown",
+          "name": "@typescript/native",
+          "spec": "npm:typescript@7.0.2",
+          "resolved": "typescript@7.0.2"
+        },
+        {
+          "consumer": "@typescript-eslint/type-utils",
+          "consumerVersion": "8.71.1",
+          "name": "typescript",
+          "spec": ">=4.8.4 <6.1.0",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@typescript-eslint/parser",
+          "consumerVersion": "8.71.1",
+          "name": "typescript",
+          "spec": ">=4.8.4 <6.1.0",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@typescript-eslint/eslint-plugin",
+          "consumerVersion": "8.71.1",
+          "name": "typescript",
+          "spec": ">=4.8.4 <6.1.0",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "typescript-eslint",
+          "consumerVersion": "8.71.1",
+          "name": "typescript",
+          "spec": ">=4.8.4 <6.1.0",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "eslint-config-next",
+          "consumerVersion": "16.4.6",
+          "name": "typescript",
+          "spec": ">=3.3.1",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@lapuertahostels/cms",
+          "consumerVersion": "0.0.0-unknown",
+          "name": "typescript",
+          "spec": "npm:@typescript/typescript6@6.0.2",
+          "resolved": "@typescript/typescript6@6.0.2"
+        },
+        {
+          "consumer": "@lapuertahostels/payload-types",
+          "consumerVersion": "0.0.0-unknown",
+          "name": "typescript",
+          "spec": "7.0.2",
+          "resolved": "typescript@7.0.2"
+        },
+        {
+          "consumer": "@lapuertahostels/rich-text",
+          "consumerVersion": "0.0.0-unknown",
+          "name": "typescript",
+          "spec": "7.0.2",
+          "resolved": "typescript@7.0.2"
+        },
+        {
+          "consumer": "@lapuertahostels/e2e",
+          "consumerVersion": "0.0.0-unknown",
+          "name": "typescript",
+          "spec": "7.0.2",
+          "resolved": "typescript@7.0.2"
+        }
+      ]
+    },
+    "localChecks": {
+      "candidateFrozenInstall": "passed",
+      "referenceCleanFrozenInstall": "passed",
+      "payloadGenerationAndSharedRefresh": "passed",
+      "adminImportMap": "passed",
+      "frontendNativeTypecheck": "passed",
+      "cmsNonIncrementalNativeTypecheck": "passed",
+      "e2eNativeTypecheck": "passed",
+      "tableRenderingAndFormatting": "passed",
+      "unitTestsBuildsStorybookBrowserE2E": "Use CI for final rebased revision; previous revision CI is historical evidence"
+    },
+    "performanceControl": {
+      "purpose": "Focused self-review integration control on Node 26 main",
+      "protocol": {
+        "warmupPairs": 1,
+        "measuredPairs": 3,
+        "scenarios": ["compiler", "routes-warm", "routes-regenerated"],
+        "order": "alternating reference/candidate, sequential processes",
+        "incremental": false,
+        "caches": "uncontrolled OS filesystem caches"
+      },
+      "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+      "samples": [
+        {
+          "scenario": "compiler",
+          "pair": 1,
+          "warmup": true,
+          "revision": "reference",
+          "milliseconds": 1248.339166999358,
+          "exitStatus": 0,
+          "loadAverageBefore": [5.0400390625, 5.9072265625, 5.97021484375],
+          "output": ""
+        },
+        {
+          "scenario": "compiler",
+          "pair": 1,
+          "warmup": true,
+          "revision": "candidate",
+          "milliseconds": 1228.8736250011425,
+          "exitStatus": 0,
+          "loadAverageBefore": [5.0400390625, 5.9072265625, 5.97021484375],
+          "output": ""
+        },
+        {
+          "scenario": "compiler",
+          "pair": 2,
+          "warmup": false,
+          "revision": "candidate",
+          "milliseconds": 1077.1577920022537,
+          "exitStatus": 0,
+          "loadAverageBefore": [5.43701171875, 5.97509765625, 5.99365234375],
+          "output": ""
+        },
+        {
+          "scenario": "compiler",
+          "pair": 2,
+          "warmup": false,
+          "revision": "reference",
+          "milliseconds": 1062.9780840026797,
+          "exitStatus": 0,
+          "loadAverageBefore": [5.43701171875, 5.97509765625, 5.99365234375],
+          "output": ""
+        },
+        {
+          "scenario": "compiler",
+          "pair": 3,
+          "warmup": false,
+          "revision": "reference",
+          "milliseconds": 1034.643541002879,
+          "exitStatus": 0,
+          "loadAverageBefore": [5.43701171875, 5.97509765625, 5.99365234375],
+          "output": ""
+        },
+        {
+          "scenario": "compiler",
+          "pair": 3,
+          "warmup": false,
+          "revision": "candidate",
+          "milliseconds": 1039.9648749989865,
+          "exitStatus": 0,
+          "loadAverageBefore": [5.43701171875, 5.97509765625, 5.99365234375],
+          "output": ""
+        },
+        {
+          "scenario": "compiler",
+          "pair": 4,
+          "warmup": false,
+          "revision": "candidate",
+          "milliseconds": 1059.7336249993532,
+          "exitStatus": 0,
+          "loadAverageBefore": [5.43701171875, 5.97509765625, 5.99365234375],
+          "output": ""
+        },
+        {
+          "scenario": "compiler",
+          "pair": 4,
+          "warmup": false,
+          "revision": "reference",
+          "milliseconds": 1066.5724579994276,
+          "exitStatus": 0,
+          "loadAverageBefore": [5.56201171875, 5.99169921875, 5.99951171875],
+          "output": ""
+        },
+        {
+          "scenario": "routes-warm",
+          "pair": 1,
+          "warmup": true,
+          "revision": "candidate",
+          "milliseconds": 1607.260791999579,
+          "exitStatus": 0,
+          "loadAverageBefore": [5.56201171875, 5.99169921875, 5.99951171875],
+          "output": ""
+        },
+        {
+          "scenario": "routes-warm",
+          "pair": 1,
+          "warmup": true,
+          "revision": "reference",
+          "milliseconds": 1727.6870839996263,
+          "exitStatus": 0,
+          "loadAverageBefore": [5.56201171875, 5.99169921875, 5.99951171875],
+          "output": ""
+        },
+        {
+          "scenario": "routes-warm",
+          "pair": 2,
+          "warmup": false,
+          "revision": "reference",
+          "milliseconds": 1502.5449580025452,
+          "exitStatus": 0,
+          "loadAverageBefore": [5.56201171875, 5.99169921875, 5.99951171875],
+          "output": ""
+        },
+        {
+          "scenario": "routes-warm",
+          "pair": 2,
+          "warmup": false,
+          "revision": "candidate",
+          "milliseconds": 1539.5578330026183,
+          "exitStatus": 0,
+          "loadAverageBefore": [5.4365234375, 5.95849609375, 5.98779296875],
+          "output": ""
+        },
+        {
+          "scenario": "routes-warm",
+          "pair": 3,
+          "warmup": false,
+          "revision": "candidate",
+          "milliseconds": 1499.7365409981285,
+          "exitStatus": 0,
+          "loadAverageBefore": [5.4365234375, 5.95849609375, 5.98779296875],
+          "output": ""
+        },
+        {
+          "scenario": "routes-warm",
+          "pair": 3,
+          "warmup": false,
+          "revision": "reference",
+          "milliseconds": 1530.224541998905,
+          "exitStatus": 0,
+          "loadAverageBefore": [5.4365234375, 5.95849609375, 5.98779296875],
+          "output": ""
+        },
+        {
+          "scenario": "routes-warm",
+          "pair": 4,
+          "warmup": false,
+          "revision": "reference",
+          "milliseconds": 1521.4598749989818,
+          "exitStatus": 0,
+          "loadAverageBefore": [5.4814453125, 5.958984375, 5.98779296875],
+          "output": ""
+        },
+        {
+          "scenario": "routes-warm",
+          "pair": 4,
+          "warmup": false,
+          "revision": "candidate",
+          "milliseconds": 1517.374999999447,
+          "exitStatus": 0,
+          "loadAverageBefore": [5.4814453125, 5.958984375, 5.98779296875],
+          "output": ""
+        },
+        {
+          "scenario": "routes-regenerated",
+          "pair": 1,
+          "warmup": true,
+          "revision": "reference",
+          "milliseconds": 1573.6065829987638,
+          "exitStatus": 0,
+          "loadAverageBefore": [5.4814453125, 5.958984375, 5.98779296875],
+          "output": ""
+        },
+        {
+          "scenario": "routes-regenerated",
+          "pair": 1,
+          "warmup": true,
+          "revision": "candidate",
+          "milliseconds": 1532.5182500018855,
+          "exitStatus": 0,
+          "loadAverageBefore": [5.44287109375, 5.94287109375, 5.98193359375],
+          "output": ""
+        },
+        {
+          "scenario": "routes-regenerated",
+          "pair": 2,
+          "warmup": false,
+          "revision": "candidate",
+          "milliseconds": 1538.0673750005371,
+          "exitStatus": 0,
+          "loadAverageBefore": [5.44287109375, 5.94287109375, 5.98193359375],
+          "output": ""
+        },
+        {
+          "scenario": "routes-regenerated",
+          "pair": 2,
+          "warmup": false,
+          "revision": "reference",
+          "milliseconds": 1536.96070800288,
+          "exitStatus": 0,
+          "loadAverageBefore": [5.44287109375, 5.94287109375, 5.98193359375],
+          "output": ""
+        },
+        {
+          "scenario": "routes-regenerated",
+          "pair": 3,
+          "warmup": false,
+          "revision": "reference",
+          "milliseconds": 1498.4594169982302,
+          "exitStatus": 0,
+          "loadAverageBefore": [5.2470703125, 5.8935546875, 5.96435546875],
+          "output": ""
+        },
+        {
+          "scenario": "routes-regenerated",
+          "pair": 3,
+          "warmup": false,
+          "revision": "candidate",
+          "milliseconds": 1526.444792001712,
+          "exitStatus": 0,
+          "loadAverageBefore": [5.2470703125, 5.8935546875, 5.96435546875],
+          "output": ""
+        },
+        {
+          "scenario": "routes-regenerated",
+          "pair": 4,
+          "warmup": false,
+          "revision": "candidate",
+          "milliseconds": 1534.8620000004303,
+          "exitStatus": 0,
+          "loadAverageBefore": [5.2470703125, 5.8935546875, 5.96435546875],
+          "output": ""
+        },
+        {
+          "scenario": "routes-regenerated",
+          "pair": 4,
+          "warmup": false,
+          "revision": "reference",
+          "milliseconds": 1563.8641250006913,
+          "exitStatus": 0,
+          "loadAverageBefore": [5.2470703125, 5.8935546875, 5.96435546875],
+          "output": ""
+        }
+      ],
+      "inputs": {
+        "reference": {
+          "commit": "67313ba6689195615b39888b288d73029b81ebb7",
+          "sourceSha256": "7d173409a51ec9eec8afcdc9d7ca52dd2249b0462c888b347110bb0e5af60dc5",
+          "payloadSha256": "14bb1c9db6b5a7b29087b4044d1ab711ab41bba2c73f513d991595e4819f0940",
+          "compiler": "Version 7.0.2",
+          "pnpm": "12.21.0",
+          "node": "v26.13.1"
+        },
+        "candidate": {
+          "commit": "ff89888b1f8b27931991f3f259b6b0d4f2358ab0",
+          "sourceSha256": "7d173409a51ec9eec8afcdc9d7ca52dd2249b0462c888b347110bb0e5af60dc5",
+          "payloadSha256": "14bb1c9db6b5a7b29087b4044d1ab711ab41bba2c73f513d991595e4819f0940",
+          "compiler": "Version 7.0.2",
+          "pnpm": "12.21.0",
+          "node": "v26.13.1"
+        }
+      },
+      "results": {
+        "compiler": {
+          "medianMilliseconds": {
+            "reference": 1062.9780840026797,
+            "candidate": 1059.7336249993532
+          },
+          "medianPairedCandidateToReference": 1.00514315683153,
+          "pairedRatios": [
+            1.0133396052213794, 1.00514315683153, 0.9935880277530305
+          ]
+        },
+        "routes-warm": {
+          "medianMilliseconds": {
+            "reference": 1521.4598749989818,
+            "candidate": 1517.374999999447
+          },
+          "medianPairedCandidateToReference": 0.997315160874987,
+          "pairedRatios": [
+            1.024633455926189, 0.9800761259775964, 0.997315160874987
+          ]
+        },
+        "routes-regenerated": {
+          "medianMilliseconds": {
+            "reference": 1536.96070800288,
+            "candidate": 1534.8620000004303
+          },
+          "medianPairedCandidateToReference": 1.0007200359722241,
+          "pairedRatios": [
+            1.0007200359722241, 1.0186760980551233, 0.9814548306744691
+          ]
+        }
+      }
+    },
+    "performanceLimitations": "One warm-up pair plus three measured pairs per scenario; targeted integration check, not a replacement for the original two-batch measurements or a Linux CI speed claim"
   }
 }
