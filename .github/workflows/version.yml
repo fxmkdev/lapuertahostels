@@ -54,7 +54,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
       - name: Install dependencies
-        run: pnpm --workspace-root install
+        run: pnpm --workspace-root install --frozen-lockfile
       - name: Get version
         id: get-version
         run: |

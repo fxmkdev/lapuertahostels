@@ -3,6 +3,26 @@
 This workspace uses squash merges to `main`. The squash commit message should
 come from the pull request title, so PR title quality matters.
 
+## Workspace Setup
+
+Use Node 24.22.3 or newer within Node 24 and the exact pnpm version pinned in
+`package.json`. Install native pnpm through npm, then install dependencies:
+
+```bash
+npm install -g --allow-scripts=pnpm "$(node -p 'require("./package.json").packageManager.split("+")[0]')"
+pnpm --version
+pnpm install --frozen-lockfile
+```
+
+If an existing Corepack shim owns the `pnpm` command, run
+`corepack disable pnpm` before installing native pnpm. CI reads the same
+manifest pin through `pnpm/action-setup`; Docker installs it through npm.
+Neither requires Corepack. Project pnpm settings, overrides, patch declarations,
+and dependency build approvals live in `pnpm-workspace.yaml`. Keep all workspace
+`packageManager` fields synchronized when upgrading pnpm, and include `patches/`
+in Docker builds. See the [pnpm 12 verification report](docs/pnpm-12-upgrade.md)
+for migration details and measured install times.
+
 ## Starting New Work
 
 Before starting any new work, run `git fetch origin` and base new branches and

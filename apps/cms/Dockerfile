@@ -4,18 +4,17 @@
 
 FROM node:24-alpine AS base
 
-# Install latest corepack to work around this issue: https://github.com/nodejs/corepack/issues/612
-RUN npm install -g corepack@latest
+# Install the native pnpm executable at the workspace's exact pinned version.
+WORKDIR /app
+COPY --link package.json ./
+RUN npm install -g --allow-scripts=pnpm "$(node -p 'require("./package.json").packageManager.split("+")[0]')"
 
 # Install dependencies only when needed
 FROM base AS builder
 ARG APP_VERSION=0.0.0-unknown
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 RUN apk add --no-cache libc6-compat
-WORKDIR /app
 ENV CI=true
-
-RUN corepack enable pnpm
 
 # Install dependencies
 COPY --link package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
@@ -37,9 +36,9 @@ RUN node -e "const fs = require('fs'); const [file, version] = process.argv.slic
 
 # Production image, copy all the files and run next
 FROM base AS runner
-RUN corepack enable pnpm
-WORKDIR /app
 
+# Dependencies are fixed at build time, including for Payload maintenance scripts.
+ENV PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN=false
 ENV NODE_ENV=production
 # Uncomment the following line in case you want to disable telemetry during runtime.
 # ENV NEXT_TELEMETRY_DISABLED 1

@@ -12,10 +12,9 @@ WORKDIR /app
 # Set production environment
 ENV NODE_ENV="production"
 
-# Install latest corepack to work around this issue: https://github.com/nodejs/corepack/issues/612
-RUN npm install -g corepack@latest
-
-RUN corepack enable pnpm
+# Install the native pnpm executable at the workspace's exact pinned version.
+COPY --link package.json ./
+RUN npm install -g --allow-scripts=pnpm "$(node -p 'require("./package.json").packageManager.split("+")[0]')"
 
 # Throw-away build stage to reduce size of final image
 FROM base AS build
@@ -46,13 +45,15 @@ RUN node -e "const fs = require('fs'); const [file, version] = process.argv.slic
 # Build application
 RUN cd apps/frontend && ./node_modules/.bin/react-router build
 
-# Remove development dependencies
+# Remove development dependencies; CMS-only patches do not apply to this subset.
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store,sharing=locked \
-    pnpm --config.store-dir=/pnpm/store --dir apps/frontend prune --prod
-
+    pnpm --config.store-dir=/pnpm/store --config.allowUnusedPatches=true --dir apps/frontend prune --prod
 
 # Final stage for app image
 FROM base
+
+# Dependencies are fixed at build time; runtime must not attempt another install.
+ENV PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN=false
 
 # Copy built application
 COPY --from=build /app /app
