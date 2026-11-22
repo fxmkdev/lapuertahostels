@@ -20,8 +20,8 @@ It includes:
 - Use `pnpm` as package manager.
 - Keep changes focused and minimal; avoid unrelated refactors.
 - Keep docs in sync when introducing new behavior, patterns, or conventions.
-- The runtime target is Node 24. Keep `@types/node` aligned with the current
-  runtime major and do not upgrade beyond Node 24 typings until the next runtime
+- The runtime target is Node 26. Keep `@types/node` aligned with the current
+  runtime major and do not upgrade beyond Node 26 typings until the next runtime
   migration is planned.
 - Pull request titles must follow Conventional Commits because squash merge
   commit messages are expected to come from the PR title.

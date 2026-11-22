@@ -32,7 +32,7 @@ on:
         description: "Commit SHA"
 
 env:
-  NODE_VERSION: 24
+  NODE_VERSION: 26
 
 jobs:
   version:

@@ -2,7 +2,7 @@
 
 # From https://github.com/vercel/next.js/blob/canary/examples/with-docker/Dockerfile
 
-FROM node:24-alpine AS base
+FROM node:26-alpine AS base
 
 # Install the native pnpm executable at the workspace's exact pinned version.
 WORKDIR /app
