@@ -29,24 +29,12 @@ const scenarios = ["compiler", "routes-warm", "routes-regenerated"];
 const report = {
   startedAt: new Date().toISOString(),
   mode: baseline ? "baseline" : "pilot",
-  commit: capture("git", ["rev-parse", "HEAD"]),
-  trackedDiff: capture("git", ["diff", "--stat"]),
   node: process.version,
-  pnpm: capture(pnpm, ["--version"]),
   os: `${platform()} ${release()} ${process.arch}`,
   cpu: cpus()[0]?.model,
   logicalCpus: cpus().length,
   availableParallelism: availableParallelism(),
   memoryBytes: totalmem(),
-  configSha256: hash("apps/frontend/tsconfig.json"),
-  lockSha256: hash("pnpm-lock.yaml"),
-  payloadTypesSha256: hash("libs/payload-types/src/payload-types.ts"),
-  compilers: Object.fromEntries(
-    compilers.map((compiler) => [
-      compiler,
-      capture(pnpm, ["exec", compiler, "--version"]),
-    ]),
-  ),
   protocol: {
     batches: 2,
     warmupPairs: 2,
@@ -86,6 +74,20 @@ function save() {
 }
 
 try {
+  Object.assign(report, {
+    commit: capture("git", ["rev-parse", "HEAD"]),
+    trackedDiff: capture("git", ["diff", "--stat"]),
+    pnpm: capture(pnpm, ["--version"]),
+    configSha256: hash("apps/frontend/tsconfig.json"),
+    lockSha256: hash("pnpm-lock.yaml"),
+    payloadTypesSha256: hash("libs/payload-types/src/payload-types.ts"),
+    compilers: Object.fromEntries(
+      compilers.map((compiler) => [
+        compiler,
+        capture(pnpm, ["exec", compiler, "--version"]),
+      ]),
+    ),
+  });
   capture(pnpm, ["exec", "react-router", "typegen"]);
   for (let batch = 1; batch <= 2; batch++) {
     for (const scenario of scenarios) {

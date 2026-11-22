@@ -114,10 +114,11 @@ excluded. No incremental compilation is enabled. OS filesystem caches are
 uncontrolled; regenerated-route runs are not described as cold-cache runs.
 
 The benchmark command writes metadata, compiler versions, raw samples, exit
-statuses, and a failure record if a command fails. To reproduce the original
-baseline, copy `apps/frontend/scripts/benchmark-typecheck.mjs` into the same
-location in a clean worktree at the baseline commit, install its frozen
-lockfile, generate Payload types, and run:
+statuses, and a failure record if a command fails, including during metadata
+collection. To reproduce the original baseline, copy
+`apps/frontend/scripts/benchmark-typecheck.mjs` into the same location in a
+clean worktree at the baseline commit, install its frozen lockfile, generate
+Payload types, and run:
 
 ```sh
 node apps/frontend/scripts/benchmark-typecheck.mjs --baseline --output /tmp/ts6-baseline.json
