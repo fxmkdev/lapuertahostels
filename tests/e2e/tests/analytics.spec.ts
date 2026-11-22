@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
 import { paragraph, richTextRoot, text } from "@lapuertahostels/rich-text";
 import { createPage } from "../common/cms";
 
@@ -7,9 +8,9 @@ test.skip(
   "Set ANALYTICS_SCRIPT_URL on the frontend and test runner to verify the real tracker",
 );
 
-test("real tracker sends first-party pageviews and custom events without duplicates", async ({
-  page,
-}) => {
+type AnalyticsEvent = { n: string; u: string; d: string; p?: object };
+
+async function createAnalyticsPages() {
   const destination = await createPage({
     title: "Analytics destination",
     hero: [{ blockType: "HeroHeading", heading: "Analytics destination" }],
@@ -30,8 +31,11 @@ test("real tracker sends first-party pageviews and custom events without duplica
     ],
   });
 
-  type Event = { n: string; u: string; d: string; p?: object };
-  const events: Event[] = [];
+  return { source, destination };
+}
+
+async function captureTracking(page: Page) {
+  const events: AnalyticsEvent[] = [];
   const trackingRequests: string[] = [];
   const thirdPartyRequests: string[] = [];
   page.on("request", (request) => {
@@ -47,12 +51,17 @@ test("real tracker sends first-party pageviews and custom events without duplica
   // Keep the real script response, but capture events before they reach the
   // server proxy so this test never adds visits to the site's Plausible stats.
   await page.route("**/api/event", async (route) => {
-    events.push(route.request().postDataJSON() as Event);
+    events.push(route.request().postDataJSON() as AnalyticsEvent);
     await route.fulfill({ status: 202, body: "{}" });
   });
   await page.route("https://fonts.googleapis.com/**", (route) =>
     route.fulfill({ contentType: "text/css", body: "" }),
   );
+  await enableLocalCapture(page);
+  return { events, trackingRequests, thirdPartyRequests };
+}
+
+async function enableLocalCapture(page: Page) {
   await page.addInitScript(() => {
     // Preserve the production endpoint configuration while enabling capture in
     // localhost/automated browsers only for this test's page.
@@ -68,7 +77,13 @@ test("real tracker sends first-party pageviews and custom events without duplica
     );
     Object.assign(window, { plausible: tracker });
   });
+}
 
+async function navigateTrackedPages(
+  page: Page,
+  { source, destination }: Awaited<ReturnType<typeof createAnalyticsPages>>,
+  events: AnalyticsEvent[],
+) {
   const pageviews = () => events.filter((event) => event.n === "pageview");
   await page.goto(`/en${source.pathname}`);
   await expect(
@@ -100,6 +115,17 @@ test("real tracker sends first-party pageviews and custom events without duplica
   expect(await page.evaluate(() => performance.timeOrigin)).toBe(
     documentStarted,
   );
+}
+
+test("real tracker sends first-party pageviews and custom events without duplicates", async ({
+  page,
+}) => {
+  const pages = await createAnalyticsPages();
+  const { source, destination } = pages;
+  const { events, trackingRequests, thirdPartyRequests } =
+    await captureTracking(page);
+  await navigateTrackedPages(page, pages, events);
+  const pageviews = () => events.filter((event) => event.n === "pageview");
 
   await page.evaluate(() => {
     const tracker = Reflect.get(window, "plausible") as (

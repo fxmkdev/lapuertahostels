@@ -125,6 +125,54 @@ describe("script proxy", () => {
 });
 
 describe("event proxy", () => {
+  test("forwards an event exactly at the 64 KiB limit unchanged", async () => {
+    const body = "a".repeat(64 * 1024);
+    fetchMock.mockResolvedValue(new Response(null, { status: 202 }));
+    const response = await proxyAnalyticsEvent(eventRequest({}, body));
+    expect(response.status).toBe(202);
+    expect(
+      new TextDecoder().decode(fetchMock.mock.calls[0][1]!.body as ArrayBuffer),
+    ).toBe(body);
+  });
+
+  test.each([undefined, "1"])(
+    "rejects oversized UTF-8 bodies even with Content-Length=%s",
+    async (length) => {
+      const response = await proxyAnalyticsEvent(
+        eventRequest(
+          length ? { "Content-Length": length } : {},
+          "é".repeat(32 * 1024 + 1),
+        ),
+      );
+      expect(response.status).toBe(413);
+      expect(response.headers.get("cache-control")).toBe("no-store");
+      expect(fetchMock).not.toHaveBeenCalled();
+    },
+  );
+
+  test("stops reading a chunked upload as soon as its body exceeds the limit", async () => {
+    const pull = vi.fn(
+      (controller: ReadableStreamDefaultController<Uint8Array>) => {
+        controller.enqueue(new Uint8Array(32 * 1024 + 1));
+      },
+    );
+    const body = new ReadableStream<Uint8Array>({ pull }, { highWaterMark: 0 });
+    const request = new Request("https://example.com/api/event", {
+      method: "POST",
+      body,
+      headers: {
+        "Fly-Client-IP": "198.51.100.42",
+        "Content-Type": "text/plain",
+      },
+      ...{ duplex: "half" },
+    });
+    const response = await proxyAnalyticsEvent(request);
+    expect(response.status).toBe(413);
+    expect(pull).toHaveBeenCalledTimes(2);
+    expect(response.headers.get("connection")).toBe("close");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   test.each(["text/plain", "application/json"])(
     "forwards unchanged %s payload and browser headers",
     async (contentType) => {

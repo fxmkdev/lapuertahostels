@@ -73,7 +73,10 @@ The browser loads `/js/script.js` and sends events to `/api/event` on the same
 origin. These resource routes bypass CMS translation loading. The script proxy
 preserves Plausible's cache policy; event responses and errors use `no-store`.
 Upstream requests time out after ten seconds and do not follow redirects. No
-cookies or authorization credentials are sent to Plausible.
+cookies or authorization credentials are sent to Plausible. Event bodies larger
+than 64 KiB return an uncached 413 response before any upstream request. The
+limit is enforced while reading the upload, including chunked requests and
+requests with an incorrect `Content-Length`.
 
 The event proxy assumes visitors connect **directly through Fly Proxy**. It
 validates `Fly-Client-IP` and forwards it as `X-Forwarded-For`, together with

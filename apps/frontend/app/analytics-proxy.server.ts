@@ -1,6 +1,9 @@
 import { isIP } from "node:net";
 
 const EVENT_URL = "https://plausible.io/api/event";
+const MAX_EVENT_BODY_BYTES = 64 * 1024;
+
+class EventBodyTooLarge extends Error {}
 
 export function getAnalyticsScriptUrl() {
   const value = process.env.ANALYTICS_SCRIPT_URL;
@@ -89,6 +92,37 @@ export async function proxyAnalyticsEvent(request: Request) {
   ]);
 }
 
+async function readEventBody(request: Request) {
+  const reader = request.body?.getReader();
+  if (!reader) return undefined;
+
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > MAX_EVENT_BODY_BYTES) {
+        // Do not cancel: the Node adapter would destroy the incoming socket
+        // before the 413 can be sent. Its response closes the connection instead.
+        throw new EventBodyTooLarge();
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  const body = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    body.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return body;
+}
+
 async function proxy(
   request: Request,
   url: string,
@@ -100,7 +134,8 @@ async function proxy(
     const response = await fetch(url, {
       method: request.method,
       headers,
-      body: request.method === "POST" ? await request.arrayBuffer() : undefined,
+      body:
+        request.method === "POST" ? await readEventBody(request) : undefined,
       signal: AbortSignal.any([timeout, request.signal]),
       redirect: "error",
     });
@@ -121,7 +156,15 @@ async function proxy(
       status: response.status,
       headers: responseHeaders,
     });
-  } catch {
+  } catch (error) {
+    if (error instanceof EventBodyTooLarge) {
+      const response = errorResponse(
+        413,
+        "Analytics event body exceeds 64 KiB",
+      );
+      response.headers.set("Connection", "close");
+      return response;
+    }
     return timeout.aborted
       ? errorResponse(504, "Analytics upstream timed out")
       : errorResponse(502, "Analytics upstream unavailable");
