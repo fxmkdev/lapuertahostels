@@ -32,31 +32,14 @@ export function resolveFocalCrop(
     return { transformation };
   }
 
-  const aspectRatio = transformation?.aspectRatio;
-  const targetRatio = aspectRatio
-    ? aspectRatio.width / aspectRatio.height
-    : undefined;
-  const width =
-    transformation?.width ??
-    (targetRatio && transformation?.height
-      ? transformation.height * targetRatio
-      : undefined);
-  const height =
-    transformation?.height ??
-    (targetRatio && width ? width / targetRatio : undefined);
-  if (
-    !width ||
-    !height ||
-    !Number.isFinite(width) ||
-    !Number.isFinite(height) ||
-    width <= 0 ||
-    height <= 0
-  ) {
+  const dimensions = getTargetDimensions(transformation);
+  if (!dimensions) {
     return {
       transformation,
       objectPosition: `${focalPoint.x}% ${focalPoint.y}%`,
     };
   }
+  const { width, height } = dimensions;
 
   // ImageKit applies xc/yc after scaling to cover the requested dimensions.
   // https://imagekit.io/docs/image-resize-and-crop#cropping-using-coordinates-maintain-ratio
@@ -78,4 +61,30 @@ export function resolveFocalCrop(
     // rather than applying the original percentages to a different image.
     objectPosition: `${((x - left) / width) * 100}% ${((y - top) / height) * 100}%`,
   };
+}
+
+function getTargetDimensions(transformation: ImageTransformation | undefined) {
+  const aspectRatio = transformation?.aspectRatio;
+  const targetRatio = aspectRatio
+    ? aspectRatio.width / aspectRatio.height
+    : undefined;
+  const width =
+    transformation?.width ??
+    (targetRatio && transformation?.height
+      ? transformation.height * targetRatio
+      : undefined);
+  const height =
+    transformation?.height ??
+    (targetRatio && width ? width / targetRatio : undefined);
+  if (
+    !width ||
+    !height ||
+    !Number.isFinite(width) ||
+    !Number.isFinite(height) ||
+    width <= 0 ||
+    height <= 0
+  ) {
+    return undefined;
+  }
+  return { width, height };
 }

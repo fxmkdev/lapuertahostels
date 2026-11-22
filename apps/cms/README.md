@@ -74,4 +74,6 @@ credentials. This works around Payload treating its absolute upload URLs as
 external URLs.
 
 The Payload server patch measures refetched files from the downloaded buffer,
-preserving their size when a storage response omits `Content-Length`.
+preserving their size when a storage response omits `Content-Length`. It also
+ensures an empty URL port matches only the default port, keeping private
+refetches on other ports outside the allowlist.

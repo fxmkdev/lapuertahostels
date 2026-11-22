@@ -23,3 +23,18 @@ index 87c2731da053a18a86d1e309b1c637d8a7948d86..0f02bcf26a4b6e40d80219119ccfd094
          };
      }
      throw new APIError('Invalid file url', 400);
+diff --git a/dist/utilities/isURLAllowed.js b/dist/utilities/isURLAllowed.js
+index 4c65669a8f4e0284103c87af6f64a747b8dab442..61e7470cbd27bb0426a5446188f18ff780646ef7 100644
+--- a/dist/utilities/isURLAllowed.js
++++ b/dist/utilities/isURLAllowed.js
+@@ -4,8 +4,8 @@ export const isURLAllowed = (url, allowList)=>{
+         const parsedUrl = new URL(url);
+         return allowList.some((allowItem)=>{
+             return Object.entries(allowItem).every(([key, value])=>{
+-                // Skip undefined or null values
+-                if (!value) {
++                // An empty port is the URL-normalized default port, not a wildcard.
++                if (!value && !(key === 'port' && value === '')) {
+                     return true;
+                 }
+                 // Compare protocol with colon

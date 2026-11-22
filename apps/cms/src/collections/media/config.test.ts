@@ -96,3 +96,58 @@ test("Payload refetches retain actual file size without Content-Length", async (
     vi.unstubAllGlobals();
   }
 });
+
+test("a default CMS port does not allow private refetches on other ports", async () => {
+  const fetch = vi.fn().mockResolvedValue(new Response(new Uint8Array([1])));
+  vi.stubGlobal("fetch", fetch);
+  try {
+    await expect(
+      getExternalFile({
+        data: {
+          filename: "photo.jpg",
+          url: "http://127.0.0.1:9876/api/media/file/photo.jpg",
+        },
+        req: {
+          headers: new Headers(),
+          payload: {
+            config: { cookiePrefix: "payload", serverURL: "http://127.0.0.1" },
+          },
+        } as PayloadRequest,
+        uploadConfig: mediaFileFetchOptions("http://127.0.0.1"),
+      }),
+    ).rejects.toThrow(/unsafe attempt/);
+    expect(fetch).not.toHaveBeenCalled();
+  } finally {
+    vi.unstubAllGlobals();
+  }
+});
+
+test.each([
+  ["http://127.0.0.1", "http://127.0.0.1:80"],
+  ["https://127.0.0.1", "https://127.0.0.1:443"],
+])(
+  "allows the normalized default CMS port: %s",
+  async (serverUrl, fileOrigin) => {
+    const fetch = vi.fn().mockResolvedValue(new Response(new Uint8Array([1])));
+    vi.stubGlobal("fetch", fetch);
+    try {
+      const file = await getExternalFile({
+        data: {
+          filename: "photo.jpg",
+          url: `${fileOrigin}/api/media/file/photo.jpg`,
+        },
+        req: {
+          headers: new Headers(),
+          payload: {
+            config: { cookiePrefix: "payload", serverURL: serverUrl },
+          },
+        } as PayloadRequest,
+        uploadConfig: mediaFileFetchOptions(serverUrl),
+      });
+      expect(file.size).toBe(1);
+      expect(fetch).toHaveBeenCalledOnce();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  },
+);

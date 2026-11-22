@@ -60,20 +60,11 @@ async function openPicker(page: BrowserPage, media: Media) {
   return picker;
 }
 
-test("editors save and reopen edge focal points and the frontend respects them", async ({
-  page,
-  request,
-}) => {
-  const media = await uploadPhoto(request);
-  const email = `focal-${createId()}@example.com`;
-  const password = createId();
-  const editor = await create("users", { email, password, role: "editor" });
-  cleanupPaths.push(`/api/users/${editor.id}`);
-  await page.context().setExtraHTTPHeaders({});
-  const login = await page.request.post(cmsUrl("/api/users/login"), {
-    data: { email, password },
-  });
-  expect(login.ok(), await login.text()).toBeTruthy();
+async function saveAndVerifyFocalPoint(
+  page: BrowserPage,
+  request: APIRequestContext,
+  media: Media,
+) {
   const picker = await openPicker(page, media);
   await expect(picker.locator(".ReactCrop")).toHaveCount(0);
   await picker.locator('input[name="X %"]').fill("0");
@@ -114,7 +105,13 @@ test("editors save and reopen edge focal points and the frontend respects them",
     height: media.height,
     filesize: media.filesize,
   });
+}
 
+async function verifyFrontendFocalPoint(
+  page: BrowserPage,
+  request: APIRequestContext,
+  media: Media,
+) {
   const content = await createPage({
     hero: [
       {
@@ -160,6 +157,24 @@ test("editors save and reopen edge focal points and the frontend respects them",
       contentType: "image/png",
     });
   }
+}
+
+test("editors save and reopen edge focal points and the frontend respects them", async ({
+  page,
+  request,
+}) => {
+  const media = await uploadPhoto(request);
+  const email = `focal-${createId()}@example.com`;
+  const password = createId();
+  const editor = await create("users", { email, password, role: "editor" });
+  cleanupPaths.push(`/api/users/${editor.id}`);
+  await page.context().setExtraHTTPHeaders({});
+  const login = await page.request.post(cmsUrl("/api/users/login"), {
+    data: { email, password },
+  });
+  expect(login.ok(), await login.text()).toBeTruthy();
+  await saveAndVerifyFocalPoint(page, request, media);
+  await verifyFrontendFocalPoint(page, request, media);
 });
 
 test("legacy media without focal metadata retains hero alignment", async ({
