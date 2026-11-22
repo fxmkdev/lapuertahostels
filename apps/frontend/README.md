@@ -75,3 +75,19 @@ app server is production-ready.
 Make sure to deploy the output of `react-router build`
 
 - `build/`
+
+## React compatibility checks
+
+Run `pnpm test --run`, `pnpm typecheck`, `pnpm build`, and
+`pnpm build-storybook` after updating React and React DOM together.
+
+The root document fixture hydrates server-rendered markup and throws on
+recoverable hydration errors. Its error-navigation test expects exactly one
+React 19.3 development warning when React Router remounts script elements at the
+root error boundary; other unexpected console errors still fail the suite.
+
+The workspace E2E suite checks both hydration scheduling paths, client
+navigation, browser history, and mobile locale switching against the production
+applications. Run it headlessly with
+`pnpm --filter @lapuertahostels/e2e exec playwright test` after starting the
+services configured in `tests/e2e/playwright.config.ts`.
