@@ -1934,5 +1934,70 @@
       "libs/rich-text/src/index.ts"
     ],
     "normalization": "Remove checkout prefix, sort diagnostics and quoted union members; retain raw probe output."
+  },
+  "selfReviewVitest5": {
+    "base": "905f7a8bc",
+    "reason": "Targeted full-command check after integrating upstream Vitest 5; original two-batch data remains historical.",
+    "warmupPairs": 1,
+    "measuredPairs": 3,
+    "samples": [
+      {
+        "pair": 0,
+        "warmup": true,
+        "command": "typecheck",
+        "seconds": 4.229376999999658,
+        "exitStatus": 0
+      },
+      {
+        "pair": 0,
+        "warmup": true,
+        "command": "typecheck:ts6",
+        "seconds": 9.270398582999405,
+        "exitStatus": 0
+      },
+      {
+        "pair": 1,
+        "warmup": false,
+        "command": "typecheck:ts6",
+        "seconds": 8.27772300000106,
+        "exitStatus": 0
+      },
+      {
+        "pair": 1,
+        "warmup": false,
+        "command": "typecheck",
+        "seconds": 5.262986084000659,
+        "exitStatus": 0
+      },
+      {
+        "pair": 2,
+        "warmup": false,
+        "command": "typecheck",
+        "seconds": 2.1281661670000176,
+        "exitStatus": 0
+      },
+      {
+        "pair": 2,
+        "warmup": false,
+        "command": "typecheck:ts6",
+        "seconds": 6.941450833999625,
+        "exitStatus": 0
+      },
+      {
+        "pair": 3,
+        "warmup": false,
+        "command": "typecheck:ts6",
+        "seconds": 10.41270833300041,
+        "exitStatus": 0
+      },
+      {
+        "pair": 3,
+        "warmup": false,
+        "command": "typecheck",
+        "seconds": 4.749060709000332,
+        "exitStatus": 0
+      }
+    ],
+    "lockSha256": "a684abb497ed8e553fd5f01323ddd002f7036291e87c88bcf94102c6b618bd6a"
   }
 }

@@ -27,10 +27,10 @@ frontend config. Both existing path mappings already have relative targets, so
 `~/*` and the React types override retain their resolution. Strictness, project
 includes, generated route types, `skipLibCheck`, and `noEmit` are preserved.
 
-The lockfile adds only TypeScript 7, its platform packages, and the TS6
-compatibility package. pnpm also refreshes peer snapshots, including optional
-peers; no existing package versions are upgraded or removed. No global compiler
-override or application API change is introduced.
+Compared with current main, the lockfile adds only TypeScript 7, its platform
+packages, and the TS6 compatibility package. pnpm also refreshes peer snapshots,
+including optional peers; no existing package versions are upgraded or removed.
+No global compiler override or application API change is introduced.
 
 ## Commands and fallback
 
@@ -168,3 +168,30 @@ run link are recorded in the PR description. Local browser E2E is not repeated
 for this compiler-only change; the existing CI suite provides that coverage.
 Keep the TS6 API dependency and fallback until its tooling consumers support a
 later API. Revert the PR if a compiler or tooling regression is found.
+
+## Self-review integration
+
+Self-review integrated main at `905f7a8bc` (the upstream Vitest 5 upgrade) to
+resolve a lockfile conflict. The original two-batch results above predate that
+integration and retain their original source and lockfile fingerprints. No
+measurement has been relabeled as a run on the newer dependency graph.
+
+After regenerating the lockfile from main, frozen installation, both frontend
+compiler commands, and all 89 frontend tests pass with Vitest 5. Existing main
+package metadata and non-frontend compiler dependencies are preserved; only the
+expected 22 TypeScript package entries are added relative to main.
+
+A targeted follow-up used one warm-up pair and three alternating measured pairs
+of the complete checking commands, sequentially on the same machine. TS7's
+median was 4.749s (range 2.128–5.263s); TS6's median was 8.278s (range
+6.941–10.413s), a 1.74× median speedup. All eight invocations passed and TS7 was
+faster in every measured pair. This is a small regression check after the merge,
+not a replacement for the original protocol or a timing comparison against
+unchanged Vitest 5 main. The raw follow-up samples are in `selfReviewVitest5` in
+the results JSON; the same system-load and cache limitations apply.
+
+The benchmark runner also now records JSON failure reports when preflight
+metadata commands fail. Targeted checks cover package-manager version failure,
+compiler version failure, type-generation failure, and the required output
+argument. The timed sampling loop is unchanged. Final-revision CI results are
+recorded separately in the PR description.
