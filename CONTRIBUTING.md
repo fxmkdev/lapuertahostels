@@ -96,7 +96,9 @@ Frontend `typecheck` uses native TypeScript 7; `typecheck:ts6` is the explicit
 fallback. The frontend's `typescript` dependency supplies the TypeScript 6 API
 for ESLint and framework tooling. Keep this separation when updating compiler
 dependencies; CMS, shared libraries, and E2E retain TypeScript 6. See the
-[pilot report](docs/typescript-7-pilot.md) for validation and measurements.
+[adoption report](docs/typescript-7-pilot.md) for the decision, validation, and
+historical pilot measurements. Removing TS6 across the workspace is a separate
+migration.
 
 Frontend and CMS TypeScript files must mark imports used only as types with
 `import type` or an inline `type` modifier. Prefer separate `import type`

@@ -1,11 +1,17 @@
-# TypeScript 7 frontend pilot
+# TypeScript 7 frontend adoption
 
-## Compiler setup
+## Adoption decision and compiler setup
 
-This pilot changes frontend command-line type checking to native TypeScript
-7.0.2. It keeps the TypeScript 6.0.3 JavaScript compiler API for existing tools.
-CMS, shared libraries, and E2E retain their existing TS6 dependencies. Node
-24.22.3, Node 24 typings, and pnpm 12.21.0 are unchanged.
+The frontend adopts native TypeScript 7.0.2 for the standard `typecheck` command
+and CI. This decision follows the pilot and validation recorded below. The
+adopted setup keeps the TypeScript 6.0.3 JavaScript compiler API for existing
+tools. CMS, shared libraries, and E2E retain their existing TS6 dependencies.
+Node 24.22.3, Node 24 typings, and pnpm 12.21.0 are unchanged.
+
+The TS6 API dependency and fallback are intentional compatibility support.
+Removing TS6 across the workspace is a separate migration. Merging the frontend
+adoption PR enables this setup for the team; no additional feature flag or
+production rollout step is required.
 
 The frontend follows Microsoft's
 [side-by-side migration guidance](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/#running-side-by-side-with-typescript-60):
@@ -46,8 +52,8 @@ pnpm --filter @lapuertahostels/frontend benchmark:typecheck --output /tmp/ts7-pi
 Both checking commands generate route types first. The existing Linux CI
 typecheck job continues to invoke `typecheck`, so it checks TS7 only. The TS6
 command is an explicit local fallback and parity check, not a second CI gate.
-For a full rollback, revert the pilot PR; selecting `typecheck:ts6` is
-sufficient for an immediate local fallback.
+For a full rollback, revert the frontend adoption PR; selecting `typecheck:ts6`
+is sufficient for an immediate local fallback.
 
 ## Correctness and tooling
 
@@ -129,7 +135,7 @@ sequentially with the same runtime, package manager, and generated Payload
 types. The report records config, lockfile, and Payload type hashes so the
 inputs can be checked.
 
-## Results and recommendation
+## Results and adoption decision
 
 All 162 baseline and pilot invocations, including warm-ups, exit successfully.
 The [raw results](typescript-7-pilot-results.json) include machine metadata,
@@ -148,11 +154,10 @@ contains seven measured runs; warm-ups are excluded.
 | 2 / routes-warm        | 4.462 (4.424–4.586) | 5.784 (4.634–6.576) | 1.878 (1.767–2.382) | 3.08×          | 3.906         |
 | 2 / routes-regenerated | 4.489 (4.439–4.533) | 6.584 (6.118–9.063) | 2.610 (2.030–3.943) | 2.52×          | 3.975         |
 
-**Recommend adopting this frontend pilot**, subject to the existing Linux PR
-checks passing before merge. Both batches show faster compiler-only and
-complete-command checks. Every measured TS7 run is faster than its paired TS6
-run; the full-command ranges within each batch do not overlap. Correctness and
-tooling checks pass without reducing coverage.
+**Decision: adopt native TypeScript 7 for frontend type checking.** Both batches
+show faster compiler-only and complete-command checks. Every measured TS7 run is
+faster than its paired TS6 run; the full-command ranges within each batch do not
+overlap. Correctness and tooling checks pass without reducing coverage.
 
 The original baseline is measured separately, so it is a reference rather than
 an interleaved comparison. Pilot TS6 timings vary more than the original
