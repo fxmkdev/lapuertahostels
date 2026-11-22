@@ -92,13 +92,15 @@ need to be strictly Conventional Commit formatted.
 
 ## TypeScript Imports
 
-Frontend `typecheck` uses native TypeScript 7; `typecheck:ts6` is the explicit
-fallback. The frontend's `typescript` dependency supplies the TypeScript 6 API
-for ESLint and framework tooling. Keep this separation when updating compiler
-dependencies; CMS, shared libraries, and E2E retain TypeScript 6. See the
-[adoption report](docs/typescript-7-pilot.md) for the decision, validation, and
-historical pilot measurements. Removing TS6 across the workspace is a separate
-migration.
+Frontend, CMS, and E2E `typecheck` commands use native TypeScript 7. Both shared
+libraries also declare TS7. Frontend and CMS keep the `typescript` compatibility
+alias for the TypeScript 6 API required by ESLint and installed docgen tooling.
+Next's integrated CMS build check still selects TS6 from that alias; the
+separate CMS native check is also required in CI. Generate Payload types and the
+admin import map before running CMS checking. Keep this compiler/API separation
+when updating dependencies. See the
+[adoption report](docs/typescript-7-pilot.md) for current commands, exact
+removal blockers, validation, and historical pilot measurements.
 
 Frontend and CMS TypeScript files must mark imports used only as types with
 `import type` or an inline `type` modifier. Prefer separate `import type`

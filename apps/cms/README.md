@@ -1,5 +1,16 @@
 # CMS
 
+## Type checking
+
+Generate Payload types and the admin import map, then run
+`pnpm --filter @lapuertahostels/cms typecheck`. This generates Next route types
+and checks the complete configured project with native TypeScript 7. CI runs
+this gate alongside the existing TS6 check inside `next build`. The package
+named `typescript` still supplies the TS6 API for ESLint; Next also selects its
+build checker from that package. See the
+[workspace compatibility report](../../docs/typescript-7-pilot.md) for remaining
+removal blockers and rollback instructions.
+
 ## Internal links and anchors
 
 For an internal link, choose the target page and select an Element ID in the

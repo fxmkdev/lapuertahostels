@@ -11,12 +11,12 @@ It includes:
 
 ## Repository-wide Guidelines
 
-- Before starting any new work, run `git fetch origin` and base new branches
-  and worktrees on the freshly fetched `origin/main`, rather than local `main`.
-  New work means starting a new task or branch, not every resumed agent turn.
-  If fetching fails, report the failure before proceeding from an unverified
-  base. When continuing an existing PR, stay on its branch; this rule does not
-  require resetting that branch or discarding local changes.
+- Before starting any new work, run `git fetch origin` and base new branches and
+  worktrees on the freshly fetched `origin/main`, rather than local `main`. New
+  work means starting a new task or branch, not every resumed agent turn. If
+  fetching fails, report the failure before proceeding from an unverified base.
+  When continuing an existing PR, stay on its branch; this rule does not require
+  resetting that branch or discarding local changes.
 - Use `pnpm` as package manager.
 - Keep changes focused and minimal; avoid unrelated refactors.
 - Keep docs in sync when introducing new behavior, patterns, or conventions.
@@ -63,7 +63,6 @@ literals to avoid variable expansion or glob matching.
 pnpm --filter @lapuertahostels/frontend dev              # Start frontend dev server
 pnpm --filter @lapuertahostels/frontend build            # Build frontend
 pnpm --filter @lapuertahostels/frontend typecheck        # Generate React Router types and run TypeScript 7
-pnpm --filter @lapuertahostels/frontend typecheck:ts6    # TypeScript 6 fallback with the same route generation
 pnpm --filter @lapuertahostels/frontend lint             # ESLint check
 pnpm --filter @lapuertahostels/frontend test             # Vitest tests
 pnpm --filter @lapuertahostels/frontend check-format     # Prettier check
@@ -72,6 +71,7 @@ pnpm --filter @lapuertahostels/frontend build-storybook  # Build Storybook
 
 pnpm --filter @lapuertahostels/cms dev                   # Start CMS dev server on port 3001
 pnpm --filter @lapuertahostels/cms build                 # Generate Payload artifacts and build CMS
+pnpm --filter @lapuertahostels/cms typecheck             # Generate Next route types and run native TypeScript 7
 pnpm --filter @lapuertahostels/cms lint                  # Next lint check
 pnpm --filter @lapuertahostels/cms test                  # Vitest tests
 pnpm --filter @lapuertahostels/cms check-format          # Prettier check
@@ -81,6 +81,7 @@ pnpm --filter @lapuertahostels/cms generate:importmap    # Generate Payload admi
 pnpm --filter @lapuertahostels/payload-types pull-payload-types # Refresh shared Payload types
 
 pnpm --filter @lapuertahostels/e2e e2e                   # Run Playwright e2e UI
+pnpm --filter @lapuertahostels/e2e typecheck             # Check E2E sources with native TypeScript 7
 ```
 
 ## Package Conventions
@@ -110,6 +111,8 @@ pnpm --filter @lapuertahostels/e2e e2e                   # Run Playwright e2e UI
   frontend formatting-sensitive files.
 - Run `pnpm --filter @lapuertahostels/cms build` when touching Payload schema,
   CMS config, CMS custom components, or generated Payload artifacts.
+- Run `pnpm --filter @lapuertahostels/cms typecheck` after generating Payload
+  types and the admin import map when touching CMS TypeScript or configuration.
 - Run `pnpm --filter @lapuertahostels/cms lint` and
   `pnpm --filter @lapuertahostels/cms check-format` when touching CMS source.
 - Run `pnpm --filter @lapuertahostels/cms test` when touching tested CMS logic.
@@ -117,4 +120,6 @@ pnpm --filter @lapuertahostels/e2e e2e                   # Run Playwright e2e UI
   Payload type changes need to be reflected in `libs/payload-types`.
 - Run `pnpm --filter @lapuertahostels/e2e e2e` for changes with significant
   user-flow risk.
+- Run `pnpm --filter @lapuertahostels/e2e typecheck` when touching E2E
+  TypeScript.
 - Update relevant docs when behavior, workflows, or conventions change.

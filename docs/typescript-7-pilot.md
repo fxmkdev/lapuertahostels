@@ -1,6 +1,183 @@
-# TypeScript 7 frontend adoption
+# TypeScript 7 adoption and compatibility
 
-## Adoption decision and compiler setup
+## Current workspace setup
+
+This follow-up extends native checking beyond the frontend. **TypeScript 6 is
+still required and has not been removed from the workspace.** The PR preserves
+main's Node 26.13.1 runtime baseline and Node 26 typings from the separately
+merged runtime migration (#434). pnpm 12.21.0, application behavior, and Payload
+schemas remain unchanged. The original follow-up benchmarks below were recorded
+on Node 24 before that migration; they have not been relabeled as Node 26 runs.
+
+| Workspace                | Checking                                                  | Compiler API / integrated build                                    |
+| ------------------------ | --------------------------------------------------------- | ------------------------------------------------------------------ |
+| Frontend                 | TS7.0.2 `tsc`, after React Router typegen                 | TS6.0.3 API through the existing compatibility alias               |
+| CMS                      | TS7.0.2 `tsc --noEmit`, after Next typegen                | TS6.0.3 API and Next build checker through the compatibility alias |
+| Payload types, rich text | Direct TS7.0.2 dependency; consumed by app and E2E checks | No compiler API consumer in either library                         |
+| E2E                      | TS7.0.2 `tsc --noEmit` before Playwright in CI            | Playwright retains its existing transpilation pipeline             |
+
+Frontend and CMS use `@typescript/native: npm:typescript@7.0.2` for the `tsc`
+executable and `typescript: npm:@typescript/typescript6@6.0.2` for tooling. The
+compatibility package re-exports `@typescript/old`, an alias resolving to
+`typescript@6.0.3`. It provides `tsc6`, avoiding an executable collision with
+native `tsc`. Next 16.4.6 reads the package named `typescript` and its bin
+metadata, so its integrated check still executes TS6 even though `pnpm exec tsc`
+executes TS7. This is intentional while CMS ESLint requires the old API. The
+separate native CMS check is required in CI alongside the build.
+
+CMS removes `baseUrl` and `ignoreDeprecations: "6.0"`; both path mappings
+already have relative targets. Strictness, file includes, exclusions, generated
+types, and existing `skipLibCheck` settings are preserved. The frontend TS6
+fallback script is removed. The compatibility executable remains available to
+tooling.
+
+```sh
+pnpm install --frozen-lockfile
+pnpm --filter @lapuertahostels/payload-types pull-payload-types
+pnpm --filter @lapuertahostels/cms generate:importmap
+pnpm --filter @lapuertahostels/frontend typecheck
+pnpm --filter @lapuertahostels/cms typecheck
+pnpm --filter @lapuertahostels/e2e typecheck
+pnpm --filter @lapuertahostels/frontend benchmark:typecheck --output /tmp/ts7-current.json
+```
+
+The live benchmark measures native TS7 only: two batches, two warm-ups and seven
+measured runs per scenario, covering compiler-only, retained route output, and
+regenerated route output. It retains metadata, input hashes, exit statuses, raw
+samples, and failure reporting. Historical TS6 reproduction requires the runner
+from PR #433 at `74c2cc7285bcc9a235ef8fcd99bfcccb1bcf98aa`; the historical
+commands below describe that version, not the current runner.
+
+## Compatibility audit and removal blockers
+
+Installed code and npm's current stable metadata were checked on 2026-11-22. No
+unsupported overrides, prerelease upgrades, reduced lint rules, excluded
+sources, or error suppressions are used to advance this migration.
+
+| Consumer                | Installed evidence and supported upgrade boundary                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ESLint in both apps     | Frontend typescript-eslint 8.59.4 and CMS eslint-config-next 16.4.6 → typescript-eslint 8.71.1 use typescript-estree, project-service, and ts-api-utils. Latest stable typescript-eslint 8.73.0 still peers on TypeScript `>=4.8.4 <6.1.0`. Its experimental TS7.1 backend still requires a side-by-side TS6 installation. This blocks full removal even without type-aware lint configuration.                                                                                        |
+| React lint integrations | @eslint-react/eslint-plugin 5.8.3 and its packages use the classic API and typescript-eslint utilities. Stable 5.30.6 still depends on typescript-eslint utilities; upgrading it does not remove the core blocker.                                                                                                                                                                                                                                                                     |
+| React Router            | @react-router/dev 8.5.2 accepts TS7; installed runtime JavaScript has no import of the TypeScript compiler API. Type generation and production builds must continue to pass. A resolved TS6 peer here is not evidence of a required TS6 API.                                                                                                                                                                                                                                           |
+| Storybook / docgen      | @storybook/react-vite 10.6.2 installs the 0.7.0 docgen plugin and react-docgen-typescript 2.4.0, which call `ts.sys`, `parseJsonConfigFileContent`, and `createProgram`. The current default is Babel-based `react-docgen`, so the typed backend is installed but inactive. Storybook 10.6.8 still depends on the 0.7 line. Plugin 0.9.1 adds experimental native support requiring TS7.1 prereleases; it does not make stable TS7.0 API-compatible. Preserve current docgen behavior. |
+| Next.js                 | Installed/current stable 16.4.6 defaults to its CLI checker and supports TS7 directly. This workspace intentionally retains its TS6 build check because CMS ESLint still needs `typescript` to expose the old API. No Next upgrade is necessary for the new separate native gate.                                                                                                                                                                                                      |
+| Payload / generation    | Installed/current stable Payload 3.94.1 generates types through json-schema-to-typescript 15.0.3, Prettier, and string postprocessing; this pipeline does not load the TypeScript compiler API. Import-map generation also has no compiler API requirement. Lexical and ts-essentials contribute TypeScript peers, which must be distinguished from runtime API imports.                                                                                                               |
+| Other peers             | i18next 26.2.0 and react-i18next 17.0.8 declare `^5 \|\| ^6`. Stable major upgrades add TS7 peer support, but are unnecessary for this partial migration while the frontend API alias remains TS6. Broad peers from Valibot, Lexical, and ts-essentials alone do not establish compiler API use.                                                                                                                                                                                       |
+
+Primary references:
+[Microsoft's side-by-side guidance](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/#running-side-by-side-with-typescript-60),
+[typescript-eslint native backend requirements](https://typescript-eslint.io/packages/parser/#experimental_backend),
+[Next's CLI behavior](https://nextjs.org/docs/app/api-reference/config/next-config-js/useTypeScriptCli),
+[docgen compatibility and native mode](https://github.com/joshwooding/vite-plugin-react-docgen-typescript#typescript-compatibility),
+and
+[react-docgen-typescript's TS7 blocker](https://github.com/styleguidist/react-docgen-typescript/issues/538).
+
+Complete removal requires supported stable releases for all active API
+consumers, compatible peers throughout the graph, and unchanged lint/docgen
+behavior. Only then remove the aliases and compatibility packages, switch Next's
+selected compiler, and prove that no TS6 compiler or compatibility package
+remains in the complete lockfile and a clean installed graph. A TS7 version from
+the frontend executable alone is insufficient evidence.
+
+## Follow-up validation and rollback
+
+The [follow-up raw evidence](typescript-native-workspace-results.json) preserves
+all 156 original Node 24 timing invocations and the original clean-install
+CLI/API audit. Self-review rebased onto the separately merged Node 26 migration;
+the `selfReviewNode26` section records the refreshed resolution audit and
+focused runtime-integration checks. Both lockfile documents were inspected,
+including all 20 TS7 platform packages. The only compiler/API versions are
+TS7.0.2, `@typescript/typescript6@6.0.2`, and its TS6.0.3 implementation. All
+five workspaces resolve `tsc` to 7.0.2. Frontend/CMS tooling resolves functional
+TS6.0.3 APIs; Next's bin metadata selects `tsc6` and reports 6.0.3. Relative to
+current Node 26 main, this PR adds, removes, or upgrades no package versions;
+only direct compiler declarations and peer snapshots change. The original Node
+24 audit separately records the same comparison against PR #433.
+
+Original Node 24 local checks passed: a clean frozen install, frontend/CMS/E2E
+native checking, a non-incremental CMS check, Payload types and import map,
+shared-type refresh, both apps' lint with zero warnings, frontend tests (89 in 8
+files), CMS tests (36 in 4 files), and formatting. The runner also passed
+failure checks for package-manager, compiler, typegen, wrong compiler version,
+and missing output. `pnpm peers check` still exits 1 for the same existing Vite
+peer-range mismatches as PR #433. These are not TypeScript peer failures.
+Production builds, Storybook, and browser E2E use CI; final-head results and run
+links are recorded in the PR description.
+
+Performance was measured on the same Apple M2 / 8 GiB machine with Node 24.22.3
+and pnpm 12.21.0, sequentially without competing local validation commands. The
+first comparison used two batches of two warm-ups plus seven measured runs per
+scenario on each revision (108 invocations). Medians in seconds were:
+
+| Batch / scenario       | Before | After |
+| ---------------------- | ------ | ----- |
+| 1 / compiler           | 1.200  | 8.159 |
+| 1 / routes-warm        | 2.037  | 9.615 |
+| 1 / routes-regenerated | 3.010  | 8.038 |
+| 2 / compiler           | 3.353  | 2.503 |
+| 2 / routes-warm        | 2.216  | 4.646 |
+| 2 / routes-regenerated | 3.986  | 2.915 |
+
+The apparent initial slowdown required investigation. Host load varied sharply
+(observed load averages approximately 15–25 on 8 CPUs), and candidate timings
+improved markedly between batches. A fresh reference worktree at merged PR #433
+(`1b4df6a63`) has the same tree as the original pilot head. An alternating
+control used one warm-up pair and seven measured pairs for each scenario (48
+additional invocations), with matching source, config, generated Payload types,
+compiler, runtime, and package-manager fingerprints:
+
+| Scenario           | Reference median (s) | Candidate median (s) | Median paired candidate/reference |
+| ------------------ | -------------------- | -------------------- | --------------------------------- |
+| compiler           | 2.534                | 2.037                | 1.007×                            |
+| routes-warm        | 4.805                | 4.680                | 1.083×                            |
+| routes-regenerated | 3.259                | 2.783                | 0.864×                            |
+
+All timing invocations passed. The control did not reproduce a median paired
+regression above the 10% investigation threshold. The noisy ranges do not
+establish a precise speed difference, and these local samples are not a Linux CI
+performance claim. Original pilot measurements and raw data below remain
+historical and unchanged.
+
+### Self-review integration with Node 26 main
+
+Main advanced to Node 26 through PR #434 while this PR was under review.
+Self-review resolved the lockfile conflict against `67313ba66`, preserving its
+Node 26.13.1 minimum, Node 26 typings, CI runtime, and Docker images. No runtime
+change is introduced relative to that main revision. The Node 24 evidence above
+and all original raw samples remain historical.
+
+On Node 26.13.1 and pinned pnpm 12.21.0, frozen installation, Payload
+generation, shared-type refresh, import-map generation, and frontend/CMS/E2E
+native checking passed, including a non-incremental CMS check. A fresh reference
+worktree and the candidate matched source, generated types, compiler, runtime,
+and pnpm fingerprints. One warm-up pair and three alternating measured pairs per
+scenario produced 24 successful timing invocations:
+
+| Scenario           | Reference median (s) | Candidate median (s) | Median paired candidate/reference |
+| ------------------ | -------------------- | -------------------- | --------------------------------- |
+| compiler           | 1.063                | 1.060                | 1.005×                            |
+| routes-warm        | 1.521                | 1.517                | 0.997×                            |
+| routes-regenerated | 1.537                | 1.535                | 1.001×                            |
+
+This targeted integration control found no material timing change; it does not
+replace the original two-batch protocol or establish Linux CI performance. The
+`selfReviewNode26` raw section contains its samples and updated dependency/API
+audit. Final rebased CI results are recorded in the PR description.
+
+Rollback this follow-up by reverting its commits, installing the restored
+lockfile with `pnpm install --frozen-lockfile`, refreshing shared Payload types,
+and rerunning checking. This restores main's pre-follow-up compiler setup and
+frontend fallback while retaining the separately merged Node 26 runtime. No data
+migration is involved.
+
+## Historical frontend adoption: PR #433
+
+The following report and its [raw results](typescript-7-pilot-results.json) are
+preserved as historical evidence. References to fallback commands and the paired
+TS6/TS7 runner describe PR #433. They are superseded by the current setup above
+and are not current workspace instructions.
+
+### Adoption decision and compiler setup
 
 The frontend adopts native TypeScript 7.0.2 for the standard `typecheck` command
 and CI. This decision follows the pilot and validation recorded below. The
@@ -41,7 +218,7 @@ packages, and the TS6 compatibility package. pnpm also refreshes peer snapshots,
 including optional peers; no existing package versions are upgraded or removed.
 No global compiler override or application API change is introduced.
 
-## Commands and fallback
+### Commands and fallback
 
 ```sh
 pnpm --filter @lapuertahostels/payload-types pull-payload-types
@@ -58,7 +235,7 @@ command is an explicit local fallback and parity check, not a second CI gate.
 For a full rollback, revert the frontend adoption PR; selecting `typecheck:ts6`
 is sufficient for an immediate local fallback.
 
-## Correctness and tooling
+### Correctness and tooling
 
 Validation uses generated Payload types from the normal workspace command and
 identical generated React Router inputs for both compilers. Both clean checks
@@ -96,7 +273,7 @@ Installation reports Vite peer-range warnings from existing tooling; the
 declared versions and overrides for those tools are unchanged. Production and
 Storybook builds retain bundle-size warnings. These are not compiler failures.
 
-## Benchmark protocol
+### Benchmark protocol
 
 Measurements were taken on 2026-11-22 from baseline commit
 `e053b86e76ee62a480f4617be1e3fecce9640d6b`, in a separate worktree. Hardware is
@@ -138,7 +315,7 @@ sequentially with the same runtime, package manager, and generated Payload
 types. The report records config, lockfile, and Payload type hashes so the
 inputs can be checked.
 
-## Results and adoption decision
+### Results and adoption decision
 
 All 162 baseline and pilot invocations, including warm-ups, exit successfully.
 The [raw results](typescript-7-pilot-results.json) include machine metadata,
@@ -177,7 +354,7 @@ for this compiler-only change; the existing CI suite provides that coverage.
 Keep the TS6 API dependency and fallback until its tooling consumers support a
 later API. Revert the PR if a compiler or tooling regression is found.
 
-## Self-review integration
+### Self-review integration
 
 Self-review integrated main at `905f7a8bc` (the upstream Vitest 5 upgrade) to
 resolve a lockfile conflict. The original two-batch results above predate that

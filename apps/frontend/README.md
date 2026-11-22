@@ -15,16 +15,15 @@ This starts your app in development mode, rebuilding assets on file changes.
 ## Type checking
 
 `pnpm typecheck` generates React Router types and checks the frontend with
-native TypeScript 7. `pnpm typecheck:ts6` runs the same check with TypeScript 6
-as a fallback. Tools importing the `typescript` compiler API continue to use
-TS6.
+native TypeScript 7. Tools importing the `typescript` compiler API continue to
+use TS6; supported upstream releases are still required for full removal.
 
 See the [TypeScript 7 adoption report](../../docs/typescript-7-pilot.md) for the
 adoption decision, compatibility checks, and historical pilot benchmarks. The
-TS6 API dependency and fallback are intentional parts of this setup; removing
-TS6 across the workspace is a separate migration. Reproduce the benchmark
-protocol with `pnpm benchmark:typecheck --output /tmp/ts7-pilot.json` after
-generating shared Payload types.
+TS6 API dependency remains intentional compatibility support. Measure current
+native checking with `pnpm benchmark:typecheck --output /tmp/ts7-current.json`
+after generating shared Payload types. The live runner measures TS7 only;
+historical TS6 reports and their raw samples remain in the adoption report.
 
 ## Root document layout
 

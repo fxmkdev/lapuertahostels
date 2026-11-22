@@ -5,7 +5,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "e2e": "playwright test --ui"
+    "e2e": "playwright test --ui",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
@@ -19,7 +20,7 @@
     "dotenv": "^16.6.1",
     "mongodb": "^6.20.0",
     "prettier": "3.8.3",
-    "typescript": "^6.0.3"
+    "typescript": "7.0.2"
   },
   "packageManager": "pnpm@12.21.0+sha512.66fd8278ee28935ce951792d34367ff3af5c432a2756445823029533835b8da529bbe0be5130afd56ed0713fb8789e47bad82d93bd5ae2fe54b15562d6276ef0"
 }

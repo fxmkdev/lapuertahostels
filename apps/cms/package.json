@@ -15,7 +15,8 @@
     "test": "vitest run",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "start": "cross-env NODE_OPTIONS=--no-deprecation PORT=3001 next start",
-    "check-format": "prettier --check ."
+    "check-format": "prettier --check .",
+    "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
     "@payloadcms/db-mongodb": "^3.94.1",
@@ -42,10 +43,11 @@
     "@types/node": "^26.6.6",
     "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",
+    "@typescript/native": "npm:typescript@7.0.2",
     "eslint": "^9.32.0",
     "eslint-config-next": "~16.4.6",
     "prettier": "3.8.3",
-    "typescript": "^6.0.3",
+    "typescript": "npm:@typescript/typescript6@6.0.2",
     "vite": "8.1.6",
     "vitest": "^5.1.1"
   },
