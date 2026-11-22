@@ -12,6 +12,18 @@ pnpm dev
 
 This starts your app in development mode, rebuilding assets on file changes.
 
+## Type checking
+
+`pnpm typecheck` generates React Router types and checks the frontend with
+native TypeScript 7. `pnpm typecheck:ts6` runs the same check with TypeScript 6
+as a fallback. Tools importing the `typescript` compiler API continue to use
+TS6.
+
+See the [TypeScript 7 pilot report](../../docs/typescript-7-pilot.md) for
+compatibility checks, benchmarks, and the adoption recommendation. Reproduce the
+pilot measurements with `pnpm benchmark:typecheck --output /tmp/ts7-pilot.json`
+after generating shared Payload types.
+
 ## Root document layout
 
 The root route's `Layout` export owns the shared HTML document for normal,

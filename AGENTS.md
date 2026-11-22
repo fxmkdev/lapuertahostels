@@ -62,7 +62,8 @@ literals to avoid variable expansion or glob matching.
 ```bash
 pnpm --filter @lapuertahostels/frontend dev              # Start frontend dev server
 pnpm --filter @lapuertahostels/frontend build            # Build frontend
-pnpm --filter @lapuertahostels/frontend typecheck        # Generate React Router types and run tsc
+pnpm --filter @lapuertahostels/frontend typecheck        # Generate React Router types and run TypeScript 7
+pnpm --filter @lapuertahostels/frontend typecheck:ts6    # TypeScript 6 fallback with the same route generation
 pnpm --filter @lapuertahostels/frontend lint             # ESLint check
 pnpm --filter @lapuertahostels/frontend test             # Vitest tests
 pnpm --filter @lapuertahostels/frontend check-format     # Prettier check
