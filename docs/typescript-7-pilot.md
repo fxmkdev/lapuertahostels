@@ -6,7 +6,10 @@ The frontend adopts native TypeScript 7.0.2 for the standard `typecheck` command
 and CI. This decision follows the pilot and validation recorded below. The
 adopted setup keeps the TypeScript 6.0.3 JavaScript compiler API for existing
 tools. CMS, shared libraries, and E2E retain their existing TS6 dependencies.
-Node 24.22.3, Node 24 typings, and pnpm 12.21.0 are unchanged.
+The adoption was validated with Node 24.22.3, Node 24 typings, and pnpm 12.21.0.
+These versions describe the adoption baseline; see
+[Workspace Setup](../CONTRIBUTING.md#workspace-setup) for current runtime
+requirements.
 
 The TS6 API dependency and fallback are intentional compatibility support.
 Removing TS6 across the workspace is a separate migration. Merging the frontend
