@@ -90,4 +90,8 @@ The workspace E2E suite checks both hydration scheduling paths, client
 navigation, browser history, and mobile locale switching against the production
 applications. Run it headlessly with
 `pnpm --filter @lapuertahostels/e2e exec playwright test` after starting the
-services configured in `tests/e2e/playwright.config.ts`.
+[disposable test services](../../tests/e2e/docker-compose.yml) and setting
+`FRONTEND_BASE_URL`, `CMS_BASE_URL`, and `CMS_API_KEY`. The fixture helpers also
+need access to that test MongoDB instance through `CMS_DATABASE_URI` (or the
+default `mongodb://localhost:27017/website-cms`). Hydration tests stub external
+font CSS so third-party availability cannot fail the interaction checks.
