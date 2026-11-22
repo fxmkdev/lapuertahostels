@@ -75,3 +75,23 @@ app server is production-ready.
 Make sure to deploy the output of `react-router build`
 
 - `build/`
+
+## React compatibility checks
+
+Run `pnpm test --run`, `pnpm typecheck`, `pnpm build`, and
+`pnpm build-storybook` after updating React and React DOM together.
+
+The root document fixture hydrates server-rendered markup and throws on
+recoverable hydration errors. Its error-navigation test expects exactly one
+React 19.3 development warning when React Router remounts script elements at the
+root error boundary; other unexpected console errors still fail the suite.
+
+The workspace E2E suite checks both hydration scheduling paths, client
+navigation, browser history, and mobile locale switching against the production
+applications. Run it headlessly with
+`pnpm --filter @lapuertahostels/e2e exec playwright test` after starting the
+[disposable test services](../../tests/e2e/docker-compose.yml) and setting
+`FRONTEND_BASE_URL`, `CMS_BASE_URL`, and `CMS_API_KEY`. The fixture helpers also
+need access to that test MongoDB instance through `CMS_DATABASE_URI` (or the
+default `mongodb://localhost:27017/website-cms`). Hydration tests stub external
+font CSS so third-party availability cannot fail the interaction checks.

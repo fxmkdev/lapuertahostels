@@ -44,7 +44,12 @@ vi.mock("./blocks/story-block", () => ({
   StoryBlock: () => <p>Error description</p>,
 }));
 
+const clientScriptWarning =
+  "Encountered a script tag while rendering React component. Scripts inside React components are never executed when rendering on the client. Consider using template tag instead (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template).";
+let expectedClientScriptWarnings = 0;
+
 beforeEach(() => {
+  expectedClientScriptWarnings = 0;
   vi.spyOn(console, "error").mockImplementation(() => {});
   vi.spyOn(window, "scrollTo").mockImplementation(() => {});
 });
@@ -54,6 +59,10 @@ afterEach(() => {
       .mocked(console.error)
       .mock.calls.filter(([error, ...args]) => {
         if (args.length > 0) return true;
+        if (error === clientScriptWarning && expectedClientScriptWarnings > 0) {
+          expectedClientScriptWarnings--;
+          return false;
+        }
         if (isRouteErrorResponse(error))
           return error.status !== 404 && error.status !== 503;
         return (
@@ -62,6 +71,7 @@ afterEach(() => {
         );
       });
     expect(unexpectedErrors).toEqual([]);
+    expect(expectedClientScriptWarnings).toBe(0);
   } finally {
     vi.restoreAllMocks();
   }
@@ -213,7 +223,8 @@ describe("root document server rendering", () => {
 });
 
 test("header measurements update padding and document nodes survive normal/error/normal navigation", async () => {
-  const router = fixture().client();
+  const router = await fixture().client();
+  expect(console.error).not.toHaveBeenCalled();
   try {
     const nodes = [document.documentElement, document.head, document.body];
     const stylesheets = () =>
@@ -224,6 +235,9 @@ test("header measurements update padding and document nodes survive normal/error
     expect(document.documentElement.style.scrollPaddingTop).toBe("112px");
     fireEvent.click(screen.getByRole("button", { name: "Resize header" }));
     expect(document.documentElement.style.scrollPaddingTop).toBe("152px");
+    // React Router remounts Layout (including Scripts) at the error boundary.
+    // React 19.3 warns once about those inert client-created script elements.
+    expectedClientScriptWarnings = 1;
     await act(() => router.navigate("/not-found"));
     expect(document.title).toBe("Page not found · Hostel Azul");
     expect(document.documentElement.style.scrollPaddingTop).toBe("");

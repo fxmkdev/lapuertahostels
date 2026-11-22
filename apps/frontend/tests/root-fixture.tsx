@@ -192,7 +192,20 @@ async function renderServer(
     status: context.statusCode,
   };
 }
-function renderClient(framework: Framework, data: RootData) {
+async function renderClient(framework: Framework, data: RootData) {
+  const { document: serverDocument } = await renderServer(
+    framework,
+    data,
+    "/normal",
+  );
+  // Preserve Testing Library's body reference and keep fixture scripts inert.
+  document.head.innerHTML = serverDocument.head.innerHTML;
+  document.body.innerHTML = serverDocument.body.innerHTML;
+  for (const element of ["documentElement", "body"] as const) {
+    for (const attribute of serverDocument[element].attributes) {
+      document[element].setAttribute(attribute.name, attribute.value);
+    }
+  }
   // Use the framework's actual Layout wrapping, with local fixture loaders.
   const routes = UNSAFE_createClientRoutes(
     framework.manifest.routes,
@@ -213,7 +226,13 @@ function renderClient(framework: Framework, data: RootData) {
         <RouterProvider router={router} />
       </UNSAFE_FrameworkContext>
     </I18nextProvider>,
-    { container: document },
+    {
+      container: document,
+      hydrate: true,
+      onRecoverableError(error) {
+        throw error;
+      },
+    },
   );
   return router;
 }
