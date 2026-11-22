@@ -81,3 +81,9 @@ the [historical security assessment](docs/security/braces-risk-assessment.md)
 for the original evidence and the dated withdrawal update, and the
 [dependency exception inventory](docs/dependency-exceptions.md) for current
 security fixes and audit results.
+
+## CI Build Reuse
+
+See [selective CI and image reuse](docs/ci-build-reuse.md) for dependency
+tracking, generated CMS types, deployment image aliases, release behavior, and
+forced rebuilds.

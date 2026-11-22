@@ -12,6 +12,12 @@ on:
         default: false
         type: boolean
 
+      force_rebuild:
+        description: "Rebuild and validate both images even when unchanged"
+        required: false
+        default: false
+        type: boolean
+
 env:
   NODE_VERSION: 26
   FLYCTL_VERSION: 0.5.11
@@ -25,9 +31,47 @@ jobs:
     with:
       release: ${{ github.event.inputs.release }}
 
+  ci-tests:
+    name: "Build / CI: Tests"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: node --test scripts/ci/*.test.mjs
+
+  detect-changes:
+    name: "Detect affected apps"
+    runs-on: ubuntu-latest
+    needs: version
+    outputs:
+      frontend_key: ${{ steps.detect.outputs.frontend_key }}
+      cms_key: ${{ steps.detect.outputs.cms_key }}
+      frontend_changed: ${{ steps.detect.outputs.frontend_changed }}
+      cms_changed: ${{ steps.detect.outputs.cms_changed }}
+      types_changed: ${{ steps.detect.outputs.types_changed }}
+      e2e_changed: ${{ steps.detect.outputs.e2e_changed }}
+      force: ${{ steps.detect.outputs.force }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Compare dependency inputs
+        id: detect
+        run: node scripts/ci/inputs.mjs detect
+        env:
+          FORCE_REBUILD: ${{ inputs.force_rebuild }}
+          NEW_RELEASE: ${{ needs.version.outputs.is_new_release }}
+
   verify-cms-types:
     name: "Build / CMS: Verify Generated Types"
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.types_changed == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -41,6 +85,10 @@ jobs:
   frontend-lint:
     name: "Build / Frontend: Lint"
     runs-on: ubuntu-latest
+    needs: [detect-changes, frontend-build-push]
+    if: >-
+      !cancelled() && needs.frontend-build-push.result == 'success' &&
+      needs.frontend-build-push.outputs.checks == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -54,6 +102,10 @@ jobs:
   frontend-check-format:
     name: "Build / Frontend: Check Format"
     runs-on: ubuntu-latest
+    needs: [detect-changes, frontend-build-push]
+    if: >-
+      !cancelled() && needs.frontend-build-push.result == 'success' &&
+      needs.frontend-build-push.outputs.checks == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -67,6 +119,10 @@ jobs:
   frontend-typecheck:
     name: "Build / Frontend: Typecheck"
     runs-on: ubuntu-latest
+    needs: [detect-changes, frontend-build-push]
+    if: >-
+      !cancelled() && needs.frontend-build-push.result == 'success' &&
+      needs.frontend-build-push.outputs.checks == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -80,6 +136,10 @@ jobs:
   frontend-unit-tests:
     name: "Build / Frontend: Unit Tests"
     runs-on: ubuntu-latest
+    needs: [detect-changes, frontend-build-push]
+    if: >-
+      !cancelled() && needs.frontend-build-push.result == 'success' &&
+      needs.frontend-build-push.outputs.checks == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -93,42 +153,57 @@ jobs:
   frontend-build-push:
     name: "Build / Frontend: Build and Push"
     runs-on: ubuntu-latest
-    needs: [version]
+    needs: [detect-changes, verify-cms-types, version]
+    if: >-
+      !cancelled() && needs.detect-changes.result == 'success' &&
+      needs.version.result == 'success' && (needs.verify-cms-types.result ==
+      'success' || (needs.detect-changes.outputs.types_changed == 'false' &&
+      needs.verify-cms-types.result == 'skipped'))
     outputs:
-      image: ${{ steps.image-name.outputs.image }}
+      image: ${{ steps.prepare.outputs.image }}
+      checks: ${{ steps.prepare.outputs.checks }}
+      built: ${{ steps.prepare.outputs.built }}
+      digest: ${{ steps.prepare.outputs.digest }}
+      cache_image: ${{ steps.prepare.outputs.cache_image }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
       - name: Set up flyctl
         uses: superfly/flyctl-actions/setup-flyctl@v1
         with:
           version: ${{ env.FLYCTL_VERSION }}
-      - name: Setup
-        uses: ./.github/actions/setup
-      - name: Get frontend image name
-        id: image-name
-        run: |
-          IMAGE_NAME=${{ vars.FLY_STAGING_FRONTEND_APP }}
-          IMAGE_TAG=v${{ needs.version.outputs.version_with_sha }}
-          echo "image_name=$IMAGE_NAME" >> "$GITHUB_OUTPUT"
-          echo "image_tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
-          echo "image=registry.fly.io/$IMAGE_NAME:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
-      - name: Build and push frontend Docker image
-        run: |
-          flyctl deploy \
-            --app ${{ steps.image-name.outputs.image_name }} \
-            --config apps/frontend/fly.build.toml \
-            --build-only \
-            --build-arg APP_VERSION=${{ needs.version.outputs.version }} \
-            --image-label ${{ steps.image-name.outputs.image_tag }} \
-            --label org.opencontainers.image.version=${{ steps.image-name.outputs.image_tag }} \
-            --push \
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+      - name: Authenticate Fly registry
+        uses: docker/login-action@v4
+        with:
+          registry: registry.fly.io
+          username: x
+          password: ${{ secrets.FLY_API_TOKEN }}
+      - name: Build or reuse frontend image
+        id: prepare
+        run: node scripts/ci/images.mjs
         env:
+          APP: frontend
+          IMAGE_APP: ${{ vars.FLY_STAGING_FRONTEND_APP }}
+          IMAGE_KEY: ${{ needs.detect-changes.outputs.frontend_key }}
+          IMAGE_TAG: v${{ needs.version.outputs.version_with_sha }}
+          BUILD_TAG: ci-build-${{ github.run_id }}-${{ github.run_attempt }}
+          APP_VERSION: ${{ needs.version.outputs.version }}
+          CHANGED: ${{ needs.detect-changes.outputs.frontend_changed }}
+          FORCE_REBUILD: ${{ needs.detect-changes.outputs.force }}
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
   frontend-publish-chromatic:
     name: "Build / Frontend: Publish to Chromatic"
     runs-on: ubuntu-latest
+    needs: [detect-changes, frontend-build-push]
+    if: >-
+      !cancelled() && needs.frontend-build-push.result == 'success' &&
+      needs.frontend-build-push.outputs.checks == 'true'
     steps:
       - name: Checkout with full history
         uses: actions/checkout@v6
@@ -154,6 +229,10 @@ jobs:
   cms-lint:
     name: "Build / CMS: Lint"
     runs-on: ubuntu-latest
+    needs: [detect-changes, cms-build-push]
+    if: >-
+      !cancelled() && needs.cms-build-push.result == 'success' &&
+      needs.cms-build-push.outputs.checks == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -167,6 +246,10 @@ jobs:
   cms-check-format:
     name: "Build / CMS: Check Format"
     runs-on: ubuntu-latest
+    needs: [detect-changes, cms-build-push]
+    if: >-
+      !cancelled() && needs.cms-build-push.result == 'success' &&
+      needs.cms-build-push.outputs.checks == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -180,6 +263,10 @@ jobs:
   cms-typecheck:
     name: "Build / CMS: Typecheck"
     runs-on: ubuntu-latest
+    needs: [detect-changes, cms-build-push]
+    if: >-
+      !cancelled() && needs.cms-build-push.result == 'success' &&
+      needs.cms-build-push.outputs.checks == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -195,6 +282,10 @@ jobs:
   cms-unit-tests:
     name: "Build / CMS: Unit Tests"
     runs-on: ubuntu-latest
+    needs: [detect-changes, cms-build-push]
+    if: >-
+      !cancelled() && needs.cms-build-push.result == 'success' &&
+      needs.cms-build-push.outputs.checks == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -208,59 +299,80 @@ jobs:
   cms-build-push:
     name: "Build / CMS: Build and Push"
     runs-on: ubuntu-latest
-    needs: [version]
+    needs: [detect-changes, verify-cms-types, version]
+    if: >-
+      !cancelled() && needs.detect-changes.result == 'success' &&
+      needs.version.result == 'success' && (needs.verify-cms-types.result ==
+      'success' || (needs.detect-changes.outputs.types_changed == 'false' &&
+      needs.verify-cms-types.result == 'skipped'))
     outputs:
-      image: ${{ steps.image-name.outputs.image }}
+      image: ${{ steps.prepare.outputs.image }}
+      checks: ${{ steps.prepare.outputs.checks }}
+      built: ${{ steps.prepare.outputs.built }}
+      digest: ${{ steps.prepare.outputs.digest }}
+      cache_image: ${{ steps.prepare.outputs.cache_image }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
       - name: Set up flyctl
         uses: superfly/flyctl-actions/setup-flyctl@v1
         with:
           version: ${{ env.FLYCTL_VERSION }}
-      - name: Setup
-        uses: ./.github/actions/setup
-      - name: Get CMS image name
-        id: image-name
-        run: |
-          IMAGE_NAME=${{ vars.FLY_STAGING_CMS_APP }}
-          IMAGE_TAG=v${{ needs.version.outputs.version_with_sha }}
-          echo "image_name=$IMAGE_NAME" >> "$GITHUB_OUTPUT"
-          echo "image_tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
-          echo "image=registry.fly.io/$IMAGE_NAME:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
-      - name: Build and push CMS Docker image
-        run: |
-          flyctl deploy \
-            --app ${{ steps.image-name.outputs.image_name }} \
-            --config apps/cms/fly.build.toml \
-            --build-only \
-            --build-arg APP_VERSION=${{ needs.version.outputs.version }} \
-            --image-label ${{ steps.image-name.outputs.image_tag }} \
-            --label org.opencontainers.image.version=${{ steps.image-name.outputs.image_tag }} \
-            --push \
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+      - name: Authenticate Fly registry
+        uses: docker/login-action@v4
+        with:
+          registry: registry.fly.io
+          username: x
+          password: ${{ secrets.FLY_API_TOKEN }}
+      - name: Build or reuse cms image
+        id: prepare
+        run: node scripts/ci/images.mjs
         env:
+          APP: cms
+          IMAGE_APP: ${{ vars.FLY_STAGING_CMS_APP }}
+          IMAGE_KEY: ${{ needs.detect-changes.outputs.cms_key }}
+          IMAGE_TAG: v${{ needs.version.outputs.version_with_sha }}
+          BUILD_TAG: ci-build-${{ github.run_id }}-${{ github.run_attempt }}
+          APP_VERSION: ${{ needs.version.outputs.version }}
+          CHANGED: ${{ needs.detect-changes.outputs.cms_changed }}
+          FORCE_REBUILD: ${{ needs.detect-changes.outputs.force }}
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
   e2e-tests:
     name: Build / End-to-End Tests
     timeout-minutes: 60
     runs-on: ubuntu-latest
-    needs: [verify-cms-types, version, frontend-build-push, cms-build-push]
-    # A skipped required job can allow merging. Report failed prerequisites explicitly.
-    if: ${{ !cancelled() }}
+    needs:
+      [
+        ci-tests,
+        detect-changes,
+        verify-cms-types,
+        version,
+        frontend-build-push,
+        cms-build-push,
+      ]
+    # Keep the existing required E2E check red for failed prerequisites.
+    if: >-
+      !cancelled() && (contains(needs.*.result, 'failure') ||
+      needs.frontend-build-push.result != 'success' ||
+      needs.cms-build-push.result != 'success' ||
+      needs.detect-changes.outputs.e2e_changed == 'true' ||
+      needs.frontend-build-push.outputs.checks == 'true' ||
+      needs.cms-build-push.outputs.checks == 'true')
     env:
       CMS_API_KEY: e2e-tests-apikey
     steps:
-      - name: Require successful prerequisite jobs
-        if: >-
-          ${{ contains(needs.*.result, 'failure') ||
-              contains(needs.*.result, 'cancelled') ||
-              contains(needs.*.result, 'skipped') }}
-        run: |
-          echo "::error::All prerequisite jobs, including CMS type verification, must succeed."
-          exit 1
       - name: Checkout
         uses: actions/checkout@v6
+      - name: Require successful prerequisite jobs
+        run: node scripts/ci/gate.mjs prerequisites
+        env:
+          NEEDS: ${{ toJSON(needs) }}
       - name: Setup
         uses: ./.github/actions/setup
       - name: Install dependencies for e2e
@@ -361,7 +473,6 @@ jobs:
           FRONTEND_BASE_URL: http://localhost:${{ env.FRONTEND_INTERNAL_PORT }}
           CMS_BASE_URL: http://localhost:${{ env.CMS_INTERNAL_PORT }}
           CMS_API_KEY: ${{ env.CMS_API_KEY }}
-          EXPECTED_VERSION: ${{ needs.version.outputs.version }}
       - name: Upload Playwright report
         uses: actions/upload-artifact@v7
         if: always()
@@ -370,23 +481,75 @@ jobs:
           path: tests/e2e/playwright-report/
           retention-days: 30
 
-  deploy:
-    name: Deploy
-    if: github.event_name != 'pull_request'
+  ci-result:
+    name: "Build / Result"
+    if: always()
+    runs-on: ubuntu-latest
     needs:
-      - verify-cms-types
       - version
+      - ci-tests
+      - detect-changes
+      - verify-cms-types
+      - frontend-build-push
+      - cms-build-push
       - frontend-lint
       - frontend-check-format
       - frontend-typecheck
       - frontend-unit-tests
-      - frontend-build-push
+      - frontend-publish-chromatic
       - cms-lint
       - cms-check-format
       - cms-typecheck
       - cms-unit-tests
-      - cms-build-push
       - e2e-tests
+    outputs:
+      deploy: ${{ steps.gate.outputs.deploy }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Require successful affected jobs
+        id: gate
+        run: |
+          node scripts/ci/gate.mjs
+          echo "deploy=$DEPLOY" >> "$GITHUB_OUTPUT"
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+          DEPLOY: >-
+            ${{ needs.detect-changes.outputs.e2e_changed == 'true' ||
+            needs.frontend-build-push.outputs.checks == 'true' ||
+            needs.cms-build-push.outputs.checks == 'true' }}
+
+      - name: Set up Docker Buildx
+        if:
+          needs.frontend-build-push.outputs.built == 'true' ||
+          needs.cms-build-push.outputs.built == 'true'
+        uses: docker/setup-buildx-action@v4
+      - name: Authenticate Fly registry
+        if:
+          needs.frontend-build-push.outputs.built == 'true' ||
+          needs.cms-build-push.outputs.built == 'true'
+        uses: docker/login-action@v4
+        with:
+          registry: registry.fly.io
+          username: x
+          password: ${{ secrets.FLY_API_TOKEN }}
+      - name: Publish validated images to reuse cache
+        if:
+          needs.frontend-build-push.outputs.built == 'true' ||
+          needs.cms-build-push.outputs.built == 'true'
+        run: node scripts/ci/images.mjs promote
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+
+  deploy:
+    name: Deploy
+    if: >-
+      always() && !cancelled() && github.event_name != 'pull_request' &&
+      needs.ci-result.result == 'success' && needs.ci-result.outputs.deploy ==
+      'true'
+    needs: [version, ci-result]
     uses: ./.github/workflows/deploy-version.yml
     with:
       version_with_sha: ${{ needs.version.outputs.version_with_sha }}
@@ -401,12 +564,11 @@ jobs:
       group: fly-preview-lifecycle
       queue: max
       cancel-in-progress: false
-    if: github.event_name == 'pull_request'
-    needs:
-      - verify-cms-types
-      - version
-      - frontend-build-push
-      - cms-build-push
+    if: >-
+      always() && !cancelled() && github.event_name == 'pull_request' &&
+      needs.ci-result.result == 'success' && needs.ci-result.outputs.deploy ==
+      'true'
+    needs: [version, ci-result]
     uses: ./.github/workflows/deploy-version.yml
     with:
       version_with_sha: ${{ needs.version.outputs.version_with_sha }}
@@ -441,6 +603,7 @@ jobs:
 
   clean-preview:
     name: Clean Preview Apps
+    if: ${{ !cancelled() && needs.deploy-preview.result == 'success' }}
     uses: ./.github/workflows/clean-preview-reusable.yml
     secrets: inherit
     needs: deploy-preview
