@@ -218,6 +218,10 @@ The next page request after successful invalidation loads current content. An
 already-running request may finish with its prior result. Open pages require
 navigation or reload to request new data; this does not change banner dismissal.
 
+Server translation resources are isolated per request, so CMS UI labels follow
+the same invalidation and expiry rules. The UI-label endpoint uses `no-store` to
+prevent browser caching from keeping old translations after a reload.
+
 Cache keys are isolated by CMS origin and a random Redis generation.
 Invalidation rotates that generation, so an earlier in-flight request cannot
 restore active stale content. Old generations expire naturally. The

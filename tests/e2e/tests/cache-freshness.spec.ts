@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { createId } from "@paralleldrive/cuid2";
-import { create, getMedia } from "../common/cms";
+import { create, createPage, get, getMedia } from "../common/cms";
 
 test("the first page request after a related banner save contains the updated content", async ({
   page,
@@ -70,5 +70,59 @@ test("the first page request after a related banner save contains the updated co
       );
       expect(response.ok(), await response.text()).toBe(true);
     }
+  }
+});
+
+test("a UI label save updates the first reload without a hydration mismatch", async ({
+  page,
+  request,
+}) => {
+  const common = await get("globals/common?locale=en");
+  const updatedHeading = `Updated footer ${createId()}`;
+  const contentPage = await createPage();
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.route("https://fonts.googleapis.com/**", (route) =>
+    route.fulfill({ contentType: "text/css", body: "" }),
+  );
+  const commonUrl = new URL(
+    "/api/globals/common?locale=en",
+    process.env.CMS_BASE_URL,
+  ).toString();
+
+  try {
+    // Warm both the server translation resources and the browser label fetch.
+    await page.goto(`/en${contentPage.pathname}`);
+    await expect(page.locator("#footer-heading")).toHaveText(
+      common.uiLabels.footer.heading,
+    );
+    const labels = await page.evaluate(async () => {
+      const response = await fetch("/api/ui-labels?lng=en");
+      return {
+        labels: await response.json(),
+        cacheControl: response.headers.get("Cache-Control"),
+      };
+    });
+    expect(labels.labels.footer.heading).toBe(common.uiLabels.footer.heading);
+    expect(labels.cacheControl).toBe("no-store");
+
+    const saved = await request.post(commonUrl, {
+      data: { uiLabels: { footer: { heading: updatedHeading } } },
+    });
+    expect(saved.status(), await saved.text()).toBe(200);
+
+    const response = await page.reload();
+    expect(response!.status()).toBe(200);
+    expect(await response!.text()).toContain(updatedHeading);
+    await expect(page.locator("#footer-heading")).toHaveText(updatedHeading);
+    // Opening the menu waits for hydration, rather than checking only SSR text.
+    await page.getByRole("button", { name: "English", exact: true }).click();
+    await expect(page.getByRole("menuitem", { name: "Español" })).toBeVisible();
+    expect(errors).toEqual([]);
+  } finally {
+    const restored = await request.post(commonUrl, {
+      data: { uiLabels: { footer: common.uiLabels.footer } },
+    });
+    expect(restored.ok(), await restored.text()).toBe(true);
   }
 });

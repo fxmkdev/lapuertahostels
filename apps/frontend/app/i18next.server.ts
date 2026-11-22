@@ -53,7 +53,10 @@ export async function createI18next(request: Request) {
   const instance = createInstance();
   instance.use(initReactI18next).use(I18NextBackend);
   await instance.init({
+    // i18next mutates resources when loading CMS labels. Keep those bundles
+    // scoped to this request so later instances reload through the CMS cache.
     ...i18nConfig,
+    resources: structuredClone(i18nConfig.resources),
     backend: { request },
     fallbackLng: fallbackLanguage,
     lng: locale,
