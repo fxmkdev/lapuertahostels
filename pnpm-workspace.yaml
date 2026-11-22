@@ -3,7 +3,7 @@ packages:
   - "libs/*"
   - "tests/e2e"
 
-nodeVersion: 24.22.3
+nodeVersion: 26.13.1
 injectWorkspacePackages: true
 
 overrides:

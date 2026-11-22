@@ -5,7 +5,7 @@ come from the pull request title, so PR title quality matters.
 
 ## Workspace Setup
 
-Use Node 24.22.3 or newer within Node 24 and the exact pnpm version pinned in
+Use Node 26.13.1 or newer within Node 26 and the exact pnpm version pinned in
 `package.json`. Install native pnpm through npm, then install dependencies:
 
 ```bash
@@ -87,7 +87,7 @@ need to be strictly Conventional Commit formatted.
 
 ## Runtime and Typings Policy
 
-- Keep `@types/node` on the Node 24 line until the next runtime migration is
+- Keep `@types/node` on the Node 26 line until the next runtime migration is
   scheduled.
 
 ## TypeScript Imports
