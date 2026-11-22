@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { createId } from "@paralleldrive/cuid2";
 import { create, createPage, get, getMedia } from "../common/cms";
+import { openMenu } from "../common/menu";
 
 test("the first page request after a related banner save contains the updated content", async ({
   page,
@@ -116,8 +117,7 @@ test("a UI label save updates the first reload without a hydration mismatch", as
     expect(await response!.text()).toContain(updatedHeading);
     await expect(page.locator("#footer-heading")).toHaveText(updatedHeading);
     // Opening the menu waits for hydration, rather than checking only SSR text.
-    await page.getByRole("button", { name: "English", exact: true }).click();
-    await expect(page.getByRole("menuitem", { name: "Español" })).toBeVisible();
+    await openMenu(page, "English", "Español");
     expect(errors).toEqual([]);
   } finally {
     const restored = await request.post(commonUrl, {
