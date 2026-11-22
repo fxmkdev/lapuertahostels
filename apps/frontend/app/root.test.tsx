@@ -98,9 +98,9 @@ function expectShell(html: string, doc: Document, brand = "azul") {
 }
 
 function expectAnalytics(doc: Document, enabled: boolean) {
-  expect(
-    doc.head.querySelectorAll('script[data-domain="example.com"]'),
-  ).toHaveLength(enabled ? 1 : 0);
+  expect(doc.head.querySelectorAll('script[src="/js/script.js"]')).toHaveLength(
+    enabled ? 1 : 0,
+  );
 }
 
 describe("root document server rendering", () => {
@@ -216,7 +216,7 @@ describe("root document server rendering", () => {
 
   test("missing analytics configuration omits analytics", async () => {
     const data = makeData();
-    data.analyticsDomain = undefined;
+    data.analyticsEnabled = false;
     const result = await fixture(data).server("/normal");
     expectAnalytics(result.document, false);
   });

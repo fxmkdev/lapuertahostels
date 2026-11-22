@@ -137,7 +137,7 @@ jobs:
             steps.create-app.outputs.cms_app_name) ||
             vars.PAYLOAD_CMS_BASE_URL}}
           IMAGEKIT_BASE_URL: ${{ vars.IMAGEKIT_BASE_URL }}
-          ANALYTICS_DOMAIN: ${{ vars.ANALYTICS_DOMAIN }}
+          ANALYTICS_SCRIPT_URL: ${{ vars.ANALYTICS_SCRIPT_URL }}
       - name: Deploy frontend
         run: |
           flyctl deploy \
