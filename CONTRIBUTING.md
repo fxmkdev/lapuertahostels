@@ -45,7 +45,9 @@ pnpm --filter @lapuertahostels/payload-types check-payload-types
 
 This regenerates both files and compares them with `HEAD`, exiting with a diff
 if either committed file is stale. CI runs this check independently of builds
-and typechecks and requires it before staging or preview deployment.
+and typechecks and requires it before staging or preview deployment. The
+existing required E2E check also fails if verification fails, so stale types
+block merging without requiring a separate branch-protection change.
 
 ## Starting New Work
 
