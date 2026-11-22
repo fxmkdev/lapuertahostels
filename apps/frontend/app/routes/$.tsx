@@ -13,7 +13,8 @@ import {
 import type { SerializeFromLoader } from "~/common/types";
 import { type loader as rootLoader } from "~/root";
 import { toImagekitTransformationString } from "~/common/image";
-import { getAltFromMedia } from "~/common/media";
+import { getAltFromMedia, getFocalPropsFromMedia } from "~/common/media";
+import { resolveFocalCrop } from "~/common/image-focal-point";
 import { PAGE_DEPTH } from "~/cms-data";
 import { getSettings, tryGetLocalizedPathname } from "~/cms-data.server";
 import type { LocaleConfig } from "@lapuertahostels/payload-types";
@@ -162,7 +163,13 @@ function getSocialImageUrl(
 
   if (!image) return "";
 
-  return `${rootLoaderData.environment.imagekitBaseUrl.toString()}/${toImagekitTransformationString({ width, height })}/${image.filename}`;
+  const { focalPoint, sourceAspectRatio } = getFocalPropsFromMedia(image);
+  const { transformation } = resolveFocalCrop(
+    { width, height },
+    focalPoint,
+    sourceAspectRatio,
+  );
+  return `${rootLoaderData.environment.imagekitBaseUrl.toString()}/${toImagekitTransformationString(transformation!)}/${image.filename}`;
 }
 
 export async function loader({ request, url }: LoaderFunctionArgs) {

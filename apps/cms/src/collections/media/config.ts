@@ -1,4 +1,9 @@
-import type { CollectionConfig, CollectionSlug, Field } from "payload";
+import type {
+  CollectionConfig,
+  CollectionSlug,
+  Field,
+  UploadConfig,
+} from "payload";
 
 import { canManageContent } from "../../common/access-control";
 import { textareaField } from "../../fields/textarea";
@@ -23,14 +28,51 @@ function categoryField({ hidden }: { hidden: boolean }): Field {
   };
 }
 
+/** Payload refetches its original upload when an editor changes the focal point. */
+export function mediaFileFetchOptions(
+  serverUrl: string | undefined,
+  apiRoute = "/api",
+): Pick<UploadConfig, "skipSafeFetch" | "externalFileHeaderFilter"> {
+  if (!serverUrl) return {};
+  const url = new URL(serverUrl);
+  if (url.protocol !== "http:" && url.protocol !== "https:") return {};
+  return {
+    skipSafeFetch: [
+      {
+        hostname: url.hostname,
+        protocol: url.protocol === "https:" ? "https" : "http",
+        port: url.port,
+        pathname: `${url.pathname.replace(/\/$/, "")}${apiRoute}/media/file/*`,
+      },
+    ],
+    // Payload does not recognize its absolute file URLs as same-origin. Only
+    // forward authentication to the configured CMS origin, never elsewhere.
+    externalFileHeaderFilter: (headers, context): Record<string, string> => {
+      if (!context || new URL(context.url).origin !== url.origin) return {};
+      const filtered: Record<string, string> = {};
+      if (headers.cookie) {
+        filtered.cookie = headers.cookie;
+        // Payload's cookie authentication requires a trusted Origin header.
+        filtered.origin = url.origin;
+      }
+      if (headers.authorization) filtered.authorization = headers.authorization;
+      return filtered;
+    },
+  };
+}
+
 export function Media({
   generateAltTextOptions,
   organization = "categories",
   retainLegacyCategories = false,
+  serverUrl,
+  apiRoute,
 }: {
   generateAltTextOptions?: { publicMediaBaseUrl: string };
   organization?: "categories" | "folders" | "none";
   retainLegacyCategories?: boolean;
+  serverUrl?: string;
+  apiRoute?: string;
 } = {}): CollectionConfig {
   const includeCategoryField =
     organization === "categories" || retainLegacyCategories;
@@ -94,6 +136,8 @@ export function Media({
     defaultPopulate: {
       alt: true,
       filename: true,
+      focalX: true,
+      focalY: true,
       height: true,
       mimeType: true,
       sizes: {
@@ -123,7 +167,7 @@ export function Media({
       crop: false,
       disableLocalStorage: true,
       displayPreview: true,
-      focalPoint: false,
+      focalPoint: true,
       imageSizes: [
         {
           name: "thumbnail",
@@ -131,6 +175,7 @@ export function Media({
         },
       ],
       mimeTypes: ["image/*", "video/*"],
+      ...mediaFileFetchOptions(serverUrl, apiRoute),
     },
   };
 }

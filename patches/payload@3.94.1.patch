@@ -1,8 +1,8 @@
 diff --git a/dist/globals/operations/update.js b/dist/globals/operations/update.js
-index 27214991ce9223951bb499b6cf956ae57cdfe1b7..07c5261862d017f5a1910fdb5be8e69ef6c185c5 100644
+index 98afdcd21c41990ebc41c292f860d24c5bd05a9d..4ee7b1e18e704629501033b5f4ca8a8b5fef61ae 100644
 --- a/dist/globals/operations/update.js
 +++ b/dist/globals/operations/update.js
-@@ -212,6 +212,7 @@ export const updateOperation = async (args)=>{
+@@ -213,6 +213,7 @@ export const updateOperation = async (args)=>{
              fieldsToValidate: submittedTopLevelFieldNames,
              global: globalConfig,
              operation: 'update',
@@ -10,3 +10,16 @@ index 27214991ce9223951bb499b6cf956ae57cdfe1b7..07c5261862d017f5a1910fdb5be8e69e
              req,
              skipValidation: isSavingDraft && !hasDraftValidationEnabled(globalConfig)
          };
+diff --git a/dist/uploads/getExternalFile.js b/dist/uploads/getExternalFile.js
+index 87c2731da053a18a86d1e309b1c637d8a7948d86..0f02bcf26a4b6e40d80219119ccfd094d7ad7a86 100644
+--- a/dist/uploads/getExternalFile.js
++++ b/dist/uploads/getExternalFile.js
+@@ -92,7 +92,7 @@ export const getExternalFile = async ({ data, req, uploadConfig })=>{
+             name: filename,
+             data: Buffer.from(data),
+             mimetype: res.headers.get('content-type') || undefined,
+-            size: Number(res.headers.get('content-length')) || 0
++            size: data.byteLength
+         };
+     }
+     throw new APIError('Invalid file url', 400);

@@ -4,7 +4,11 @@ import { ImageViewer } from "~/common/image-viewer/image-viewer";
 import type { Room } from "./types";
 import { RichTextParagraph } from "~/common/paragraph";
 import type { RichTextObject } from "@lapuertahostels/rich-text";
-import { getAltFromMedia, getSrcFromMedia } from "~/common/media";
+import {
+  getAltFromMedia,
+  getSrcFromMedia,
+  getFocalPropsFromMedia,
+} from "~/common/media";
 import { PageLink } from "~/common/page-link";
 import { isObject } from "~/common/utils";
 
@@ -22,6 +26,7 @@ export function RoomCard({ heading, text, images, cta }: RoomCardProps) {
             src: getSrcFromMedia(image.image),
             alt: getAltFromMedia(image.image),
             caption: image.caption ?? "",
+            focalPoint: getFocalPropsFromMedia(image.image).focalPoint,
             aspectRatio:
               isObject(image.image) && image.image.width && image.image.height
                 ? image.image.width / image.image.height

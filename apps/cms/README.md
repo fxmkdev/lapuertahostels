@@ -40,3 +40,38 @@ CI runs the CMS unit suite in the **Build / CMS: Unit Tests** job. Browser
 regressions for structured and rich-text links run in the existing E2E suite.
 The E2E CMS advertises `http://localhost:3001` so the host browser can reach its
 API; container-to-container requests use `http://cms:3001`.
+
+## Image focal points
+
+Open a media image, choose **Edit Image**, and drag the focal-point marker onto
+the subject (or enter X and Y percentages). Apply the changes and save the
+media. The point belongs to the image and applies to every placement and locale,
+including room thumbnails and social previews. A saved point takes precedence
+over hero-slide Image Alignment; that setting remains a fallback for older
+images without focal metadata. New uploads default to a centered point.
+
+The original image stays uncropped. Payload stores the point and retains the
+existing admin-thumbnail configuration; ImageKit handles frontend resizing and
+cropping. No migration or bulk image regeneration is needed. The website caches
+CMS data for one minute and refreshes stale entries in the background, so a
+focal edit may require a subsequent page load after that interval to appear. Use
+`?skipcache=true` when checking a saved change immediately.
+
+The existing Payload UI patch also preserves zero-valued focal coordinates when
+reopening the editor and omits crop edits when cropping is disabled. These
+workarounds apply to both the individual modules and the bundled client export.
+
+Payload refetches the stored original when saving a focal edit. The media
+collection allows that fetch only at the configured CMS server's media-file
+endpoint (including its protocol, explicit port, and API path), so local and
+private deployments can save edits without disabling fetch protection for other
+URLs.
+
+The fetch forwards session cookies and API authorization only to the configured
+CMS origin, including protocol and port. Cookie-authenticated refetches also
+include that origin for Payload’s CSRF check. Other destinations receive no
+credentials. This works around Payload treating its absolute upload URLs as
+external URLs.
+
+The Payload server patch measures refetched files from the downloaded buffer,
+preserving their size when a storage response omits `Content-Length`.

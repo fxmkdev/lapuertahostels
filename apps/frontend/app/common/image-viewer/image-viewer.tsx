@@ -29,6 +29,8 @@ export function ImageViewer({ images, className }: ImageViewerProps) {
             <Image
               src={images[0].src}
               alt={images[0].alt}
+              focalPoint={images[0].focalPoint}
+              sourceAspectRatio={images[0].aspectRatio}
               className="h-full w-full object-cover transition-all duration-300 ease-in-out group-hover:scale-105 group-hover:opacity-75"
               transformation={{
                 width: 560,
@@ -52,6 +54,8 @@ export function ImageViewer({ images, className }: ImageViewerProps) {
             <Image
               src={image.src}
               alt={image.alt}
+              focalPoint={image.focalPoint}
+              sourceAspectRatio={image.aspectRatio}
               className="aspect-4/3 object-cover transition-all duration-300 ease-in-out group-hover:scale-105 group-hover:opacity-75"
               transformation={{
                 width: 140,

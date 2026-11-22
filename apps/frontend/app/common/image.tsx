@@ -2,19 +2,22 @@ import type { DetailedHTMLProps, ImgHTMLAttributes, Ref } from "react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useEnvironment } from "~/common/environment";
 import { mergeRefs } from "./utils";
+import { resolveFocalCrop, type FocalPoint } from "./image-focal-point";
 
 export type ImageProps = {
   src: string;
   alt?: string;
   className?: string;
   transformation?: ImageTransformation;
+  focalPoint?: FocalPoint;
+  sourceAspectRatio?: number;
   onLoadingFinished?: () => void;
   layout: "fixed" | "responsive";
   srcMultiplier?: number;
   ref?: Ref<HTMLImageElement>;
 } & Pick<
   DetailedHTMLProps<ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement>,
-  "loading" | "sizes"
+  "loading" | "sizes" | "style"
 >;
 
 export function Image({
@@ -24,8 +27,11 @@ export function Image({
   srcMultiplier = 3,
   className,
   transformation,
+  focalPoint,
+  sourceAspectRatio,
   onLoadingFinished,
   ref,
+  style,
   ...props
 }: ImageProps) {
   const { imagekitBaseUrl, useImageCacheBuster } = useEnvironment();
@@ -74,8 +80,13 @@ export function Image({
         }
       : undefined;
 
+    const { transformation: focalTransformation } = resolveFocalCrop(
+      ratioAdjustedTransformation,
+      focalPoint,
+      sourceAspectRatio,
+    );
     const fullSrcUrl = new URL(
-      `${imagekitBaseUrl}${ratioAdjustedTransformation ? `/${toImagekitTransformationString(ratioAdjustedTransformation)}` : ""}${src}`,
+      `${imagekitBaseUrl}${focalTransformation ? `/${toImagekitTransformationString(focalTransformation)}` : ""}${src}`,
     );
     if (useImageCacheBuster) {
       // Add cache buster to avoid flaky Chromatic regression tests
@@ -86,11 +97,18 @@ export function Image({
     return fullSrcUrl.toString();
   }
 
+  const { objectPosition } = resolveFocalCrop(
+    transformation,
+    focalPoint,
+    sourceAspectRatio,
+  );
+
   return (
     <img
       {...props}
       srcSet={srcSet}
       className={className}
+      style={objectPosition ? { ...style, objectPosition } : style}
       alt={alt}
       ref={mergeRefs(ref, localRef)}
       onLoad={onLoad}
@@ -104,6 +122,8 @@ export type ImageTransformation = {
   aspectRatio?: { width: number; height: number };
   cropStrategy?: "maintain_ratio";
   focus?: "auto" | "custom";
+  centerX?: number;
+  centerY?: number;
   enhancement?: "grayscale";
   blur?: number;
 };
@@ -138,6 +158,10 @@ function toImagekitTransformationItemString(
       return `c-${transformation.cropStrategy!}`;
     case "focus":
       return `fo-${transformation.focus!}`;
+    case "centerX":
+      return `xc-${transformation.centerX!}`;
+    case "centerY":
+      return `yc-${transformation.centerY!}`;
     case "enhancement":
       return `e-${transformation.enhancement!}`;
     case "blur":
