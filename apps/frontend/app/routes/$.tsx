@@ -12,14 +12,18 @@ import {
 } from "~/common/routing";
 import type { SerializeFromLoader } from "~/common/types";
 import { type loader as rootLoader } from "~/root";
-import { toImagekitTransformationString } from "~/common/image";
-import { getAltFromMedia } from "~/common/media";
+import { getAltFromMedia, getMediaImageUrl } from "~/common/media";
 import { PAGE_DEPTH } from "~/cms-data";
 import { getSettings, tryGetLocalizedPathname } from "~/cms-data.server";
 import type { LocaleConfig } from "@lapuertahostels/payload-types";
+import { buildStructuredData } from "~/common/structured-data";
 
-export const meta: MetaFunction<typeof loader> = ({ loaderData, matches }) => {
-  if (!loaderData) throw new Error("No loader data");
+export const meta: MetaFunction<typeof loader> = ({
+  loaderData,
+  matches,
+  error,
+}) => {
+  if (error || !loaderData) return [];
 
   const rootLoaderData = matches.find((m) => m.id === "root")
     ?.loaderData as SerializeFromLoader<typeof rootLoader>;
@@ -28,8 +32,21 @@ export const meta: MetaFunction<typeof loader> = ({ loaderData, matches }) => {
   const parentMeta = matches.flatMap((match) => match.meta ?? []);
 
   const description = loaderData.content.seo?.description ?? "";
+  const structuredData = loaderData.includeStructuredData
+    ? buildStructuredData({
+        page: loaderData.content,
+        brand: rootLoaderData.brand,
+        parentBrand: rootLoaderData.allBrands.find((b) => b.id === "puerta"),
+        footer: rootLoaderData.footer,
+        canonicalUrl: loaderData.canonicalUrl,
+        locale: rootLoaderData.locale,
+        publishedLocaleCodes: loaderData.publishedLocaleCodes,
+        imagekitBaseUrl: rootLoaderData.environment.imagekitBaseUrl,
+      })
+    : undefined;
   return [
     ...parentMeta,
+    ...(structuredData ? [{ "script:ld+json": structuredData }] : []),
     ...loaderData.alternateUrls.map((alternateUrl) => ({
       tagName: "link",
       rel: "alternate",
@@ -98,18 +115,20 @@ function getTwitterCardImageMeta(
   rootLoaderData: SerializeFromLoader<typeof rootLoader>,
 ): { name: string; content: string }[] {
   const image = data.content.seo?.image;
-  if (!image) {
-    return [];
-  }
-
-  if (typeof image !== "object") {
-    throw new Error("Invalid image");
-  }
+  const imageUrl = getMediaImageUrl(
+    image,
+    rootLoaderData.environment.imagekitBaseUrl,
+    {
+      width: 2400,
+      height: 1200,
+    },
+  );
+  if (!imageUrl) return [];
 
   return [
     {
       name: "twitter:image",
-      content: getSocialImageUrl(data, rootLoaderData, 2400, 1200),
+      content: imageUrl,
     },
     {
       name: "twitter:image:alt",
@@ -123,21 +142,24 @@ function getOpenGraphImageMeta(
   rootLoaderData: SerializeFromLoader<typeof rootLoader>,
 ): { name: string; content: string }[] {
   const image = data.content.seo?.image;
-  if (!image) {
-    return [];
-  }
-
-  if (typeof image !== "object") {
-    throw new Error("Invalid image");
-  }
+  if (!image || typeof image !== "object") return [];
 
   const width = 1200;
   const height = 630;
+  const imageUrl = getMediaImageUrl(
+    image,
+    rootLoaderData.environment.imagekitBaseUrl,
+    {
+      width,
+      height,
+    },
+  );
+  if (!imageUrl) return [];
 
   return [
     {
       name: "og:image",
-      content: getSocialImageUrl(data, rootLoaderData, width, height),
+      content: imageUrl,
     },
     {
       name: "og:image:alt",
@@ -147,22 +169,6 @@ function getOpenGraphImageMeta(
     { name: "og:image:width", content: width.toString() },
     { name: "og:image:height", content: height.toString() },
   ];
-}
-
-function getSocialImageUrl(
-  data: SerializeFromLoader<typeof loader>,
-  rootLoaderData: SerializeFromLoader<typeof rootLoader>,
-  width: number,
-  height: number,
-) {
-  const image = data.content.seo?.image;
-  if (typeof image !== "object") {
-    throw new Error("Invalid image");
-  }
-
-  if (!image) return "";
-
-  return `${rootLoaderData.environment.imagekitBaseUrl.toString()}/${toImagekitTransformationString({ width, height })}/${image.filename}`;
 }
 
 export async function loader({ request, url }: LoaderFunctionArgs) {
@@ -194,9 +200,16 @@ export async function loader({ request, url }: LoaderFunctionArgs) {
     settings.publishedLocales.fallbackLocale as LocaleConfig
   ).id;
 
+  const canonicalUrl = getCanonicalRequestUrl(request, url);
+  canonicalUrl.search = "";
+  canonicalUrl.hash = "";
+
   return {
     origin: requestUrl.origin,
-    canonicalUrl: getCanonicalRequestUrl(request, url).href,
+    canonicalUrl: canonicalUrl.href,
+    includeStructuredData:
+      !requestUrl.searchParams.has("preview") &&
+      !settings.maintenanceScreen?.show,
     pageUrl,
     dataPath,
     content,
