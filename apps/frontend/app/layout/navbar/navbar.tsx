@@ -41,11 +41,19 @@ export function Navbar({
 }: NavbarProps) {
   const { i18n } = useTranslation();
   const [localeSwitcherOpen, setLocaleSwitcherOpen] = useState(false);
+  const [navbarFocused, setNavbarFocused] = useState(false);
+  const [floatingCtaFocused, setFloatingCtaFocused] = useState(false);
 
   const navbarRef = useRef<HTMLDivElement>(null);
   const scrollDirection = useScrollDirection();
   const scrollY = useScrollY();
   const isScrolled = useIsScrolled(navbarRef);
+  const navbarHidden =
+    isScrolled &&
+    scrollDirection === "down" &&
+    scrollY > HIDE_NAVBAR_THRESHOLD &&
+    !navbarFocused &&
+    !localeSwitcherOpen;
 
   useElementHeightObserver(navbarRef, onHeightChanged || (() => {}));
 
@@ -62,17 +70,21 @@ export function Navbar({
       <Menu
         as="nav"
         className={cn(
-          "sticky inset-0 z-40 bg-white",
+          "sticky inset-0 z-40 bg-white focus-within:duration-0 motion-reduce:transition-none",
           isScrolled
             ? cn(
                 "shadow-md transition-transform duration-500 ease-in-out",
-                scrollDirection === "down" && scrollY > HIDE_NAVBAR_THRESHOLD
-                  ? "-translate-y-full sm:translate-y-0"
-                  : "translate-y-0",
+                navbarHidden ? "-translate-y-full" : "translate-y-0",
               )
             : "shadow-none transition-shadow duration-1000 ease-in-out",
         )}
         ref={mergeRefs(navbarRef, ref)}
+        onFocusCapture={() => setNavbarFocused(true)}
+        onBlurCapture={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget)) {
+            setNavbarFocused(false);
+          }
+        }}
       >
         {({ open }) => (
           <>
@@ -174,7 +186,14 @@ export function Navbar({
         <BookButton
           cta={brand.bookCta}
           size="floating-action-button"
-          className="fixed right-6 bottom-6 z-50 sm:hidden"
+          className={cn(
+            // Visibility changes immediately on reveal, but waits for the navbar
+            // to slide back in before hiding, keeping booking available throughout.
+            "fixed right-6 bottom-6 z-50 transition-[visibility] duration-500 motion-reduce:transition-none",
+            !navbarHidden && !floatingCtaFocused && "sm:invisible",
+          )}
+          onFocus={() => setFloatingCtaFocused(true)}
+          onBlur={() => setFloatingCtaFocused(false)}
         />
       ) : null}
     </>
@@ -241,7 +260,7 @@ function useScrollDirection(): ScrollDirection | undefined {
 
         if (window.scrollY > lastScrollY) {
           setScrollDirection("down");
-        } else {
+        } else if (window.scrollY < lastScrollY) {
           setScrollDirection("up");
         }
       } finally {

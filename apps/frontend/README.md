@@ -163,6 +163,20 @@ See Plausible's
 [Events API diagnostics](https://plausible.io/docs/events-api), plus Fly's
 [visitor IP documentation](https://fly.io/docs/networking/request-headers/).
 
+## Navbar scrolling
+
+The sticky navbar hides when scrolling down past 100px and reappears when
+scrolling up or navigating to another page. While hidden, its booking CTA is
+available as a floating button at the bottom right. At widths below 640px, the
+floating booking button is always available. Both versions use the brand's CMS
+booking configuration.
+
+Keyboard focus reveals the navbar and keeps it visible while focus is inside. A
+focused floating booking button stays available until focus leaves it. The
+navbar transition respects reduced-motion preferences. Try this behavior in
+Storybook under `layout/Navbar → Scrollable`, which also includes a dismissible
+banner.
+
 ## Deployment
 
 First, build your app for production:

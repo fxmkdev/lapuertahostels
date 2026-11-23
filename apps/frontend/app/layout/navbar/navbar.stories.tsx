@@ -3,10 +3,12 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { Navbar } from "./navbar";
 import {
   brand,
+  banner,
   customLink,
   internalLink,
   media,
 } from "~/common/cms-data.builders";
+import { Header } from "../header";
 
 const meta = {
   title: "layout/Navbar",
@@ -72,4 +74,30 @@ export const WithoutBookCta: Story = {
       bookCta: { show: false },
     },
   },
+};
+
+export const Scrollable: Story = {
+  args: {
+    ...Default.args,
+    brand: {
+      ...puertaBrand,
+      banner: banner("Travel before 20 September and get 20% off!", "Book now"),
+    },
+  },
+  render: (args) => (
+    <>
+      <Header {...args} />
+      <main className="min-h-[300vh] bg-neutral-50 p-8">
+        <h2 className="text-2xl font-bold">Scroll to try the navbar</h2>
+        <p className="mt-4">
+          Scroll down past 100px to hide the navbar, then scroll up to reveal
+          it. Booking stays available at the bottom right while the navbar is
+          hidden. On mobile, the floating booking button is always available.
+        </p>
+        <button className="mt-8 rounded-md border p-3" type="button">
+          Focus outside the navbar
+        </button>
+      </main>
+    </>
+  ),
 };
