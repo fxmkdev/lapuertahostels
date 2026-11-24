@@ -11,7 +11,7 @@ vi.mock("~/cms-data.server", () => ({
   tryGetLocalizedPathname: vi.fn(),
 }));
 
-function socialMetadata(focalX?: number, focalY?: number) {
+function socialMetadata(focalX?: number, focalY?: number, dimensions = {}) {
   return meta({
     loaderData: {
       content: {
@@ -23,6 +23,7 @@ function socialMetadata(focalX?: number, focalY?: number) {
             height: 800,
             focalX,
             focalY,
+            ...dimensions,
           },
         },
       },
@@ -62,5 +63,19 @@ test("social URLs without focal metadata preserve existing transformations", () 
   expect(socialMetadata()).toContainEqual({
     name: "og:image",
     content: "https://images.example.com/tr:w-1200,h-630/subject.jpg",
+  });
+});
+
+test("social crops use the displayed portrait dimensions for EXIF rotations", () => {
+  const result = socialMetadata(50, 90, {
+    width: 1280,
+    height: 854,
+    displayWidth: 854,
+    displayHeight: 1280,
+  });
+  expect(result).toContainEqual({
+    name: "og:image",
+    content:
+      "https://images.example.com/tr:w-1200,h-630,xc-600,yc-1484/subject.jpg",
   });
 });

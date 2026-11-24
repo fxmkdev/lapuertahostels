@@ -11,6 +11,7 @@ import { contentGroup } from "../../groups";
 import { translated } from "../../translations/translations";
 import { generateAltTextEndpoint } from "./generate-alt-text-endpoint";
 import { mediaUsagesField } from "./usages";
+import { setDisplayDimensions } from "./display-dimensions";
 
 function categoryField({ hidden }: { hidden: boolean }): Field {
   const relationTo = "mediaCategory" as unknown as CollectionSlug;
@@ -77,6 +78,14 @@ export function Media({
   const includeCategoryField =
     organization === "categories" || retainLegacyCategories;
   const fields: Field[] = [
+    ...["displayWidth", "displayHeight"].map(
+      (name): Field => ({
+        name,
+        type: "number",
+        min: 1,
+        admin: { hidden: true, readOnly: true },
+      }),
+    ),
     ...(includeCategoryField
       ? [categoryField({ hidden: organization !== "categories" })]
       : []),
@@ -138,6 +147,8 @@ export function Media({
       filename: true,
       focalX: true,
       focalY: true,
+      displayWidth: true,
+      displayHeight: true,
       height: true,
       mimeType: true,
       sizes: {
@@ -157,6 +168,7 @@ export function Media({
       ? [generateAltTextEndpoint(generateAltTextOptions)]
       : [],
     fields,
+    hooks: { beforeChange: [setDisplayDimensions] },
     folders: organization === "folders" ? true : undefined,
     labels: {
       plural: translated("cmsPlugin:media:labels:plural"),

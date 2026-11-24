@@ -52,10 +52,12 @@ images without focal metadata. New uploads default to a centered point.
 
 The original image stays uncropped. Payload stores the point and retains the
 existing admin-thumbnail configuration; ImageKit handles frontend resizing and
-cropping. No migration or bulk image regeneration is needed. The website caches
-CMS data for one minute and refreshes stale entries in the background, so a
-focal edit may require a subsequent page load after that interval to appear. Use
-`?skipcache=true` when checking a saved change immediately.
+cropping. The metadata migration `20261124_000000_media_display_dimensions`
+backfills existing JPEG display dimensions; no bulk image regeneration is
+needed. The website caches CMS data for one minute and refreshes stale entries
+in the background, so a focal edit may require a subsequent page load after that
+interval to appear. Use `?skipcache=true` when checking a saved change
+immediately.
 
 The existing Payload UI patch also preserves zero-valued focal coordinates when
 reopening the editor and omits crop edits when cropping is disabled. These
@@ -77,3 +79,19 @@ The Payload server patch measures refetched files from the downloaded buffer,
 preserving their size when a storage response omits `Content-Length`. It also
 ensures an empty URL port matches only the default port, keeping private
 refetches on other ports outside the allowlist.
+
+### EXIF orientation
+
+`displayWidth` and `displayHeight` describe the image after EXIF orientation,
+matching the editor and ImageKit. Uploads, replacements and focal refetches read
+these dimensions with Sharp metadata only; no image pixels or raw width/height
+are rewritten. Sharp is not registered as Payload's image processor.
+
+The deployment's normal `payload migrate` release command backfills JPEGs
+missing valid display dimensions. It reads originals from the configured S3
+bucket, including their optional storage object folders, and updates only these
+two fields. Valid records are skipped on retries. Missing objects or invalid
+JPEG metadata fail the migration with the affected media ID; correct the source
+or storage access and rerun the migration. The migration helper also supports a
+`dryRun` option for an audit without database writes. This work may read each
+legacy JPEG once from S3. It does not rotate or regenerate originals/thumbnails.

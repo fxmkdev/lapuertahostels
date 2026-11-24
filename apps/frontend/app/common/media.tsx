@@ -15,23 +15,36 @@ export function getAltFromMedia(media: Media | string | undefined | null) {
   return gracefully(media, "alt") || "";
 }
 
+export function getDisplayDimensionsFromMedia(
+  media: Media | string | undefined | null,
+) {
+  if (!isObject(media)) return undefined;
+  const valid = (width: unknown, height: unknown) =>
+    typeof width === "number" &&
+    typeof height === "number" &&
+    Number.isFinite(width) &&
+    Number.isFinite(height) &&
+    width > 0 &&
+    height > 0;
+  if (valid(media.displayWidth, media.displayHeight))
+    return { width: media.displayWidth!, height: media.displayHeight! };
+  if (valid(media.width, media.height))
+    return { width: media.width!, height: media.height! };
+  return undefined;
+}
+
 export function getFocalPropsFromMedia(
   media: Media | string | undefined | null,
 ) {
-  if (
-    !isObject(media) ||
-    !media.mimeType?.startsWith("image/") ||
-    !media.width ||
-    !media.height ||
-    media.width <= 0 ||
-    media.height <= 0 ||
-    !Number.isFinite(media.width) ||
-    !Number.isFinite(media.height)
-  )
+  const dimensions = getDisplayDimensionsFromMedia(media);
+  if (!isObject(media) || !media.mimeType?.startsWith("image/") || !dimensions)
     return {};
   const focalPoint = { x: media.focalX!, y: media.focalY! };
   if (!isValidFocalPoint(focalPoint)) return {};
-  return { focalPoint, sourceAspectRatio: media.width / media.height };
+  return {
+    focalPoint,
+    sourceAspectRatio: dimensions.width / dimensions.height,
+  };
 }
 
 export type MediaImageProps = Omit<

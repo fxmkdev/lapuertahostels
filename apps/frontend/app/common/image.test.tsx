@@ -2,7 +2,11 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
 import { ThemeProvider } from "~/themes";
 import { Image } from "./image";
-import { MediaImage, getFocalPropsFromMedia } from "./media";
+import {
+  MediaImage,
+  getFocalPropsFromMedia,
+  getDisplayDimensionsFromMedia,
+} from "./media";
 import { media } from "./cms-data.builders";
 import { SlideImage } from "~/blocks/slides-block/slide-image";
 import { RoomCard } from "~/blocks/room-list-block/room-card";
@@ -152,4 +156,49 @@ test("room-gallery thumbnails retain media focal metadata", () => {
   expect(images[0].getAttribute("srcset")).toContain("xc-");
   expect(images[1].getAttribute("srcset")).toContain("xc-");
   expect(images[0].style.objectPosition).not.toBe("");
+});
+
+const rotatedPhoto = {
+  ...photo,
+  width: 1280,
+  height: 854,
+  displayWidth: 854,
+  displayHeight: 1280,
+  focalX: 50,
+  focalY: 90,
+};
+
+test("EXIF-oriented metadata controls square crops and gallery geometry", () => {
+  const { unmount } = render(
+    <MediaImage
+      media={rotatedPhoto}
+      layout="fixed"
+      transformation={{ width: 400, height: 400 }}
+    />,
+  );
+  expect(screen.getByRole("img").getAttribute("srcset")).toContain(
+    "xc-200,yc-400",
+  );
+  unmount();
+  render(
+    <ThemeProvider themeColor="puerta">
+      <RoomCard images={[{ image: rotatedPhoto }]} />
+    </ThemeProvider>,
+  );
+  // A 560x315 crop of an oriented portrait must center vertically toward its bottom.
+  expect(screen.getByRole("img").getAttribute("srcset")).toContain("yc-682");
+  expect(getDisplayDimensionsFromMedia(rotatedPhoto)).toEqual({
+    width: 854,
+    height: 1280,
+  });
+});
+
+test("legacy and incomplete display metadata fall back to raw dimensions", () => {
+  expect(getDisplayDimensionsFromMedia(photo)).toEqual({
+    width: 1600,
+    height: 800,
+  });
+  expect(
+    getDisplayDimensionsFromMedia({ ...rotatedPhoto, displayHeight: null }),
+  ).toEqual({ width: 1280, height: 854 });
 });

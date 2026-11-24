@@ -8,9 +8,9 @@ import {
   getAltFromMedia,
   getSrcFromMedia,
   getFocalPropsFromMedia,
+  getDisplayDimensionsFromMedia,
 } from "~/common/media";
 import { PageLink } from "~/common/page-link";
-import { isObject } from "~/common/utils";
 
 export type RoomCardProps = Partial<Room>;
 
@@ -22,15 +22,13 @@ export function RoomCard({ heading, text, images, cta }: RoomCardProps) {
       </Heading>
       <ImageViewer
         images={images?.map((image) => {
+          const dimensions = getDisplayDimensionsFromMedia(image.image);
           return {
             src: getSrcFromMedia(image.image),
             alt: getAltFromMedia(image.image),
             caption: image.caption ?? "",
             focalPoint: getFocalPropsFromMedia(image.image).focalPoint,
-            aspectRatio:
-              isObject(image.image) && image.image.width && image.image.height
-                ? image.image.width / image.image.height
-                : 1,
+            aspectRatio: dimensions ? dimensions.width / dimensions.height : 1,
           };
         })}
       />
