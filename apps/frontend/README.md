@@ -171,11 +171,16 @@ available as a floating button at the bottom right. At widths below 640px, the
 floating booking button is always available. Both versions use the brand's CMS
 booking configuration.
 
+The floating CTA fades in and slides upward 8px over 200ms. When the navbar
+returns, the CTA waits 500ms before fading out and sliding downward over 150ms,
+keeping booking available throughout the handoff. Scroll reversals immediately
+reverse the transition.
+
 Keyboard focus reveals the navbar and keeps it visible while focus is inside. A
 focused floating booking button stays available until focus leaves it. The
-navbar transition respects reduced-motion preferences. Try this behavior in
-Storybook under `layout/Navbar → Scrollable`, which also includes a dismissible
-banner.
+navbar and CTA transitions respect reduced-motion preferences, with animation
+and delays disabled. Try this behavior in Storybook under
+`layout/Navbar → Scrollable`, which also includes a dismissible banner.
 
 ## Deployment
 

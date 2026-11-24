@@ -86,7 +86,12 @@ function floatingCta() {
 test("hides only beyond 100px and swaps the desktop booking CTA", () => {
   const nav = setup();
   expect(nav).not.toHaveClass("-translate-y-full");
-  expect(floatingCta()).toHaveClass("sm:invisible");
+  expect(floatingCta()).toHaveClass(
+    "sm:invisible",
+    "sm:opacity-0",
+    "sm:translate-y-2",
+    "sm:delay-500",
+  );
 
   scrollTo(100);
   expect(nav).not.toHaveClass("-translate-y-full");
@@ -94,6 +99,7 @@ test("hides only beyond 100px and swaps the desktop booking CTA", () => {
   expect(nav).toHaveClass("-translate-y-full");
   expect(nav).not.toHaveClass("sm:translate-y-0");
   expect(floatingCta()).not.toHaveClass("sm:invisible");
+  expect(floatingCta()).not.toHaveClass("sm:opacity-0");
   expect(floatingCta()).toHaveAttribute("href", "https://booking.example.com");
 
   scrollTo(200);
@@ -170,6 +176,23 @@ test("keeps the floating CTA available until it loses focus", () => {
   expect(nav).toHaveClass("translate-y-0");
   expect(booking).toHaveFocus();
   expect(booking).not.toHaveClass("sm:invisible");
+  expect(booking).not.toHaveClass("sm:opacity-0");
   act(() => screen.getByRole("button", { name: "Outside navbar" }).focus());
   expect(booking).toHaveClass("sm:invisible");
+  expect(booking).toHaveClass("sm:opacity-0");
+});
+
+test("keeps the same booking link mounted through rapid scroll reversals", () => {
+  setup();
+  const booking = floatingCta();
+  for (const [y, exiting] of [
+    [200, false],
+    [190, true],
+    [210, false],
+    [180, true],
+  ] as const) {
+    scrollTo(y);
+    expect(floatingCta()).toBe(booking);
+    expect(booking.classList.contains("sm:opacity-0")).toBe(exiting);
+  }
 });

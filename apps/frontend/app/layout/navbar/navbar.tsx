@@ -187,10 +187,12 @@ export function Navbar({
           cta={brand.bookCta}
           size="floating-action-button"
           className={cn(
-            // Visibility changes immediately on reveal, but waits for the navbar
-            // to slide back in before hiding, keeping booking available throughout.
-            "fixed right-6 bottom-6 z-50 transition-[visibility] duration-500 motion-reduce:transition-none",
-            !navbarHidden && !floatingCtaFocused && "sm:invisible",
+            "visible fixed right-6 bottom-6 z-50 translate-y-0 opacity-100 transition-[opacity,translate,visibility] delay-0 duration-200 ease-out motion-reduce:transition-none",
+            // Wait for the navbar to return before fading out. Visibility keeps
+            // the CTA interactive until the exit finishes.
+            !navbarHidden &&
+              !floatingCtaFocused &&
+              "sm:invisible sm:translate-y-2 sm:opacity-0 sm:delay-500 sm:duration-150 sm:ease-in sm:motion-reduce:delay-0",
           )}
           onFocus={() => setFloatingCtaFocused(true)}
           onBlur={() => setFloatingCtaFocused(false)}
