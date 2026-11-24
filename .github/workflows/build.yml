@@ -25,8 +25,8 @@ jobs:
     with:
       release: ${{ github.event.inputs.release }}
 
-  populate-cms-types:
-    name: "Populate CMS types"
+  verify-cms-types:
+    name: "Build / CMS: Verify Generated Types"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -35,13 +35,8 @@ jobs:
         uses: ./.github/actions/setup
       - name: Install CMS dependencies
         run: pnpm --filter cms install --frozen-lockfile
-      - name: Pull CMS types
-        run: pnpm --filter payload-types pull-payload-types
-      - name: Upload CMS types
-        uses: actions/upload-artifact@v7
-        with:
-          name: payload-types
-          path: libs/payload-types/src/payload-types.ts
+      - name: Verify committed CMS types
+        run: pnpm --filter @lapuertahostels/payload-types check-payload-types
 
   frontend-lint:
     name: "Build / Frontend: Lint"
@@ -72,17 +67,11 @@ jobs:
   frontend-typecheck:
     name: "Build / Frontend: Typecheck"
     runs-on: ubuntu-latest
-    needs: populate-cms-types
     steps:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Setup
         uses: ./.github/actions/setup
-      - name: Download CMS types
-        uses: actions/download-artifact@v8
-        with:
-          name: payload-types
-          path: libs/payload-types/src
       - name: Install dependencies
         run: pnpm --filter frontend install --frozen-lockfile
       - name: Run typecheck in frontend
@@ -104,7 +93,7 @@ jobs:
   frontend-build-push:
     name: "Build / Frontend: Build and Push"
     runs-on: ubuntu-latest
-    needs: [populate-cms-types, version]
+    needs: [version]
     outputs:
       image: ${{ steps.image-name.outputs.image }}
     steps:
@@ -116,11 +105,6 @@ jobs:
           version: ${{ env.FLYCTL_VERSION }}
       - name: Setup
         uses: ./.github/actions/setup
-      - name: Download CMS types
-        uses: actions/download-artifact@v8
-        with:
-          name: payload-types
-          path: libs/payload-types/src
       - name: Get frontend image name
         id: image-name
         run: |
@@ -145,7 +129,6 @@ jobs:
   frontend-publish-chromatic:
     name: "Build / Frontend: Publish to Chromatic"
     runs-on: ubuntu-latest
-    needs: [populate-cms-types]
     steps:
       - name: Checkout with full history
         uses: actions/checkout@v6
@@ -155,11 +138,6 @@ jobs:
         uses: ./.github/actions/setup
       - name: Install dependencies for frontend
         run: pnpm --filter frontend install --frozen-lockfile
-      - name: Download CMS types
-        uses: actions/download-artifact@v8
-        with:
-          name: payload-types
-          path: libs/payload-types/src
       - name: Publish frontend to Chromatic
         uses: chromaui/action@v17
         with:
@@ -202,7 +180,6 @@ jobs:
   cms-typecheck:
     name: "Build / CMS: Typecheck"
     runs-on: ubuntu-latest
-    needs: populate-cms-types
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -210,11 +187,6 @@ jobs:
         uses: ./.github/actions/setup
       - name: Install dependencies
         run: pnpm --filter cms install --frozen-lockfile
-      - name: Download CMS types
-        uses: actions/download-artifact@v8
-        with:
-          name: payload-types
-          path: apps/cms/src
       - name: Generate admin import map
         run: pnpm --filter cms generate:importmap
       - name: Run native typecheck in CMS
@@ -273,10 +245,20 @@ jobs:
     name: Build / End-to-End Tests
     timeout-minutes: 60
     runs-on: ubuntu-latest
-    needs: [populate-cms-types, version, frontend-build-push, cms-build-push]
+    needs: [verify-cms-types, version, frontend-build-push, cms-build-push]
+    # A skipped required job can allow merging. Report failed prerequisites explicitly.
+    if: ${{ !cancelled() }}
     env:
       CMS_API_KEY: e2e-tests-apikey
     steps:
+      - name: Require successful prerequisite jobs
+        if: >-
+          ${{ contains(needs.*.result, 'failure') ||
+              contains(needs.*.result, 'cancelled') ||
+              contains(needs.*.result, 'skipped') }}
+        run: |
+          echo "::error::All prerequisite jobs, including CMS type verification, must succeed."
+          exit 1
       - name: Checkout
         uses: actions/checkout@v6
       - name: Setup
@@ -370,11 +352,6 @@ jobs:
         run: pnpm playwright install --with-deps chromium
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         working-directory: tests/e2e
-      - name: Download CMS types
-        uses: actions/download-artifact@v8
-        with:
-          name: payload-types
-          path: libs/payload-types/src
       - name: Run native typecheck in E2E
         run: pnpm --filter e2e typecheck
       - name: Run e2e tests
@@ -397,6 +374,7 @@ jobs:
     name: Deploy
     if: github.event_name != 'pull_request'
     needs:
+      - verify-cms-types
       - version
       - frontend-lint
       - frontend-check-format
@@ -420,6 +398,7 @@ jobs:
     name: Deploy Preview
     if: github.event_name == 'pull_request'
     needs:
+      - verify-cms-types
       - version
       - frontend-build-push
       - cms-build-push

@@ -2,7 +2,7 @@
 
 ## Type checking
 
-Generate Payload types and the admin import map, then run
+Generate the admin import map, then run
 `pnpm --filter @lapuertahostels/cms typecheck`. This generates Next route types
 and checks the complete configured project with native TypeScript 7. CI runs
 this gate alongside the existing TS6 check inside `next build`. The package
@@ -10,6 +10,26 @@ named `typescript` still supplies the TS6 API for ESLint; Next also selects its
 build checker from that package. See the
 [workspace compatibility report](../../docs/typescript-7-pilot.md) for remaining
 removal blockers and rollback instructions.
+
+## Generated Payload types
+
+The CMS and shared-library generated types are committed. Fresh checkouts can
+use them without running type generation, and CMS builds generate only the admin
+import map before Next builds the application.
+
+After schema changes or Payload dependency changes that affect generated types,
+run this command from the repository root and commit both generated files:
+
+```bash
+pnpm --filter @lapuertahostels/payload-types pull-payload-types
+```
+
+Use `pnpm --filter @lapuertahostels/payload-types check-payload-types` to
+regenerate and compare both files with `HEAD`. CI rejects stale committed types
+before staging or preview deployment. Keep the generator's formatting and do not
+edit these files by hand. The CMS's `generate:types` command remains the
+low-level generator; use `pull-payload-types` to synchronize the shared copy
+too.
 
 ## Internal links and anchors
 

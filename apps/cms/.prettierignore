@@ -1,1 +1,4 @@
 /pnpm-lock.yaml
+
+# Preserve Payload's generated formatting.
+/src/payload-types.ts

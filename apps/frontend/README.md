@@ -12,6 +12,13 @@ pnpm dev
 
 This starts your app in development mode, rebuilding assets on file changes.
 
+Shared Payload types are committed, so frontend development, builds, typechecks,
+and Storybook do not require running CMS type generation first. If a CMS schema
+or relevant Payload dependency changes, run
+`pnpm --filter @lapuertahostels/payload-types pull-payload-types` from the
+repository root and commit both generated files. CI checks that they are
+current.
+
 ## Type checking
 
 `pnpm typecheck` generates React Router types and checks the frontend with
@@ -22,7 +29,7 @@ See the [TypeScript 7 adoption report](../../docs/typescript-7-pilot.md) for the
 adoption decision, compatibility checks, and historical pilot benchmarks. The
 TS6 API dependency remains intentional compatibility support. Measure current
 native checking with `pnpm benchmark:typecheck --output /tmp/ts7-current.json`
-after generating shared Payload types. The live runner measures TS7 only;
+using the committed shared Payload types. The live runner measures TS7 only;
 historical TS6 reports and their raw samples remain in the adoption report.
 
 ## Root document layout
