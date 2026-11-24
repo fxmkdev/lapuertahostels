@@ -70,7 +70,7 @@ pnpm --filter @lapuertahostels/frontend storybook        # Start Storybook
 pnpm --filter @lapuertahostels/frontend build-storybook  # Build Storybook
 
 pnpm --filter @lapuertahostels/cms dev                   # Start CMS dev server on port 3001
-pnpm --filter @lapuertahostels/cms build                 # Generate Payload artifacts and build CMS
+pnpm --filter @lapuertahostels/cms build                 # Generate admin import map and build CMS
 pnpm --filter @lapuertahostels/cms typecheck             # Generate Next route types and run native TypeScript 7
 pnpm --filter @lapuertahostels/cms lint                  # Next lint check
 pnpm --filter @lapuertahostels/cms test                  # Vitest tests
@@ -78,7 +78,8 @@ pnpm --filter @lapuertahostels/cms check-format          # Prettier check
 pnpm --filter @lapuertahostels/cms generate:types        # Generate Payload TypeScript types
 pnpm --filter @lapuertahostels/cms generate:importmap    # Generate Payload admin import map
 
-pnpm --filter @lapuertahostels/payload-types pull-payload-types # Refresh shared Payload types
+pnpm --filter @lapuertahostels/payload-types pull-payload-types # Refresh both committed Payload type files
+pnpm --filter @lapuertahostels/payload-types check-payload-types # Verify committed types match the schema
 
 pnpm --filter @lapuertahostels/e2e e2e                   # Run Playwright e2e UI
 pnpm --filter @lapuertahostels/e2e typecheck             # Check E2E sources with native TypeScript 7
@@ -92,10 +93,13 @@ pnpm --filter @lapuertahostels/e2e typecheck             # Check E2E sources wit
 - Generated React Router type files are produced by the frontend `typecheck`
   script; do not commit generated cache/output unless already tracked and
   intentionally changed.
-- Payload types are generated in `apps/cms/src/payload-types.ts`. Refresh the
-  shared workspace package with
-  `pnpm --filter @lapuertahostels/payload-types pull-payload-types` when schema
-  changes need to be consumed outside the CMS.
+- Both generated Payload type files are committed:
+  `apps/cms/src/payload-types.ts` and `libs/payload-types/src/payload-types.ts`.
+  After schema changes or Payload dependency changes that affect generated
+  types, run `pnpm --filter @lapuertahostels/payload-types pull-payload-types`
+  and commit both files. Keep Payload's generated formatting; do not edit them
+  by hand. Fresh checkouts do not need CMS generation before frontend or E2E
+  checking. CI verifies freshness without distributing generated type artifacts.
 - Keep CMS configuration and custom blocks close to `apps/cms/src/`, and keep
   frontend rendering concerns in `apps/frontend/app/`.
 
@@ -111,13 +115,15 @@ pnpm --filter @lapuertahostels/e2e typecheck             # Check E2E sources wit
   frontend formatting-sensitive files.
 - Run `pnpm --filter @lapuertahostels/cms build` when touching Payload schema,
   CMS config, CMS custom components, or generated Payload artifacts.
-- Run `pnpm --filter @lapuertahostels/cms typecheck` after generating Payload
-  types and the admin import map when touching CMS TypeScript or configuration.
+- Run `pnpm --filter @lapuertahostels/cms typecheck` after generating the admin
+  import map when touching CMS TypeScript or configuration.
 - Run `pnpm --filter @lapuertahostels/cms lint` and
   `pnpm --filter @lapuertahostels/cms check-format` when touching CMS source.
 - Run `pnpm --filter @lapuertahostels/cms test` when touching tested CMS logic.
-- Run `pnpm --filter @lapuertahostels/payload-types pull-payload-types` when
-  Payload type changes need to be reflected in `libs/payload-types`.
+- Run `pnpm --filter @lapuertahostels/payload-types pull-payload-types` after
+  schema or relevant Payload dependency changes and commit both generated files.
+  Run `pnpm --filter @lapuertahostels/payload-types check-payload-types` to
+  verify the committed types match the schema.
 - Run `pnpm --filter @lapuertahostels/e2e e2e` for changes with significant
   user-flow risk.
 - Run `pnpm --filter @lapuertahostels/e2e typecheck` when touching E2E

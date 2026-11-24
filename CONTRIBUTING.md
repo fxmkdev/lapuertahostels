@@ -23,6 +23,32 @@ and dependency build approvals live in `pnpm-workspace.yaml`. Keep all workspace
 in Docker builds. See the [pnpm 12 verification report](docs/pnpm-12-upgrade.md)
 for migration details and measured install times.
 
+## Generated CMS Types
+
+Both generated Payload type files are committed, so frontend builds, Storybook,
+and frontend/E2E typechecks can consume them immediately after installation. CMS
+checking still requires generating the admin import map.
+
+After changing the CMS schema or Payload dependencies that affect generated
+output, refresh both files from the repository root:
+
+```bash
+pnpm --filter @lapuertahostels/payload-types pull-payload-types
+```
+
+Commit both generated files with the change. Do not edit or reformat them by
+hand. To verify that the committed types match the current schema, run:
+
+```bash
+pnpm --filter @lapuertahostels/payload-types check-payload-types
+```
+
+This regenerates both files and compares them with `HEAD`, exiting with a diff
+if either committed file is stale. CI runs this check independently of builds
+and typechecks and requires it before staging or preview deployment. The
+existing required E2E check also fails if verification fails, so stale types
+block merging without requiring a separate branch-protection change.
+
 ## Starting New Work
 
 Before starting any new work, run `git fetch origin` and base new branches and
@@ -96,11 +122,10 @@ Frontend, CMS, and E2E `typecheck` commands use native TypeScript 7. Both shared
 libraries also declare TS7. Frontend and CMS keep the `typescript` compatibility
 alias for the TypeScript 6 API required by ESLint and installed docgen tooling.
 Next's integrated CMS build check still selects TS6 from that alias; the
-separate CMS native check is also required in CI. Generate Payload types and the
-admin import map before running CMS checking. Keep this compiler/API separation
-when updating dependencies. See the
-[adoption report](docs/typescript-7-pilot.md) for current commands, exact
-removal blockers, validation, and historical pilot measurements.
+separate CMS native check is also required in CI. Generate the admin import map
+before running CMS checking. Keep this compiler/API separation when updating
+dependencies. See the [adoption report](docs/typescript-7-pilot.md) for current
+commands, exact removal blockers, validation, and historical pilot measurements.
 
 Frontend and CMS TypeScript files must mark imports used only as types with
 `import type` or an inline `type` modifier. Prefer separate `import type`
