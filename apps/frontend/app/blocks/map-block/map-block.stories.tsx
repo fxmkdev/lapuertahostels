@@ -5,6 +5,7 @@ import { paragraph, richTextRoot, text } from "@lapuertahostels/rich-text";
 import { APIProvider } from "@vis.gl/react-google-maps";
 import { useEnvironment } from "~/common/environment";
 import { useSettings } from "~/common/common";
+import { allModes } from "../../../.storybook/modes";
 
 const meta = {
   title: "blocks/Map Block",
@@ -12,7 +13,15 @@ const meta = {
   parameters: {
     layout: "fullscreen",
     // give Map some time to load
-    chromatic: { delay: 1_000 },
+    chromatic: {
+      delay: 1_000,
+      modes: {
+        "brand-puerta": { brand: "puerta", viewport: "desktop" },
+        "brand-aqua": allModes["brand-aqua"],
+        "brand-azul": allModes["brand-azul"],
+        mobile: allModes["viewport-small-mobile"],
+      },
+    },
   },
   decorators: [
     (Story) => {
@@ -62,10 +71,11 @@ export const SingleLocation: Story = {
     zoomLevel: 14.5,
     locations: [
       {
+        name: "Aqua Hostel",
         address: Default.args!.address!,
         overlayTextBox: {
           ...Default.args!.overlayTextBox!,
-          heading: "Puerta Aqua",
+          heading: "Stay with us at Puerta Aqua",
           text: Default.args!.overlayTextBox!.text!,
         },
       },
@@ -79,9 +89,10 @@ export const MultipleLocations: Story = {
     locations: [
       ...SingleLocation.args!.locations!,
       {
+        name: "Parque de los Novios",
         address: "Parque de los Novios, Santa Marta, Colombia",
         overlayTextBox: {
-          heading: "Parque de los Novios",
+          heading: "Explore our neighborhood",
           text: richTextRoot(
             paragraph(text("Explore the heart of Santa Marta.")),
           ),

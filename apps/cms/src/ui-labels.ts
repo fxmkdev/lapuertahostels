@@ -3,6 +3,19 @@ import type { Field } from "payload";
 
 export const additionalUiLabelFields: Field[] = [
   {
+    name: "mapBlock",
+    label: { en: "Map", es: "Mapa" },
+    type: "group",
+    fields: [
+      optionalTextField({
+        name: "locations",
+        label: { en: "Locations", es: "Ubicaciones" },
+        defaultValue: ({ locale }) =>
+          locale === "es" ? "Ubicaciones" : "Locations",
+      }),
+    ],
+  },
+  {
     name: "footer",
     label: { en: "Footer", es: "Pie de página" },
     type: "group",

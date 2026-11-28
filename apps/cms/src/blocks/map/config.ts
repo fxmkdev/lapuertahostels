@@ -3,6 +3,7 @@ import type { Block, FieldHook, GroupField, TextareaField } from "payload";
 import { elementIdField } from "../../fields/element-id";
 import { moreOptionsField } from "../../fields/more-options";
 import { overlayTextBoxField } from "../../fields/overlay-text-box";
+import { optionalTextField } from "../../fields/text";
 
 // Keep legacy fields in the schema so old documents and versions remain readable.
 const addressField: TextareaField = {
@@ -82,7 +83,20 @@ export const MapBlock: Block = {
         beforeValidate: [writeLegacyLocations],
         beforeChange: [preserveLegacyLocales],
       },
-      fields: [addressField, overlayField],
+      fields: [
+        optionalTextField({
+          name: "name",
+          label: { en: "Name", es: "Nombre" },
+          admin: {
+            description: {
+              en: "Optional name for the location tab and map pin, independent of the overlay heading. If empty, the heading or address is used.",
+              es: "Nombre opcional para la pestaña de ubicación y el marcador del mapa, independiente del título. Si está vacío, se usa el título o la dirección.",
+            },
+          },
+        }),
+        addressField,
+        overlayField,
+      ],
     },
     { ...addressField, required: false, admin: { hidden: true } },
     legacyOverlayField,

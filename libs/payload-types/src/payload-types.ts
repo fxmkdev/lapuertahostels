@@ -1465,6 +1465,10 @@ export interface TextColumnsWithImages {
 export interface Map {
   locations: {
     /**
+     * Optional name for the location tab and map pin, independent of the overlay heading. If empty, the heading or address is used.
+     */
+    name?: string | null;
+    /**
      * Enter the address to display on the map, including the business name. It should resolve unambiguously to a place on Google Maps.
      */
     address: string;
@@ -2209,6 +2213,7 @@ export interface MapSelect<T extends boolean = true> {
   locations?:
     | T
     | {
+        name?: T;
         address?: T;
         overlayTextBox?:
           | T
@@ -2561,6 +2566,9 @@ export interface Common {
       password?: string | null;
       submit?: string | null;
     };
+    mapBlock?: {
+      locations?: string | null;
+    };
     footer?: {
       heading?: string | null;
       newsletter?: {
@@ -2687,6 +2695,11 @@ export interface CommonSelect<T extends boolean = true> {
               email?: T;
               password?: T;
               submit?: T;
+            };
+        mapBlock?:
+          | T
+          | {
+              locations?: T;
             };
         footer?:
           | T

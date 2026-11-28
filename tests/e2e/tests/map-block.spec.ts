@@ -19,6 +19,7 @@ for (const width of [1280, 390]) {
           zoomLevel: 14.5,
           locations: ["Aqua", "Azul"].map((name) => ({
             id: `location-${name}`,
+            name: `${name} Hostel`,
             address: `${name} test address`,
             overlayTextBox: {
               heading: name,
@@ -38,7 +39,9 @@ for (const width of [1280, 390]) {
       "data-bounds",
       /11.24.*11.25/,
     );
-    await block.getByRole("button", { name: "Pin Azul", exact: true }).click();
+    await block
+      .getByRole("button", { name: "Pin Azul Hostel", exact: true })
+      .click();
     await expect(
       block.getByRole("heading", { name: "Azul", exact: true }),
     ).toBeVisible();
@@ -46,13 +49,24 @@ for (const width of [1280, 390]) {
     await expect(
       block.getByRole("link", { name: "Directions to Azul" }),
     ).toHaveAttribute("href", "https://maps.example.com/Azul%20test%20address");
-    const aqua = block.getByRole("button", { name: "Aqua", exact: true });
-    await aqua.focus();
-    await page.keyboard.press("Enter");
-    await expect(aqua).toHaveAttribute("aria-pressed", "true");
+    const azul = block.getByRole("tab", { name: "Azul Hostel", exact: true });
+    await expect(azul).toHaveAttribute("aria-selected", "true");
+    await expect(block.getByRole("tabpanel")).toHaveAttribute(
+      "aria-labelledby",
+      (await azul.getAttribute("id"))!,
+    );
+    const aqua = block.getByRole("tab", { name: "Aqua Hostel", exact: true });
+    await azul.focus();
+    await page.keyboard.press("ArrowLeft");
+    await expect(aqua).toBeFocused();
+    await expect(aqua).toHaveAttribute("aria-selected", "true");
     await expect(
       block.getByRole("heading", { name: "Aqua", exact: true }),
     ).toBeVisible();
+    await page.keyboard.press("End");
+    await expect(azul).toHaveAttribute("aria-selected", "true");
+    await page.keyboard.press("Home");
+    await expect(aqua).toHaveAttribute("aria-selected", "true");
     expect(errors).toEqual([]);
   });
 }

@@ -7,13 +7,10 @@ import {
 import { useMemo, useRef, useState } from "react";
 import { useTheme } from "~/themes";
 import { cn } from "~/common/cn";
-import { Link } from "~/common/link";
-import { MapPinIcon } from "@heroicons/react/20/solid";
-import { OverlayTextBox } from "../common/overlay-text-box";
-import type { RichTextObject } from "@lapuertahostels/rich-text";
 import { useSettings } from "~/common/common";
 import { MapViewport } from "./map-viewport";
 import { useMapLocations } from "./use-map-locations";
+import { MapLocationDetails } from "./map-location-details";
 
 // Cached pages and old CMS responses can still use the single-location shape.
 export type MapBlockProps = Omit<MapType, "locations"> & {
@@ -96,7 +93,7 @@ export function MapBlock({
                 <LocationMarker
                   key={entry.index}
                   location={entry.place.location}
-                  title={entry.overlayTextBox?.heading || entry.address}
+                  title={entry.label}
                   selected={entry.index === selected.index}
                   onClick={() =>
                     setSelection({ addresses, index: entry.index })
@@ -108,41 +105,12 @@ export function MapBlock({
         </div>
 
         {selected && (
-          <OverlayTextBox
-            ref={overlayRef}
-            position={details?.position}
-            heading={details?.heading}
-            text={details?.text as RichTextObject | undefined}
-            cta={
-              details?.callToActionLabel
-                ? {
-                    icon: MapPinIcon,
-                    label: details.callToActionLabel,
-                    as: Link,
-                    variant: "secondary",
-                    to: selected.place.url,
-                  }
-                : undefined
-            }
-          >
-            {resolved.length > 1 && (
-              <div className="mt-4 flex flex-wrap justify-center gap-2 lg:justify-start">
-                {resolved.map((entry) => (
-                  <button
-                    key={entry.index}
-                    type="button"
-                    aria-pressed={entry.index === selected.index}
-                    className="rounded border border-current px-3 py-2 text-sm aria-pressed:bg-neutral-100"
-                    onClick={() =>
-                      setSelection({ addresses, index: entry.index })
-                    }
-                  >
-                    {entry.overlayTextBox?.heading || entry.address}
-                  </button>
-                ))}
-              </div>
-            )}
-          </OverlayTextBox>
+          <MapLocationDetails
+            overlayRef={overlayRef}
+            locations={resolved}
+            selected={selected}
+            onSelect={(index) => setSelection({ addresses, index })}
+          />
         )}
       </div>
     </div>

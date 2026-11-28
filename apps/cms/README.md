@@ -152,7 +152,16 @@ A Map block contains an ordered **Locations** list. Add an address (including
 the business name) and an overlay with its heading, text, optional directions
 label, and position for each location. Addresses must identify a place on Google
 Maps. The first available location is selected initially. Selecting a pin or a
-location button switches its details and directions destination.
+location tab switches its details and directions destination.
+
+Each location also has an optional, translated **Name** for its tab and pin.
+This can differ from the overlay heading. Empty or whitespace-only names fall
+back to the heading, then the address. Existing content needs no name backfill.
+
+The frontend shows themed tabs above the details when multiple locations
+resolve. The Google Maps directions link remains a separate action button. The
+tab list screen-reader label can be translated under **UI Labels → Map →
+Locations**.
 
 Single-location maps retain their configured zoom. Maps with multiple locations
 fit all available pins, reserving room for the desktop overlay; **Zoom Level**

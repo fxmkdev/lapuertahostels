@@ -33,6 +33,7 @@ i18n
         previous: "Previous",
         exitFullscreen: "Exit Full Screen",
       },
+      mapBlock: { locations: "Locations" },
       slidesBlock: {
         goToSlide: "Go to slide {{slide}}",
       },

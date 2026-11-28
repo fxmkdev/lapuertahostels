@@ -11,10 +11,14 @@ import { Heading } from "~/common/heading";
 import { RichTextParagraph } from "~/common/paragraph";
 import type { RichTextObject } from "@lapuertahostels/rich-text";
 
-type OverlayTextBoxProps<TCta extends ElementType = ElementType> = {
+type OverlayTextBoxShellProps = {
   ref?: Ref<HTMLDivElement>;
   children?: ReactNode;
   position?: "top-left" | "top-right" | "bottom-left" | "bottom-right" | null;
+};
+
+type OverlayTextBoxContentProps<TCta extends ElementType = ElementType> = {
+  children?: ReactNode;
   heading: string | undefined | null;
   text: RichTextObject | undefined | null;
   cta?: {
@@ -25,14 +29,26 @@ type OverlayTextBoxProps<TCta extends ElementType = ElementType> = {
   } & Omit<ComponentPropsWithoutRef<TCta>, "as">;
 };
 
+type OverlayTextBoxProps<TCta extends ElementType = ElementType> =
+  OverlayTextBoxShellProps & OverlayTextBoxContentProps<TCta>;
+
 export function OverlayTextBox({
   ref,
-  children,
   position,
-  cta,
-  heading,
-  text,
+  ...content
 }: OverlayTextBoxProps) {
+  return (
+    <OverlayTextBoxShell ref={ref} position={position}>
+      <OverlayTextBoxContent {...content} />
+    </OverlayTextBoxShell>
+  );
+}
+
+export function OverlayTextBoxShell({
+  ref,
+  position,
+  children,
+}: OverlayTextBoxShellProps) {
   const overlayTextBoxPosition = position || "top-left";
 
   return (
@@ -52,6 +68,19 @@ export function OverlayTextBox({
         },
       )}
     >
+      {children}
+    </div>
+  );
+}
+
+export function OverlayTextBoxContent({
+  heading,
+  text,
+  children,
+  cta,
+}: OverlayTextBoxContentProps) {
+  return (
+    <>
       <Heading as="h3" size="small">
         {heading}
       </Heading>
@@ -62,6 +91,6 @@ export function OverlayTextBox({
           {cta.label}
         </Button>
       )}
-    </div>
+    </>
   );
 }

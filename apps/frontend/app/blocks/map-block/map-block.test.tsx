@@ -12,6 +12,11 @@ const { resolvePlace, mapProps, placesLibrary } = vi.hoisted(() => ({
   mapProps: vi.fn(),
   placesLibrary: {},
 }));
+vi.mock("react-i18next", () => ({
+  useTranslation: () => ({
+    t: (_: string, options: { defaultValue: string }) => options.defaultValue,
+  }),
+}));
 vi.mock("~/common/common", () => ({
   useSettings: () => ({ maps: { mapId: "test" } }),
 }));
@@ -94,7 +99,7 @@ test("renders legacy single-location content with its zoom and directions", asyn
   );
 });
 
-test("selecting pins and location buttons switches details and directions", async () => {
+test("selecting pins and location tabs switches details and directions", async () => {
   render(<MapBlock {...props} />, { wrapper: Wrapper });
   await load();
   expect(screen.getAllByRole("button", { name: /^Pin / })).toHaveLength(2);
@@ -105,9 +110,9 @@ test("selecting pins and location buttons switches details and directions", asyn
   expect(
     screen.getByRole("link", { name: "Directions to Azul" }),
   ).toHaveAttribute("href", place("Azul").url);
-  fireEvent.click(screen.getByRole("button", { name: "Aqua" }));
-  expect(screen.getByRole("button", { name: "Aqua" })).toHaveAttribute(
-    "aria-pressed",
+  fireEvent.click(screen.getByRole("tab", { name: "Aqua" }));
+  expect(screen.getByRole("tab", { name: "Aqua" })).toHaveAttribute(
+    "aria-selected",
     "true",
   );
   expect(screen.getByRole("heading", { name: "Aqua" })).toBeVisible();
@@ -168,7 +173,7 @@ test("debounces edits, deduplicates lookups, and keeps coincident locations sele
   );
   await load();
   expect(resolvePlace).toHaveBeenCalledTimes(1);
-  fireEvent.click(screen.getByRole("button", { name: "Azul" }));
+  fireEvent.click(screen.getByRole("tab", { name: "Azul" }));
   expect(screen.getByRole("heading", { name: "Azul" })).toBeVisible();
   rerender(<MapBlock {...props} locations={[location("Changed")]} />);
   unmount();
@@ -197,4 +202,83 @@ test("incomplete live-preview rows do not hide completed locations", async () =>
   expect(
     screen.getByRole("button", { name: "Pin Azul address" }),
   ).toBeVisible();
+});
+
+test("names label tabs and pins independently from headings and stay in sync", async () => {
+  const namedAqua = { ...aqua, name: "Aqua Hostel" };
+  const namedAzul = { ...azul, name: "Azul Hostel" };
+  render(<MapBlock {...props} locations={[namedAqua, namedAzul]} />, {
+    wrapper: Wrapper,
+  });
+  await load();
+  expect(screen.getByRole("tab", { name: "Aqua Hostel" })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
+  expect(screen.getByRole("heading", { name: "Aqua" })).toBeVisible();
+  expect(screen.getByRole("tablist", { name: "Locations" })).toBeVisible();
+  fireEvent.click(screen.getByRole("button", { name: "Pin Azul Hostel" }));
+  expect(screen.getByRole("tab", { name: "Azul Hostel" })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
+  expect(screen.getByRole("heading", { name: "Azul" })).toBeVisible();
+  expect(
+    screen.getByRole("link", { name: "Directions to Azul" }),
+  ).toHaveAttribute("href", place("Azul").url);
+  fireEvent.click(screen.getByRole("tab", { name: "Aqua Hostel" }));
+  const panel = screen.getByRole("tabpanel");
+  expect(panel).toHaveAttribute(
+    "aria-labelledby",
+    screen.getByRole("tab", { name: "Aqua Hostel" }).id,
+  );
+  expect(screen.getByRole("heading", { name: "Aqua" })).toBeVisible();
+});
+
+test.each([undefined, "", "   "])(
+  "blank location name %s falls back to its heading",
+  async (name) => {
+    render(<MapBlock {...props} locations={[{ ...aqua, name }, azul]} />, {
+      wrapper: Wrapper,
+    });
+    await load();
+    expect(screen.getByRole("tab", { name: "Aqua" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Pin Aqua" })).toBeVisible();
+  },
+);
+
+test("missing name and blank preview heading fall back to the address", async () => {
+  render(
+    <MapBlock
+      {...props}
+      locations={[
+        {
+          ...aqua,
+          name: " ",
+          overlayTextBox: { ...aqua.overlayTextBox, heading: " " },
+        },
+        azul,
+      ]}
+    />,
+    { wrapper: Wrapper },
+  );
+  await load();
+  expect(screen.getByRole("tab", { name: aqua.address })).toBeVisible();
+  expect(
+    screen.getByRole("button", { name: `Pin ${aqua.address}` }),
+  ).toBeVisible();
+});
+
+test("editing a location name updates labels without another address lookup", async () => {
+  const { rerender } = render(<MapBlock {...props} />, { wrapper: Wrapper });
+  await load();
+  rerender(
+    <MapBlock
+      {...props}
+      locations={[{ ...aqua, name: "Renamed Aqua" }, azul]}
+    />,
+  );
+  expect(screen.getByRole("tab", { name: "Renamed Aqua" })).toBeVisible();
+  await load();
+  expect(resolvePlace).toHaveBeenCalledTimes(2);
 });

@@ -5,6 +5,7 @@ import type { Place } from "~/common/google-maps";
 import { PlaceResolver } from "~/common/google-maps";
 
 type MapLocation = {
+  name?: string | null;
   address?: string | null;
   overlayTextBox?: MapType["overlayTextBox"];
 };
@@ -66,7 +67,19 @@ export function useMapLocations(entries: MapLocation[]) {
         ? entries.flatMap((entry, index) => {
             const place = result.places[index];
             return place
-              ? [{ ...entry, address: entry.address ?? "", place, index }]
+              ? [
+                  {
+                    ...entry,
+                    address: entry.address ?? "",
+                    label:
+                      entry.name?.trim() ||
+                      entry.overlayTextBox?.heading?.trim() ||
+                      entry.address?.trim() ||
+                      "",
+                    place,
+                    index,
+                  },
+                ]
               : [];
           })
         : [],
@@ -74,3 +87,7 @@ export function useMapLocations(entries: MapLocation[]) {
   );
   return { addresses, ready, resolved };
 }
+
+export type ResolvedMapLocation = ReturnType<
+  typeof useMapLocations
+>["resolved"][number];

@@ -61,7 +61,7 @@ test("new maps and explicitly emptied maps require at least one location", async
 });
 
 test.each(["en", "es", "all"])(
-  "Payload reads legacy localized overlays in locale %s",
+  "Payload reads legacy overlays and independent location names in locale %s",
   async (locale) => {
     const config = await buildConfig({
       secret: "map-test",
@@ -88,6 +88,16 @@ test.each(["en", "es", "all"])(
           blockType: "Map",
           ...legacy,
           overlayTextBox: structuredClone(localizedOverlay),
+        },
+        {
+          blockType: "Map",
+          locations: [
+            {
+              ...legacy,
+              name: { en: "Aqua Hostel", es: "Hostal Aqua" },
+              overlayTextBox: structuredClone(localizedOverlay),
+            },
+          ],
         },
       ],
     };
@@ -128,6 +138,26 @@ test.each(["en", "es", "all"])(
     }
     const block = (doc.content as Record<string, unknown>[])[0];
     const locations = block.locations as (typeof legacy)[];
+    const namedBlock = (doc.content as Record<string, unknown>[])[1];
+    const named = (
+      namedBlock.locations as {
+        name: unknown;
+        overlayTextBox: { heading: unknown };
+      }[]
+    )[0];
+    expect(named.name).toEqual(
+      locale === "all"
+        ? { en: "Aqua Hostel", es: "Hostal Aqua" }
+        : locale === "en"
+          ? "Aqua Hostel"
+          : "Hostal Aqua",
+    );
+    expect(named.overlayTextBox.heading).toEqual(
+      locale === "all"
+        ? localizedOverlay.heading
+        : localizedOverlay.heading[locale as "en" | "es"],
+    );
+
     expect(locations[0].address).toBe(legacy.address);
     expect(locations[0].overlayTextBox.heading).toEqual(
       locale === "all"
