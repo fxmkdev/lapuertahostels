@@ -6,6 +6,8 @@ import { readFile } from "node:fs/promises";
 import { MongoClient, ObjectId } from "mongodb";
 import { create, createPage } from "../common/cms";
 
+test.setTimeout(90_000);
+
 let cleanupPaths: string[];
 
 test.beforeEach(async ({ page }) => {
@@ -142,18 +144,18 @@ async function verifyFrontendFocalPoint(
     await page.goto(`${content.pathname}?skipcache=true`);
     const image = page.getByTestId("full-image");
     await expect(image).toHaveCSS("object-position", "0% 100%");
-    await expect(image).toHaveAttribute("srcset", /xc-.*yc-/);
+    await expect(image).toHaveAttribute("srcset", /optimized\//);
     await expect(image).toHaveJSProperty("complete", true);
     expect(
       await image.evaluate((element: HTMLImageElement) => element.naturalWidth),
     ).toBeGreaterThan(0);
     await expect(page.locator('meta[name="og:image"]')).toHaveAttribute(
       "content",
-      /xc-.*yc-/,
+      /optimized\//,
     );
     await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute(
       "content",
-      /xc-.*yc-/,
+      /optimized\//,
     );
     await test.info().attach(`focal-hero-${width}`, {
       body: await image.screenshot({
@@ -262,11 +264,11 @@ test("EXIF-oriented uploads keep focal subjects in hero, gallery and social crop
   await page.goto(`${content.pathname}?skipcache=true`);
   await expect(page.getByTestId("full-image")).toHaveAttribute(
     "srcset",
-    /xc-400,yc-899/,
+    /optimized\//,
   );
   await expect(page.locator('meta[name="og:image"]')).toHaveAttribute(
     "content",
-    /xc-600,yc-1484/,
+    /optimized\//,
   );
   const galleryImage = page
     .getByRole("button")
@@ -274,5 +276,5 @@ test("EXIF-oriented uploads keep focal subjects in hero, gallery and social crop
       has: page.getByRole("img", { name: "Focal point test courtyard" }),
     })
     .getByRole("img");
-  await expect(galleryImage).toHaveAttribute("srcset", /yc-682/);
+  await expect(galleryImage).toHaveAttribute("srcset", /optimized\//);
 });

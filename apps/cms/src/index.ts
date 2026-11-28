@@ -1,6 +1,8 @@
 import type { Block, CollectionConfig, Config, Field, Plugin } from "payload";
 
 import { s3Storage } from "@payloadcms/storage-s3";
+import { createMediaStore, type MediaStorage } from "./media/storage";
+import { publicMediaUrl } from "../../../libs/payload-types/src/media";
 
 import { ApiKeys } from "./collections/api-keys/config";
 import { Banners } from "./collections/banners/config";
@@ -62,12 +64,7 @@ export type CmsPluginOptions = {
   e2eTestsApiKey?: string;
   livePreviewBaseUrl?: string;
   media?: CmsPluginMediaOptions;
-  mediaS3Storage: {
-    accessKeyId: string;
-    bucket: string;
-    region: string;
-    secretAccessKey: string;
-  };
+  mediaStorage: MediaStorage;
   openaiApiKey?: string;
   publicMediaBaseUrl?: string;
   serverUrl?: string;
@@ -83,7 +80,7 @@ export const cmsPlugin =
     e2eTestsApiKey,
     livePreviewBaseUrl,
     media,
-    mediaS3Storage,
+    mediaStorage,
     openaiApiKey,
     publicMediaBaseUrl,
     serverUrl,
@@ -129,6 +126,7 @@ export const cmsPlugin =
         retainLegacyCategories,
         serverUrl,
         apiRoute: config.routes?.api,
+        mediaStore: createMediaStore(mediaStorage),
       }),
     );
     if (mediaOrganization === "categories" || retainLegacyCategories) {
@@ -299,16 +297,24 @@ export const cmsPlugin =
     }
 
     return s3Storage({
-      bucket: mediaS3Storage.bucket,
+      bucket: mediaStorage.bucket,
       collections: {
-        media: true,
+        media: {
+          disablePayloadAccessControl: true,
+          generateFileURL: ({ filename, prefix }) =>
+            publicMediaUrl(
+              mediaStorage.publicBaseUrl,
+              [prefix, filename].filter(Boolean).join("/"),
+            ),
+        },
       },
       config: {
+        endpoint: mediaStorage.endpoint,
         credentials: {
-          accessKeyId: mediaS3Storage.accessKeyId,
-          secretAccessKey: mediaS3Storage.secretAccessKey,
+          accessKeyId: mediaStorage.accessKeyId,
+          secretAccessKey: mediaStorage.secretAccessKey,
         },
-        region: mediaS3Storage.region,
+        region: mediaStorage.region,
       },
     })(config);
   };

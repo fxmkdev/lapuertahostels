@@ -45,7 +45,6 @@ export function TextWithImageItem({
             aspectRatio: { width: 9, height: 10 },
           }}
           sizes={imageSizes}
-          srcMultiplier={5}
         />
       )}
       {heading && (

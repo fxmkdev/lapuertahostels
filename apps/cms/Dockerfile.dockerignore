@@ -8,6 +8,7 @@
 !.npmrc
 !/patches
 !/apps/cms
+!/libs/payload-types
 
 # These should be ignored, though
 **/.next

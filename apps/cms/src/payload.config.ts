@@ -1,4 +1,5 @@
 import path from "path";
+import { mediaStorageFromEnv } from "./media/storage";
 
 import { mongooseAdapter } from "@payloadcms/db-mongodb";
 import { buildConfig } from "payload";
@@ -54,15 +55,10 @@ export default buildConfig({
     cmsPlugin({
       additionalContentBlocks: [RoomListBlock, AccommodationSelectorBlock],
       additionalUiLabelFields,
-      mediaS3Storage: {
-        bucket: process.env.MEDIA_S3_BUCKET!,
-        region: process.env.MEDIA_S3_REGION!,
-        accessKeyId: process.env.MEDIA_S3_ACCESS_KEY_ID!,
-        secretAccessKey: process.env.MEDIA_S3_SECRET_ACCESS_KEY!,
-      },
+      mediaStorage: mediaStorageFromEnv(),
       deeplApiKey: process.env.DEEPL_API_AUTH_KEY,
       openaiApiKey: process.env.OPENAI_API_KEY,
-      publicMediaBaseUrl: process.env.IMAGEKIT_BASE_URL,
+      publicMediaBaseUrl: process.env.MEDIA_PUBLIC_BASE_URL,
       livePreviewBaseUrl: process.env.LIVE_PREVIEW_URL,
       serverUrl: process.env.SERVER_URL,
       e2eTestsApiKey: process.env.E2E_TESTS_API_KEY,

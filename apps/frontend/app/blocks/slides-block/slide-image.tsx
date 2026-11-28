@@ -20,7 +20,6 @@ export function SlideImage({
   const imageProps = {
     media,
     layout: "responsive",
-    srcMultiplier: 6,
     sizes: "100vw",
     className: cn("absolute top-0 h-full w-full object-cover", {
       "object-[center_90%]": alignment === "bottom",

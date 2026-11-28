@@ -75,12 +75,10 @@ function AccommodationCard({
           transformation={{
             aspectRatio: { width: 1, height: 1 },
             width: 592,
-            focus: "custom",
           }}
           loading="lazy"
           layout="responsive"
           sizes="(min-width: 1280px) 592px, (min-width: 768px) 50vw, 100vw"
-          srcMultiplier={4}
         />
       </div>
       <div

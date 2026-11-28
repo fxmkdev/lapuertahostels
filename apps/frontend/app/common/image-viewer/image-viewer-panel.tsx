@@ -181,6 +181,8 @@ export function ImageViewerPanel({
           <Image
             key={currentImageIndex} // ensure an old image is not rendered anymore while a new one is loading
             src={images[currentImageIndex].src}
+            variants={images[currentImageIndex].variants}
+            originalVersion={images[currentImageIndex].originalVersion}
             alt={images[currentImageIndex].alt}
             className={cn(
               "max-h-screen max-w-screen",
@@ -191,7 +193,6 @@ export function ImageViewerPanel({
             }}
             onLoadingFinished={() => setIsImageLoading(false)}
             layout="responsive"
-            srcMultiplier={8}
             sizes={
               images[currentImageIndex].aspectRatio <
               window.innerWidth / window.innerHeight

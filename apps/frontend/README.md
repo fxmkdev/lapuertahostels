@@ -178,21 +178,16 @@ need access to that test MongoDB instance through `CMS_DATABASE_URI` (or the
 default `mongodb://localhost:27017/website-cms`). Hydration tests stub external
 font CSS so third-party availability cannot fail the interaction checks.
 
-## Image focal points
+## Image delivery and focal points
 
-`MediaImage` reads Payload's `focalX`/`focalY` percentages and orientation-aware
-display dimensions (falling back to raw dimensions for legacy records). The
-shared image layer maps them to ImageKit `xc`/`yc` coordinates after scaling and
-clamps the crop within the image. Each responsive/DPR URL gets its own crop
-coordinates. Any CSS `object-fit: cover` crop uses the focal point remapped into
-the ImageKit output, keeping the subject visible through both crop stages.
-Room-gallery thumbnails and social preview URLs use the same geometry.
-
-Missing, incomplete, or invalid metadata preserves the existing cropping and
-hero alignment. A valid saved point overrides automatic/custom ImageKit focus
-and hero alignment. Full-image lightboxes, uncropped logos, and videos retain
-their existing presentation. See the CMS README for the editor workflow and
-cache-refresh timing.
+The shared image layer selects pre-generated Tigris derivatives using stored
+actual sizes. Focal positions are adjusted for each generated crop before any
+further CSS cropping. A saved point overrides legacy hero alignment. Unprocessed
+media and Storybook fixtures use the original public file. Social previews use
+JPEG derivatives and their actual dimensions. See
+[media storage and migration](../../docs/media-storage.md) for configuration,
+recipes, backfill, verification, backups, and rollout. The CMS editor workflow
+and content freshness rules below continue to apply.
 
 ## CMS content freshness
 

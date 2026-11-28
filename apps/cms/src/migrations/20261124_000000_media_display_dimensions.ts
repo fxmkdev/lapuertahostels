@@ -1,18 +1,14 @@
+import { createMediaClient, mediaStorageFromEnv } from "../media/storage";
 import type { MigrateDownArgs, MigrateUpArgs } from "@payloadcms/db-mongodb";
-import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
 import {
   migrateDisplayDimensions,
   getOriginalObjectKey,
 } from "../collections/media/migrate-display-dimensions";
 
 export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
-  const client = new S3Client({
-    region: process.env.MEDIA_S3_REGION!,
-    credentials: {
-      accessKeyId: process.env.MEDIA_S3_ACCESS_KEY_ID!,
-      secretAccessKey: process.env.MEDIA_S3_SECRET_ACCESS_KEY!,
-    },
-  });
+  const storage = mediaStorageFromEnv();
+  const client = createMediaClient(storage);
   try {
     const result = await migrateDisplayDimensions({
       payload,
@@ -21,7 +17,7 @@ export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
         const key = getOriginalObjectKey(media);
         const { Body } = await client.send(
           new GetObjectCommand({
-            Bucket: process.env.MEDIA_S3_BUCKET!,
+            Bucket: storage.bucket,
             Key: key,
           }),
         );

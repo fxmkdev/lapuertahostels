@@ -1,3 +1,4 @@
+import { readImageManifest } from "../../../../../libs/payload-types/src/media";
 import type {
   CollectionConfig,
   CollectionSlug,
@@ -12,6 +13,8 @@ import { translated } from "../../translations/translations";
 import { generateAltTextEndpoint } from "./generate-alt-text-endpoint";
 import { mediaUsagesField } from "./usages";
 import { setDisplayDimensions } from "./display-dimensions";
+import { optimizeMedia } from "../../media/hooks";
+import type { MediaStore } from "../../media/storage";
 
 function categoryField({ hidden }: { hidden: boolean }): Field {
   const relationTo = "mediaCategory" as unknown as CollectionSlug;
@@ -68,16 +71,44 @@ export function Media({
   retainLegacyCategories = false,
   serverUrl,
   apiRoute,
+  mediaStore,
 }: {
   generateAltTextOptions?: { publicMediaBaseUrl: string };
   organization?: "categories" | "folders" | "none";
   retainLegacyCategories?: boolean;
   serverUrl?: string;
   apiRoute?: string;
+  mediaStore?: MediaStore;
 } = {}): CollectionConfig {
   const includeCategoryField =
     organization === "categories" || retainLegacyCategories;
   const fields: Field[] = [
+    {
+      name: "sizes",
+      type: "group",
+      admin: { hidden: true, readOnly: true },
+      fields: [
+        {
+          name: "thumbnail",
+          type: "group",
+          fields: [
+            ...["filename", "url", "mimeType"].map(
+              (name): Field => ({ name, type: "text" }),
+            ),
+            ...["width", "height", "filesize"].map(
+              (name): Field => ({ name, type: "number" }),
+            ),
+          ],
+        },
+      ],
+    },
+
+    {
+      name: "imageVariants",
+      type: "json",
+      admin: { hidden: true, readOnly: true },
+      access: { create: () => false, update: () => false },
+    },
     ...["displayWidth", "displayHeight"].map(
       (name): Field => ({
         name,
@@ -145,6 +176,8 @@ export function Media({
     defaultPopulate: {
       alt: true,
       filename: true,
+      _objectKey: true,
+      imageVariants: true,
       focalX: true,
       focalY: true,
       displayWidth: true,
@@ -168,24 +201,48 @@ export function Media({
       ? [generateAltTextEndpoint(generateAltTextOptions)]
       : [],
     fields,
-    hooks: { beforeChange: [setDisplayDimensions] },
+    hooks: {
+      beforeOperation: [
+        ({ operation, req }) => {
+          if (
+            process.env.MEDIA_WRITES_PAUSED === "true" &&
+            !req.context.mediaMaintenance &&
+            ["create", "update", "delete", "updateByID", "deleteByID"].includes(
+              operation,
+            )
+          )
+            throw new Error(
+              "Media editing is temporarily paused for maintenance",
+            );
+        },
+      ],
+      beforeChange: [
+        setDisplayDimensions,
+        ...(mediaStore ? [optimizeMedia(mediaStore)] : []),
+      ],
+    },
     folders: organization === "folders" ? true : undefined,
     labels: {
       plural: translated("cmsPlugin:media:labels:plural"),
       singular: translated("cmsPlugin:media:labels:singular"),
     },
     upload: {
-      adminThumbnail: "thumbnail",
+      adminThumbnail: ({ doc }) => {
+        const variants = readImageManifest(doc.imageVariants)?.variants.filter(
+          (v) => v.preset === "natural",
+        );
+        const thumbnail =
+          variants?.find((v) => v.width >= 400) ?? variants?.at(-1);
+        return thumbnail && mediaStore
+          ? mediaStore.url(thumbnail.key)
+          : typeof doc.url === "string"
+            ? doc.url
+            : null;
+      },
       crop: false,
       disableLocalStorage: true,
       displayPreview: true,
       focalPoint: true,
-      imageSizes: [
-        {
-          name: "thumbnail",
-          width: 400,
-        },
-      ],
       mimeTypes: ["image/*", "video/*"],
       ...mediaFileFetchOptions(serverUrl, apiRoute),
     },

@@ -38,44 +38,64 @@ function socialMetadata(focalX?: number, focalY?: number, dimensions = {}) {
         loaderData: {
           locale: "en",
           allBrands: [{ id: "puerta", name: "La Puerta" }],
-          environment: { imagekitBaseUrl: "https://images.example.com" },
+          environment: { mediaBaseUrl: "https://images.example.com" },
         },
       },
     ],
   } as never);
 }
 
-test("social previews use the same focal geometry at their respective sizes", () => {
+test("legacy social previews use direct original URLs and actual dimensions", () => {
   const result = socialMetadata(0, 100);
   expect(result).toContainEqual({
     name: "og:image",
-    content:
-      "https://images.example.com/tr:w-1200,h-630,xc-600,yc-315/subject.jpg",
+    content: "https://images.example.com/subject.jpg",
+  });
+  expect(result).toContainEqual({ name: "og:image:width", content: "1600" });
+});
+test("social previews use immutable JPEG derivatives when available", () => {
+  const imageVariants = {
+    recipeVersion: 1,
+    sourceHash: "a".repeat(64),
+    focalX: 0,
+    focalY: 100,
+    variants: [
+      {
+        preset: "opengraph",
+        key: "optimized/og.jpg",
+        width: 1200,
+        height: 630,
+        mimeType: "image/jpeg",
+        focalX: 0,
+        focalY: 100,
+        sha256: "b".repeat(64),
+      },
+      {
+        preset: "twitter",
+        key: "optimized/twitter.jpg",
+        width: 2400,
+        height: 1200,
+        mimeType: "image/jpeg",
+        focalX: 0,
+        focalY: 100,
+        sha256: "b".repeat(64),
+      },
+    ],
+  };
+  const result = socialMetadata(0, 100, {
+    imageVariants,
+    mimeType: "image/png",
+  });
+  expect(result).toContainEqual({
+    name: "og:image",
+    content: "https://images.example.com/optimized/og.jpg",
   });
   expect(result).toContainEqual({
     name: "twitter:image",
-    content:
-      "https://images.example.com/tr:w-2400,h-1200,xc-1200,yc-600/subject.jpg",
-  });
-});
-
-test("social URLs without focal metadata preserve existing transformations", () => {
-  expect(socialMetadata()).toContainEqual({
-    name: "og:image",
-    content: "https://images.example.com/tr:w-1200,h-630/subject.jpg",
-  });
-});
-
-test("social crops use the displayed portrait dimensions for EXIF rotations", () => {
-  const result = socialMetadata(50, 90, {
-    width: 1280,
-    height: 854,
-    displayWidth: 854,
-    displayHeight: 1280,
+    content: "https://images.example.com/optimized/twitter.jpg",
   });
   expect(result).toContainEqual({
-    name: "og:image",
-    content:
-      "https://images.example.com/tr:w-1200,h-630,xc-600,yc-1484/subject.jpg",
+    name: "og:image:type",
+    content: "image/jpeg",
   });
 });

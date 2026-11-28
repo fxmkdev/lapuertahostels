@@ -1,0 +1,143 @@
+import sharp from "sharp";
+import type { Payload } from "payload";
+import { readImageManifest } from "../../../../libs/payload-types/src/media";
+import { getOriginalObjectKey } from "../collections/media/migrate-display-dimensions";
+import { IMAGE_RECIPE_VERSION, checksum, normalizePoint } from "./optimize";
+import type { MediaStore } from "./storage";
+
+export async function* mediaDocuments(payload: Payload) {
+  let page = 1;
+  while (true) {
+    const batch = await payload.find({
+      collection: "media",
+      depth: 0,
+      limit: 50,
+      page,
+      sort: "id",
+      overrideAccess: true,
+      showHiddenFields: true,
+    });
+    for (const doc of batch.docs) yield doc;
+    if (!batch.hasNextPage) break;
+    page++;
+  }
+}
+export async function backfillMedia(
+  payload: Payload,
+  apply: boolean,
+  report: (value: object) => Promise<void>,
+  force = false,
+) {
+  for await (const media of mediaDocuments(payload)) {
+    const manifest = readImageManifest(media.imageVariants);
+    const point = normalizePoint(media.focalX, media.focalY);
+    const eligible = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/avif",
+    ].includes(media.mimeType ?? "");
+    const current =
+      manifest?.recipeVersion === IMAGE_RECIPE_VERSION &&
+      manifest.focalX === point.x &&
+      manifest.focalY === point.y;
+    if (!eligible || (current && !force)) {
+      await report({ id: media.id, status: "skipped" });
+      continue;
+    }
+    if (apply)
+      try {
+        await payload.update({
+          collection: "media",
+          id: media.id,
+          data: {},
+          overrideAccess: true,
+          context: { regenerateImages: true, mediaMaintenance: true },
+        });
+      } catch (error) {
+        throw new Error(
+          `Backfill failed for media ${media.id} (${media.filename}): ${error instanceof Error ? error.message : String(error)}`,
+          { cause: error },
+        );
+      }
+    await report({
+      id: media.id,
+      status: apply ? "generated" : "would-generate",
+    });
+  }
+}
+export async function verifyMedia(
+  payload: Payload,
+  store: Pick<MediaStore, "read">,
+  report: (value: object) => Promise<void>,
+) {
+  for await (const media of mediaDocuments(payload)) {
+    try {
+      const original = await store.read(getOriginalObjectKey(media));
+      const manifest = readImageManifest(media.imageVariants);
+      const point = normalizePoint(media.focalX, media.focalY);
+      if (manifest) {
+        if (
+          manifest.recipeVersion !== IMAGE_RECIPE_VERSION ||
+          manifest.focalX !== point.x ||
+          manifest.focalY !== point.y
+        )
+          throw new Error(`Stale derivatives for media ${media.id}`);
+        if (manifest.sourceHash !== checksum(original))
+          throw new Error(`Original changed for media ${media.id}`);
+        for (const variant of manifest.variants) {
+          if (checksum(await store.read(variant.key)) !== variant.sha256)
+            throw new Error(`Derivative checksum mismatch: ${variant.key}`);
+        }
+      } else if (
+        media.mimeType?.startsWith("image/") &&
+        media.mimeType !== "image/svg+xml"
+      ) {
+        const metadata = await sharp(original).metadata();
+        if (
+          ["jpeg", "png", "webp", "heif", "avif"].includes(
+            metadata.format ?? "",
+          ) &&
+          (metadata.pages ?? 1) <= 1
+        )
+          throw new Error(`Missing image variants for ${media.id}`);
+      }
+      for (const size of Object.values(media.sizes ?? {}))
+        if (size?.filename) {
+          await store.read(
+            getOriginalObjectKey({ ...media, filename: size.filename }),
+          );
+        }
+      await report({
+        id: media.id,
+        status: "verified",
+        derivatives: manifest?.variants.length ?? 0,
+      });
+    } catch (error) {
+      throw new Error(
+        `Verification failed for media ${media.id} (${media.filename}): ${error instanceof Error ? error.message : String(error)}`,
+        { cause: error },
+      );
+    }
+  }
+}
+export async function referencedKeys(payload: Payload) {
+  const keys = new Set<string>();
+  for await (const doc of mediaDocuments(payload))
+    for (const variant of readImageManifest(doc.imageVariants)?.variants ?? [])
+      keys.add(variant.key);
+  return keys;
+}
+export function canRemoveDerivative(
+  key: string,
+  retiredAt: Date | undefined,
+  references: Set<string>,
+  now = Date.now(),
+) {
+  return (
+    key.startsWith("optimized/") &&
+    !!retiredAt &&
+    now - retiredAt.getTime() >= 14 * 86400000 &&
+    !references.has(key)
+  );
+}

@@ -25,6 +25,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store,sharing=locked \
 
 # Copy application code
 COPY apps/cms apps/cms
+COPY libs/payload-types libs/payload-types
 
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry

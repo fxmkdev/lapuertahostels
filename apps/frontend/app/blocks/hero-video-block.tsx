@@ -1,8 +1,12 @@
 import type { Page } from "@lapuertahostels/payload-types";
 import { OverlayTitle } from "./common/overlay-title";
 import { useEnvironment } from "~/common/environment";
-import { MediaPlaceholder } from "~/common/media";
-import { gracefully, isObject } from "~/common/utils";
+import {
+  publicMediaUrl,
+  readImageManifest,
+} from "@lapuertahostels/payload-types";
+import { MediaPlaceholder, getSrcFromMedia } from "~/common/media";
+import { isObject } from "~/common/utils";
 
 export type HeroVideoBlockProps = NonNullable<Page["hero"]>[number] & {
   blockType: "HeroVideo";
@@ -13,16 +17,27 @@ export function HeroVideoBlock({
   video,
   overlayTitle,
 }: HeroVideoBlockProps) {
-  const { imagekitBaseUrl } = useEnvironment();
+  const { mediaBaseUrl, mediaUseDerivatives } = useEnvironment();
 
-  const previewUrl = gracefully(previewImage, "filename");
+  const previewVariant =
+    mediaUseDerivatives !== false && isObject(previewImage)
+      ? readImageManifest(previewImage.imageVariants)
+          ?.variants.filter((v) => v.preset === "natural")
+          .find((v) => v.width >= 1200)
+      : undefined;
+  const previewUrl =
+    previewVariant?.key ?? getSrcFromMedia(previewImage).replace(/^\//, "");
   return (
     <div className="bg-puerta-100 relative h-[30rem] md:h-[40rem]">
       {isObject(video) ? (
         <video
-          src={`${imagekitBaseUrl}/${video.filename}`}
+          src={publicMediaUrl(
+            mediaBaseUrl,
+            getSrcFromMedia(video).replace(/^\//, ""),
+            video.updatedAt,
+          )}
           poster={
-            previewUrl ? `${imagekitBaseUrl}/tr:h-720/${previewUrl}` : undefined
+            previewUrl ? publicMediaUrl(mediaBaseUrl, previewUrl) : undefined
           }
           autoPlay
           muted

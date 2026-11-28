@@ -4,3 +4,7 @@
 .env
 /node_modules
 .vitest/
+
+# Local media backups and migration reports
+.media-backup/
+media-migration-*.json

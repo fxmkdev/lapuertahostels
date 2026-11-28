@@ -1,5 +1,6 @@
 /.backup
 /.s3-backup
+/.media-backup
 /.github
 /tests
 /tools

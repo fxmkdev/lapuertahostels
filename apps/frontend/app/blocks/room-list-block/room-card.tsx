@@ -1,3 +1,4 @@
+import { readImageManifest } from "@lapuertahostels/payload-types";
 import { Button } from "~/common/button";
 import { Heading } from "~/common/heading";
 import { ImageViewer } from "~/common/image-viewer/image-viewer";
@@ -25,6 +26,14 @@ export function RoomCard({ heading, text, images, cta }: RoomCardProps) {
           const dimensions = getDisplayDimensionsFromMedia(image.image);
           return {
             src: getSrcFromMedia(image.image),
+            originalVersion:
+              typeof image.image === "object"
+                ? image.image.updatedAt
+                : undefined,
+            variants:
+              typeof image.image === "object"
+                ? readImageManifest(image.image.imageVariants)
+                : undefined,
             alt: getAltFromMedia(image.image),
             caption: image.caption ?? "",
             focalPoint: getFocalPropsFromMedia(image.image).focalPoint,

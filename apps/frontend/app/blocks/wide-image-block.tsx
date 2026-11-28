@@ -17,7 +17,6 @@ export function WideImageBlock({ image, overlayTextBox }: WideImageBlockProps) {
         }}
         className="h-[35rem] w-full object-cover lg:h-full"
         layout="responsive"
-        srcMultiplier={6}
         sizes="100vw"
       />
       {overlayTextBox?.show && (
