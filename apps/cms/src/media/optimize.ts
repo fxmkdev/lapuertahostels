@@ -98,6 +98,30 @@ export function cropRegion(
   };
 }
 
+export function canOptimizeImage(
+  input: Buffer,
+  metadata: { format?: string; pages?: number },
+) {
+  if (
+    !["jpeg", "png", "webp", "avif", "heif"].includes(metadata.format ?? "") ||
+    (metadata.pages ?? 1) > 1
+  )
+    return false;
+  if (metadata.format === "png") {
+    // Sharp's frame count does not identify APNG. PNG requires acTL before IDAT.
+    for (
+      let offset = 8;
+      offset + 12 <= input.length;
+      offset += input.readUInt32BE(offset) + 12
+    ) {
+      const type = input.toString("ascii", offset + 4, offset + 8);
+      if (type === "acTL") return false;
+      if (type === "IDAT" || type === "IEND") break;
+    }
+  }
+  return true;
+}
+
 export async function optimizeImage({
   input,
   point,
@@ -123,11 +147,7 @@ export async function optimizeImage({
   )
     return previous;
   const metadata = await sharp(input).metadata();
-  if (
-    !["jpeg", "png", "webp", "avif", "heif"].includes(metadata.format ?? "") ||
-    (metadata.pages ?? 1) > 1
-  )
-    return null;
+  if (!canOptimizeImage(input, metadata)) return null;
   const { width, height } = metadata.autoOrient;
   const seen = new Set<string>();
   const outputs = recipes.flatMap((recipe) => {

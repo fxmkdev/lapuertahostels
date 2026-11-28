@@ -1,10 +1,12 @@
 // @vitest-environment node
+import { readFile } from "node:fs/promises";
 import { expect, test, vi } from "vitest";
 import { copyObject, copyBatch } from "./copy";
 import {
   canRemoveDerivative,
   backfillMedia,
   referencedKeys,
+  verifyMedia,
 } from "./maintenance";
 import type { S3Client } from "@aws-sdk/client-s3";
 import type { Payload } from "payload";
@@ -217,4 +219,43 @@ test("a failed copy batch reports completed objects and resumes without overwrit
       ([command]) => command.constructor.name === "GetObjectCommand",
     ),
   ).toBe(true);
+});
+
+test("original-only animation backfills skip repeat writes and pass verification", async () => {
+  const input = await readFile(
+    new URL(
+      "../../../../tests/e2e/assets/animated-two-frames.png",
+      import.meta.url,
+    ),
+  );
+  const updateOne = vi.fn();
+  const payload = {
+    find: vi.fn().mockResolvedValue({
+      docs: [
+        { id: "animated", filename: "animated.png", mimeType: "image/png" },
+      ],
+      hasNextPage: false,
+    }),
+    db: { updateOne },
+  } as unknown as Payload;
+  const store = {
+    read: vi.fn(async () => input),
+    write: vi.fn(async () => {}),
+  };
+  const report = vi.fn(async (_value: object) => {});
+  await backfillMedia(payload, true, report, false, store);
+  await backfillMedia(payload, true, report, false, store);
+  expect(updateOne).not.toHaveBeenCalled();
+  expect(store.write).not.toHaveBeenCalled();
+  expect(
+    report.mock.calls.every(
+      ([value]) => (value as { status: string }).status === "skipped",
+    ),
+  ).toBe(true);
+  await verifyMedia(payload, store, report);
+  expect(report).toHaveBeenLastCalledWith({
+    id: "animated",
+    status: "verified",
+    derivatives: 0,
+  });
 });

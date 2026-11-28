@@ -149,3 +149,17 @@ test("focal saves load the original key and storage errors abort the save", asyn
 test("invalid or missing focal metadata has a centered fallback", () => {
   expect(normalizePoint(undefined, NaN)).toEqual({ x: 50, y: 50 });
 });
+
+test("animated PNGs remain original files even when Sharp reports one page", async () => {
+  const input = await readFile(
+    new URL(
+      "../../../../tests/e2e/assets/animated-two-frames.png",
+      import.meta.url,
+    ),
+  );
+  const write = vi.fn(async () => {});
+  expect(
+    await optimizeImage({ input, point: { x: 50, y: 50 }, write }),
+  ).toBeNull();
+  expect(write).not.toHaveBeenCalled();
+});

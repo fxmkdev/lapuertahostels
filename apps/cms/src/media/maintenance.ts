@@ -7,6 +7,7 @@ import {
   checksum,
   normalizePoint,
   optimizeImage,
+  canOptimizeImage,
 } from "./optimize";
 import type { MediaStore } from "./storage";
 
@@ -59,6 +60,14 @@ export async function backfillMedia(
           point,
           write: store.write,
         });
+        if (!imageVariants && !manifest) {
+          await report({
+            id: media.id,
+            status: "skipped",
+            reason: "original-only",
+          });
+          continue;
+        }
         // Use the adapter directly: normal document updates fill missing focal
         // defaults and run unrelated localization hooks on legacy records.
         const updated = await payload.db.updateOne({
@@ -115,12 +124,7 @@ export async function verifyMedia(
         media.mimeType !== "image/svg+xml"
       ) {
         const metadata = await sharp(original).metadata();
-        if (
-          ["jpeg", "png", "webp", "heif", "avif"].includes(
-            metadata.format ?? "",
-          ) &&
-          (metadata.pages ?? 1) <= 1
-        )
+        if (canOptimizeImage(original, metadata))
           throw new Error(`Missing image variants for ${media.id}`);
       }
       for (const size of Object.values(media.sizes ?? {}))
