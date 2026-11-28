@@ -41,5 +41,3 @@ next-env.d.ts
 .env
 
 /media
-
-/src/app/(payload)/admin/importMap.js

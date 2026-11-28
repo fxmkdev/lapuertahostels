@@ -1,52 +1,31 @@
+import { isPreviewDocument } from "@lapuertahostels/live-preview";
+import {
+  createPreviewBridgeClient,
+  PreviewConnectionError,
+} from "./preview-bridge";
 import type { useLivePreview } from "@payloadcms/live-preview-react";
 
 type RequestHandler = NonNullable<
   Parameters<typeof useLivePreview>[0]["requestHandler"]
 >;
 
-function isExpectedDocument(document: unknown, expectedId: unknown) {
-  return (
-    document !== null &&
-    typeof document === "object" &&
-    !Array.isArray(document) &&
-    "id" in document &&
-    (typeof document.id === "string" || typeof document.id === "number") &&
-    document.id === expectedId &&
-    !("errors" in document)
-  );
-}
-
-function fetchPreview(
-  documentPath: string,
-  { apiPath, data, serverURL }: Parameters<RequestHandler>[0],
-) {
-  // Payload shares a document cache across subscriptions. Use our document
-  // path so a delayed response from an old subscription cannot change it.
-  return fetch(`${serverURL}${apiPath}/${encodeURI(documentPath)}`, {
-    body: JSON.stringify(data),
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Payload-HTTP-Method-Override": "GET",
-    },
-    method: "POST",
-  });
-}
-
 export type PreviewSnapshot<T> = {
   data: T;
-  error: "authentication" | "request" | null;
+  error: "authentication" | "request" | "connection" | null;
 };
 
 export function createPreviewRequestHandler<T>({
   initialData,
   documentPath,
+  locale,
   onChange,
 }: {
   initialData: T;
   documentPath: string;
+  locale: string;
   onChange: (snapshot: PreviewSnapshot<T>) => void;
 }) {
+  const bridge = createPreviewBridgeClient(documentPath, locale);
   let lastValidData = initialData;
   let latestRequest = 0;
   const expectedId = (initialData as { id?: unknown }).id;
@@ -56,7 +35,10 @@ export function createPreviewRequestHandler<T>({
     let error: PreviewSnapshot<T>["error"] = "request";
 
     try {
-      const response = await fetchPreview(documentPath, args);
+      const response = await bridge.request(
+        args.serverURL,
+        args.data.depth ?? 0,
+      );
 
       if (response.status === 401 || response.status === 403) {
         error = "authentication";
@@ -64,7 +46,7 @@ export function createPreviewRequestHandler<T>({
       if (!response.ok) throw new Error("Preview request failed");
 
       const document: unknown = await response.json();
-      if (!isExpectedDocument(document, expectedId)) {
+      if (!isPreviewDocument(document, expectedId)) {
         throw new Error("Invalid preview document");
       }
 
@@ -72,7 +54,8 @@ export function createPreviewRequestHandler<T>({
         lastValidData = document as T;
         onChange({ data: lastValidData, error: null });
       }
-    } catch {
+    } catch (cause) {
+      if (cause instanceof PreviewConnectionError) error = "connection";
       if (request === latestRequest) {
         onChange({ data: lastValidData, error });
       }
@@ -87,6 +70,7 @@ export function createPreviewRequestHandler<T>({
     requestHandler,
     cancelPending: () => {
       latestRequest++;
+      bridge.cancelPending();
     },
   };
 }

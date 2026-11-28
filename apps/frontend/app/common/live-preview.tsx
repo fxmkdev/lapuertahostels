@@ -53,7 +53,7 @@ function LivePreview<T extends Record<string, any>>({
   children,
 }: LivePreviewProps<T>) {
   const { payloadCmsBaseUrl } = useEnvironment();
-  const { t } = useTranslation("admin");
+  const { t, i18n } = useTranslation("admin");
   const [snapshot, setSnapshot] = useState<PreviewSnapshot<T>>({
     data,
     error: null,
@@ -62,6 +62,7 @@ function LivePreview<T extends Record<string, any>>({
     createPreviewRequestHandler({
       initialData: data,
       documentPath: path,
+      locale: i18n.language,
       onChange: setSnapshot,
     }),
   );
@@ -72,7 +73,7 @@ function LivePreview<T extends Record<string, any>>({
   // receive responses from a previous document or locale after it unmounts.
   useLivePreview<T>({
     initialData: data,
-    serverURL: payloadCmsBaseUrl,
+    serverURL: new URL(payloadCmsBaseUrl).origin,
     depth,
     requestHandler: guard.requestHandler,
   });

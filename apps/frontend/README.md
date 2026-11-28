@@ -60,17 +60,33 @@ current mount.
 
 ## Live preview
 
-CMS live preview retains the last valid document when an update fails, rather
-than replacing page content with an API error response. A translated alert
-explains the failure and clears after the next successful update. Authentication
-errors ask editors to sign back into the CMS and reopen preview; other failures
-can be retried by editing again or reloading preview.
+All CMS live previews, including popup windows, populate content through the
+signed-in CMS window. The website sends a versioned request over `postMessage`;
+the CMS uses its own current unsaved form and same-origin session cookie to
+populate relationships, then returns the document. This works across separate
+`.fly.dev` sites without cross-site cookies or DNS changes. Credentials remain
+in the CMS, and document read permissions are unchanged.
 
-The preview request handler preserves Payload's cookie authentication, method
-override, locale, and relationship depth. It validates response status and
-document identity, ignores superseded responses, and resets when the document or
-language changes. Valid empty block arrays still remove content intentionally.
-This guard does not change CMS authentication or access permissions.
+Both ends validate the other window and exact configured origin. The CMS accepts
+only its active document and language with relationship depths from zero through
+three. Replies include document data on success or a sanitized HTTP status on
+failure. Requests time out after ten seconds in the CMS and fifteen seconds in
+the website. Switching document, language, or preview window cancels pending
+work.
+
+The website retains the last valid document on failed updates, rejects stale or
+invalid replies, and shows an English/Spanish alert until a later update
+succeeds. Valid empty block arrays still remove content intentionally. Open live
+preview from the CMS; there is no direct cross-site request fallback. Deploy the
+CMS and website together; mixed versions retain content and show a connection
+alert.
+
+`PAYLOAD_CMS_BASE_URL` is used for server-to-server requests. Set optional
+`PAYLOAD_CMS_PUBLIC_URL` when the browser must use a different address;
+otherwise it defaults to `PAYLOAD_CMS_BASE_URL`. The public URL must match the
+CMS address used by editors. The disposable E2E services use `http://cms:3001`
+internally, `http://localhost:3001` in the browser, and `http://127.0.0.1:3000`
+for the preview.
 
 ## Deployment
 

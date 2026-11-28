@@ -1,135 +1,43 @@
 import { act, render, screen, waitFor } from "@testing-library/react";
-import { createInstance } from "i18next";
-import { StrictMode } from "react";
-import { I18nextProvider, initReactI18next } from "react-i18next";
-import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import { adminResources } from "~/i18n.admin-resources";
-import { OptInLivePreview } from "./live-preview";
+import { expect, test } from "vitest";
+import {
+  PREVIEW_CHANNEL,
+  PREVIEW_VERSION,
+} from "@lapuertahostels/live-preview";
+import {
+  environment,
+  initialData,
+  editedData,
+  i18n,
+  fetchMock,
+  host,
+  Subject,
+  sendUpdate,
+  deferredResponse,
+} from "./live-preview.test-helpers";
 
-const { environment } = vi.hoisted(() => ({
-  environment: {
-    payloadCmsBaseUrl: "https://cms.example.com",
-    preview: "pages/page-one",
-  },
-}));
-
-vi.mock("~/common/environment", () => ({
-  useEnvironment: () => environment,
-}));
-
-const initialData = {
-  id: "page-one",
-  hero: [{ id: "hero", text: "Initial hero" }],
-  content: [{ id: "content", text: "Initial content" }],
-};
-const editedData = {
-  ...initialData,
-  content: [{ id: "content", text: "Edited content" }],
-};
-
-let i18n: ReturnType<typeof createInstance>;
-const fetchMock = vi.fn<typeof fetch>();
-
-beforeEach(async () => {
-  environment.preview = "pages/page-one";
-  fetchMock.mockReset();
-  vi.stubGlobal("fetch", fetchMock);
-  i18n = createInstance();
-  await i18n.use(initReactI18next).init({
-    lng: "en",
-    fallbackLng: "en",
-    resources: adminResources,
-    react: { useSuspense: false },
-  });
-});
-
-afterEach(() => {
-  vi.unstubAllGlobals();
-});
-
-function Subject({
-  data = initialData,
-  path = `pages/${data.id}`,
-}: {
-  data?: typeof initialData;
-  path?: string;
-}) {
-  return (
-    <StrictMode>
-      <I18nextProvider i18n={i18n}>
-        <OptInLivePreview path={path} data={data} depth={3}>
-          {(page) => (
-            <main>
-              {page.hero?.map((block) => (
-                <h1 key={block.id}>{block.text}</h1>
-              ))}
-              {page.content?.map((block) => (
-                <p key={block.id}>{block.text}</p>
-              ))}
-            </main>
-          )}
-        </OptInLivePreview>
-      </I18nextProvider>
-    </StrictMode>
-  );
-}
-
-// Exercise the real Payload hook and subscription; only the HTTP boundary is mocked.
-async function sendUpdate(
-  data = editedData,
-  locale = "en",
-  collectionSlug = "pages",
-) {
-  await act(async () => {
-    window.dispatchEvent(
-      new MessageEvent("message", {
-        origin: environment.payloadCmsBaseUrl,
-        data: {
-          type: "payload-live-preview",
-          collectionSlug,
-          data,
-          locale,
-        },
-      }),
-    );
-  });
-}
-
-function deferredResponse() {
-  let resolve!: (response: Response) => void;
-  const promise = new Promise<Response>((resolvePromise) => {
-    resolve = resolvePromise;
-  });
-  return { promise, resolve };
-}
-
-test("renders initial content and preserves Payload's request options for edits", async () => {
+test("renders initial content and requests population through the CMS window", async () => {
   render(<Subject />);
   expect(screen.getByRole("main")).toHaveTextContent("Initial content");
   expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   expect(fetchMock).not.toHaveBeenCalled();
-
   fetchMock.mockResolvedValueOnce(Response.json(editedData));
   await sendUpdate();
-
   expect(screen.getByRole("main")).toHaveTextContent("Edited content");
-  expect(fetchMock).toHaveBeenCalledExactlyOnceWith(
-    "https://cms.example.com/api/pages/page-one",
-    {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Payload-HTTP-Method-Override": "GET",
-      },
-      body: JSON.stringify({
-        data: editedData,
-        depth: 3,
-        flattenLocales: false,
-        locale: "en",
-      }),
-    },
+  expect(fetchMock).toHaveBeenCalledExactlyOnceWith("pages/page-one", {
+    channel: PREVIEW_CHANNEL,
+    version: PREVIEW_VERSION,
+    type: "populate",
+    requestId: expect.any(String),
+    documentPath: "pages/page-one",
+    depth: 3,
+    locale: "en",
+  });
+  expect(host.postMessage).toHaveBeenLastCalledWith(
+    expect.objectContaining({ type: "populate" }),
+    environment.payloadCmsBaseUrl,
   );
+  expect(window.fetch).not.toHaveBeenCalled();
 });
 
 const failures = [
@@ -171,7 +79,7 @@ test.each(failures)(
     expect(screen.getByRole("heading")).toHaveTextContent("Initial hero");
     expect(screen.getByRole("alert")).toHaveTextContent(
       "authentication" in failure && failure.authentication
-        ? "Sign back into the CMS and reopen live preview"
+        ? "Check your CMS session and access, then reopen live preview"
         : "Try editing again or reload the preview",
     );
 
@@ -184,9 +92,9 @@ test.each(failures)(
     expect(screen.getByRole("main")).toHaveTextContent("Recovered content");
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
-      "https://cms.example.com/api/pages/page-one",
-      "https://cms.example.com/api/pages/page-one",
-      "https://cms.example.com/api/pages/page-one",
+      "pages/page-one",
+      "pages/page-one",
+      "pages/page-one",
     ]);
   },
 );
@@ -271,9 +179,7 @@ test("switching documents resets the snapshot and ignores requests from the old 
 
   fetchMock.mockResolvedValueOnce(Response.json(nextData));
   await sendUpdate(nextData);
-  expect(fetchMock.mock.lastCall?.[0]).toBe(
-    "https://cms.example.com/api/pages/page-two",
-  );
+  expect(fetchMock.mock.lastCall?.[0]).toBe("pages/page-two");
   expect(screen.getByRole("main")).toHaveTextContent("Second page");
 });
 
@@ -293,7 +199,7 @@ test("switching languages resets retained content and translates the error", asy
   );
   await sendUpdate(initialData, "es");
   expect(screen.getByRole("alert")).toHaveTextContent(
-    "Vuelve a iniciar sesión en el CMS",
+    "Comprueba tu sesión y tus permisos en el CMS",
   );
   const spanishData = {
     ...initialData,
@@ -331,7 +237,7 @@ test("brand previews retain their content on failure and recover on the brand en
   expect(screen.getByRole("main")).toHaveTextContent("Edited content");
   expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
-    "https://cms.example.com/api/brands/page-one",
-    "https://cms.example.com/api/brands/page-one",
+    "brands/page-one",
+    "brands/page-one",
   ]);
 });
