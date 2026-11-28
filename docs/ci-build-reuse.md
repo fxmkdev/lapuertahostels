@@ -86,7 +86,8 @@ selected for reuse by another run.
 The image step replaces its shell with the Node helper, which forwards `SIGINT`
 and `SIGTERM` to Fly and waits for it to exit. This gives Fly an opportunity to
 cancel its remote build session before the runner forcibly cleans up orphan
-processes; interrupted builds never publish image outputs or aliases.
+processes. A signal received during a Fly build fails image preparation even if
+the CLI exits successfully, preventing subsequent alias publication.
 
 ## Checks and deployments
 
@@ -145,5 +146,46 @@ Compare the initial cold build with subsequent warm-cache builds. Record queue
 time separately from builder startup, CMS compilation, runtime-file copying,
 layer export, and registry upload. The investigated slow CMS job took 9m 28s,
 including 140s copying runtime files and 220s exporting layers, while the CMS
-build itself took 39s. Builder isolation addresses contention; Docker image
+build itself took 39s. Builder isolation bounds concurrent load; Docker image
 size, cache fingerprints, and check scheduling are unchanged.
+
+## Validation observations (2026-11-28)
+
+Overlapping revisions of PR #451 and the disposable PR #452 verified that
+frontend and CMS can run concurrently, requests from different PRs queue for the
+same app, and superseded requests cancel only their own PR's image work. The
+canceled run's result gate failed and skipped image promotion and deployment.
+The disposable PR was closed and its branch removed after validation.
+
+The runner logs for the
+[original slow build](https://github.com/fxmkdev/lapuertahostels/actions/runs/46152748950/job/141002918410),
+[first completed app-scoped build](https://github.com/fxmkdev/lapuertahostels/actions/runs/46155782505/job/141012266993),
+and
+[next app-scoped build](https://github.com/fxmkdev/lapuertahostels/actions/runs/46157328715/job/141017008078)
+show the following CMS timings. Queueing time is excluded; the controlled
+overlap test deliberately queued the first completed build behind the disposable
+CMS test for about eleven minutes.
+
+| Stage                     | Original slow build | First app-scoped build | Next app-scoped build |
+| ------------------------- | ------------------- | ---------------------- | --------------------- |
+| Runner log duration       | 9m 28s              | 7m 05s                 | 3m 44s                |
+| Depot builder acquisition | 13s                 | 206s                   | 2s                    |
+| Dependency installation   | 55s                 | 48s                    | 42s                   |
+| CMS build                 | 39s                 | 43s                    | 49s                   |
+| Copy runtime files        | 140s                | 26s                    | 28s                   |
+| Export layers             | 220s                | 36s                    | 35s                   |
+| Upload layers             | 7s                  | 18s                    | 17s                   |
+
+All three images were approximately 474 MB. Layer processing improved in these
+two runs, but a 3m 26s builder-acquisition delay still contributed to the first
+run's total time. These individual measurements are not a guarantee of future
+build duration. The
+[disposable CMS test](https://github.com/fxmkdev/lapuertahostels/actions/runs/46155671149/job/141011882486)
+was deliberately canceled after 10m 38s: acquisition took 0.6s, dependencies
+took 66.9s, and Turbopack then remained in production compilation for almost
+nine minutes without reaching runtime copying or export. Builder isolation does
+not establish a fix for that separate observed compilation stall.
+
+The earlier revision passed E2E and deployed both preview apps successfully
+while the newer revision continued running, confirming that image requests do
+not cancel the deployment lifecycle.
