@@ -26,20 +26,22 @@ type Localized<T> = {
   es: T;
 };
 
+type PagePathnames = { en: string; es?: string };
+
 type PageSeedDocument = Omit<
   Partial<Page>,
   "createdAt" | "id" | "pathname" | "title" | "updatedAt"
 > & {
   _id: ObjectId;
   createdAt: string;
-  pathname: Localized<string>;
+  pathname: PagePathnames;
   title: Localized<string>;
   updatedAt: string;
 };
 
 export async function createPage(
   data: Partial<Page> = {},
-  pathnames?: Localized<string>,
+  pathnames?: PagePathnames,
 ) {
   const testPagePathname = `/e2e/${createId()}`;
   const now = new Date().toISOString();

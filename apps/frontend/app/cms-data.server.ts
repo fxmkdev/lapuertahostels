@@ -212,15 +212,19 @@ export async function tryGetLocalizedPathname(
   request: Request,
   pathname: string,
   locale: string,
+  fallbackLocale?: "none",
 ) {
-  return await getData<{ localizedPathname: string }, string | null>(
+  return await getData<{ localizedPathname?: string | null }, string | null>(
     request,
     `pages/localized-pathname`,
-    `localized-pathname:${pathname.substring(1).replaceAll("/", ":") || "index"}`,
+    `localized-pathname${fallbackLocale ? "-no-locale-fallback" : ""}:${pathname.substring(1).replaceAll("/", ":") || "index"}`,
     locale,
     0,
-    { pathname },
-    (data) => (data ? data.localizedPathname : null),
+    {
+      pathname,
+      ...(fallbackLocale ? { "fallback-locale": fallbackLocale } : {}),
+    },
+    (data) => data?.localizedPathname ?? null,
   );
 }
 

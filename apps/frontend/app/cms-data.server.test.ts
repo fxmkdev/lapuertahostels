@@ -4,6 +4,7 @@ import {
   getCommon,
   purgeCache,
   tryGetPage,
+  tryGetLocalizedPathname,
 } from "./cms-data.server";
 import { getCmsCachePrefix } from "./cms-cache.server";
 
@@ -63,6 +64,40 @@ const contentKey = () =>
   [...values.keys()].find((key) => key.endsWith(":pages:about:en"))!;
 
 describe("CMS data cache", () => {
+  test("isolates exact-language destination lookups from fallback pathnames", async () => {
+    const request = new Request("https://www.example.com/en/about");
+    fetchMock.mockResolvedValueOnce(json({ localizedPathname: "/about" }));
+    fetchMock.mockResolvedValueOnce(json({ localizedPathname: "/sobre" }));
+    expect(await tryGetLocalizedPathname(request, "/about", "es")).toBe(
+      "/about",
+    );
+    expect(await tryGetLocalizedPathname(request, "/about", "es", "none")).toBe(
+      "/sobre",
+    );
+    expect(
+      (fetchMock.mock.calls[1][0] as URL).searchParams.get("fallback-locale"),
+    ).toBe("none");
+    expect(await tryGetLocalizedPathname(request, "/about", "es")).toBe(
+      "/about",
+    );
+    expect(await tryGetLocalizedPathname(request, "/about", "es", "none")).toBe(
+      "/sobre",
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  test("normalizes an absent localized pathname to null", async () => {
+    fetchMock.mockResolvedValueOnce(json({}));
+    await expect(
+      tryGetLocalizedPathname(
+        new Request("https://www.example.com/en/about"),
+        "/about",
+        "es",
+        "none",
+      ),
+    ).resolves.toBeNull();
+  });
+
   test("keeps untranslated notice labels separate from normal CMS locale fallback", async () => {
     const request = new Request("https://www.example.com/en/about");
     fetchMock.mockResolvedValueOnce(

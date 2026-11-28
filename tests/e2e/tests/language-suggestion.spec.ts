@@ -58,6 +58,44 @@ async function expectSavedLocale(
   expect(response.headers().location).toBe(destination);
 }
 
+test("does not offer Spanish for an English-only pathname despite CMS fallback", async ({
+  page,
+  request,
+}) => {
+  const pathname = `/e2e/${createId()}/english-only`;
+  await createPage(
+    {
+      hero: [{ blockType: "HeroHeading", heading: "English-only destination" }],
+    },
+    { en: pathname },
+  );
+
+  const lookup = new URL(
+    "/api/pages/localized-pathname",
+    process.env.CMS_BASE_URL,
+  );
+  lookup.searchParams.set("pathname", pathname);
+  lookup.searchParams.set("locale", "es");
+  const fallback = await request.get(lookup.href);
+  expect(fallback.status()).toBe(200);
+  expect(await fallback.json()).toEqual({ localizedPathname: pathname });
+  lookup.searchParams.set("fallback-locale", "none");
+  const exact = await request.get(lookup.href);
+  expect(exact.status()).toBe(404);
+
+  // Alternate links warm the regular fallback cache before the offer is checked.
+  const response = await page.goto(`/en${pathname}`);
+  expect(response?.status()).toBe(200);
+  await expect(
+    page.getByRole("heading", { name: "English-only destination" }),
+  ).toBeVisible();
+  await expectNoOffer(page);
+  await expect(page).toHaveURL(`/en${pathname}`);
+  expect(
+    (await page.context().cookies()).find((cookie) => cookie.name === "locale"),
+  ).toBeUndefined();
+});
+
 test("offers without redirecting, preserves translated destination and saves switch", async ({
   page,
   request,

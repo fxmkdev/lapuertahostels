@@ -51,6 +51,7 @@ test("offers the translated destination with preferred-language defaults", async
     expect.any(Request),
     "/azul/contact",
     "es",
+    "none",
   );
   expect(getCommon).toHaveBeenCalledWith(expect.any(Request), "es", "none");
 });

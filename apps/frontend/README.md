@@ -64,7 +64,9 @@ language with `{{language}}` placeholders for native language names. Copy is
 requested in the preferred language without changing the page language. Missing
 labels use English/Spanish defaults, with English as the final fallback. Missing
 destinations or failed suggestion lookups omit the optional notice without
-failing the page.
+failing the page. Destination availability is checked without CMS locale
+fallback; an English-only pathname does not trigger a Spanish offer. Normal
+routing and alternate-language links retain their existing fallback behavior.
 
 ## Banner dismissal
 

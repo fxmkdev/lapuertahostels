@@ -41,13 +41,18 @@ async function getLocalizedPathname(
   req: PayloadRequest,
   pathnameToFind: string,
 ) {
-  const pages = await getPagesForPathname(req, pathnameToFind);
-  return pages.length > 0 ? pages[0].pathname : null;
+  const pages = await getPagesForPathname(
+    req,
+    pathnameToFind,
+    req.searchParams.get("fallback-locale") === "none" ? false : undefined,
+  );
+  return pages[0]?.pathname ?? null;
 }
 
 export async function getPagesForPathname(
   req: PayloadRequest,
   pathnameToFind: string,
+  fallbackLocale?: false,
 ) {
   const settings = await req.payload.findGlobal({
     slug: "settings",
@@ -60,6 +65,8 @@ export async function getPagesForPathname(
   });
   const result = await req.payload.find({
     collection: "pages",
+    // Local API calls otherwise reset request fallback to the configured default.
+    fallbackLocale,
     limit: 1,
     pagination: false,
     req,

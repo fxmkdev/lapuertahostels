@@ -29,6 +29,7 @@ export async function getLanguageSuggestion(
       request,
       pathname,
       preferredLocale,
+      "none",
     );
     if (!localizedPathname) return undefined;
 
