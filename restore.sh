@@ -13,18 +13,19 @@ test -d ".backup/$BACKUP_DATABASE_NAME"
 test -d .media-backup
 
 echo "Dropping database…"
-RESTORE_DATABASE_NAME="$RESTORE_DATABASE_NAME" mongosh "$RESTORE_DATABASE_URI" <<'JS'
+RESTORE_DATABASE_NAME="$RESTORE_DATABASE_NAME" mongosh --quiet --file /dev/stdin "$RESTORE_DATABASE_URI" <<'JS'
 db = db.getSiblingDB(process.env.RESTORE_DATABASE_NAME);
 db.getCollectionNames().filter(c => !['users', 'api-keys', 'payload-preferences'].includes(c)).forEach(c => db.getCollection(c).drop());
 JS
 
 echo "Restoring database…"
 mongorestore --uri "$RESTORE_DATABASE_URI" \
+  --nsInclude "$BACKUP_DATABASE_NAME.*" \
   --nsFrom "$BACKUP_DATABASE_NAME.*" --nsTo "$RESTORE_DATABASE_NAME.*" \
   --nsExclude "$BACKUP_DATABASE_NAME.users" \
   --nsExclude "$BACKUP_DATABASE_NAME.api-keys" \
   --nsExclude "$BACKUP_DATABASE_NAME.payload-preferences" \
-  --drop ".backup/$BACKUP_DATABASE_NAME"
+  --drop .backup
 
 echo "Restoring Tigris bucket…"
 AWS_ACCESS_KEY_ID="$MEDIA_STORAGE_ACCESS_KEY_ID" \
