@@ -6,12 +6,13 @@ requests compare against their merge base; pushes compare against the event's
 conservatively.
 
 Each app includes its own directory and transitive workspace dependencies. The
-frontend currently consumes `libs/payload-types` and `libs/rich-text`; the CMS
-has no workspace dependencies. Root package manifests, lockfile, pnpm workspace
-configuration, `.npmrc`, patches, shared formatting/Docker configuration, CI
-helpers, and Actions configuration affect both apps. Changes inside an app's
-directory are conservatively considered app changes, including its
-documentation. Root `README.md` and `docs/` changes do not affect either app.
+frontend consumes `libs/payload-types`, `libs/rich-text`, and
+`libs/live-preview`; the CMS also consumes `libs/live-preview`. Root package
+manifests, lockfile, pnpm workspace configuration, `.npmrc`, patches, shared
+formatting/Docker configuration, CI helpers, and Actions configuration affect
+both apps. Changes inside an app's directory are conservatively considered app
+changes, including its documentation. Root `README.md` and `docs/` changes do
+not affect either app.
 
 ## Generated CMS types
 
@@ -119,8 +120,8 @@ its existing name, always runs, and rejects failed/cancelled dependencies and
 unexpectedly skipped required checks. Configure it as a required
 branch-protection check so failures in prerequisite jobs cannot be hidden by
 downstream skips. Staging and preview deployments depend on this gate; preview
-cleanup runs only after a preview deployment. The existing required E2E check
-also explicitly fails when prerequisite jobs fail or unexpectedly skip, while
+cleanup runs only after a preview deployment. The E2E prerequisite guard also
+explicitly fails when prerequisite jobs fail or unexpectedly skip, while
 permitting intentional CMS-verification skips.
 
 The image-preparation job summaries record changes, build/reuse decisions,
