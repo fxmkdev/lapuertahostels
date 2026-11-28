@@ -595,6 +595,11 @@ jobs:
   clean-preview:
     name: Clean Preview Apps
     if: ${{ !cancelled() && needs.deploy-preview.result == 'success' }}
-    uses: ./.github/workflows/clean-preview-reusable.yml
+    permissions:
+      contents: read
+      pull-requests: read
+      deployments: read
+    # Keep the workflow and its checked-out helper on the same trusted revision.
+    uses: fxmkdev/lapuertahostels/.github/workflows/clean-preview-reusable.yml@main
     secrets: inherit
     needs: deploy-preview
