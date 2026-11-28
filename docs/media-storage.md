@@ -93,12 +93,14 @@ records the affected item. Source credentials are temporary migration inputs and
 must not remain configured on the finished apps.
 
 Backfill reads originals sequentially from Tigris and preserves document IDs,
-filenames, localized text, relationships, and focal metadata. Current manifests
-are skipped. Set `MEDIA_REGENERATE_ALL=true` to repair missing derivatives or
-force regeneration. Verification reads one media record at a time, with its
-derivative reads in parallel. It checks originals, derivative hashes, saved
-focal points, the recipe version, and any referenced legacy thumbnails. It fails
-on missing objects or incomplete static-image manifests.
+filenames, localized text, relationships, focal metadata, and timestamps.
+Current manifests are skipped after checking the original file checksum, so a
+changed original is detected even when its filename and focal point stay the
+same. Set `MEDIA_REGENERATE_ALL=true` to repair missing derivatives or force
+regeneration. Verification reads one media record at a time, with its derivative
+reads in parallel. It checks originals, derivative hashes, saved focal points,
+the recipe version, and any referenced legacy thumbnails. It fails on missing
+objects or incomplete static-image manifests.
 
 `MEDIA_WRITES_PAUSED=true` blocks media create/update/delete operations on the
 CMS, including focal saves. Maintenance backfills use a server-only request
@@ -125,7 +127,10 @@ restoration in a separate bucket and database before production cutover.
    and rollback.
 2. Copy all source objects to the matching Tigris buckets. Run `verify-copy` and
    retain its checksum report. Keep the old services and configuration
-   available.
+   available. Bulk derivative preparation can also run before the editing pause
+   using the future Tigris configuration in an isolated worker. Copy newly
+   referenced originals first. The final paused backfill checks source hashes
+   again and repairs changed images.
 3. Prepare GitHub variables/secrets and stage the new Fly settings. Deployments
    build with no live credentials. Confirm the production media domain serves
    the target bucket over HTTPS before changing production delivery.
@@ -157,7 +162,12 @@ restoration in a separate bucket and database before production cutover.
 Recipe 1 was measured on the existing staging machine in `cdg`: one shared CPU,
 2048 MiB RAM, Sharp 0.35.5. These are the three largest staging JPEGs. Encoding
 excludes object downloads and uploads. Peak process RSS, including Payload
-initialization, was 453,688 KiB (443 MiB); VM sizing stays unchanged.
+initialization, was 453,688 KiB (443 MiB). These timings used available burst
+credits. Sustained backfills exhausted a fresh shared worker’s credits and
+experienced substantial CPU throttling, so bulk jobs use a temporary performance
+CPU with the same 2048 MiB RAM. Website VM sizing is assessed separately from
+this temporary worker. See
+[Fly CPU performance](https://fly.io/docs/machines/cpu-performance/).
 
 | Photo                                                     | Original bytes | Derivative bytes | Encoding time | Outputs |
 | --------------------------------------------------------- | -------------: | ---------------: | ------------: | ------: |

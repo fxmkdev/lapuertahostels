@@ -128,7 +128,21 @@ test("backfill only writes manifests, preserves absent focal points and resumes"
   expect(preserved).toEqual(before);
   await backfillMedia(payload, true, async () => {}, false, store);
   expect(updateOne).toHaveBeenCalledTimes(1);
-  expect(store.read).toHaveBeenCalledTimes(1);
+  expect(store.read).toHaveBeenCalledTimes(2);
+  const changed = await sharp({
+    create: { width: 20, height: 10, channels: 3, background: "blue" },
+  })
+    .jpeg()
+    .toBuffer();
+  store.read.mockResolvedValueOnce(changed);
+  await backfillMedia(payload, true, async () => {}, false, store);
+  expect(updateOne).toHaveBeenCalledTimes(2);
+  expect(
+    (doc as typeof doc & { imageVariants: { sourceHash: string } })
+      .imageVariants.sourceHash,
+  ).not.toBe((imageVariants as { sourceHash: string }).sourceHash);
+  expect(doc.filename).toBe(before.filename);
+  expect(doc.updatedAt).toBe(before.updatedAt);
 });
 test("cleanup protects referenced files, originals, and the retention window", () => {
   const now = new Date("2026-11-28").getTime();

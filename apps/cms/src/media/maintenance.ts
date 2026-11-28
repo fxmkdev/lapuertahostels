@@ -48,15 +48,24 @@ export async function backfillMedia(
       manifest?.recipeVersion === IMAGE_RECIPE_VERSION &&
       manifest.focalX === point.x &&
       manifest.focalY === point.y;
-    if (!eligible || (current && !force)) {
+    if (!eligible) {
       await report({ id: media.id, status: "skipped" });
       continue;
+    }
+    let input: Buffer | undefined;
+    if (current && !force) {
+      if (!store) throw new Error("Backfill requires a media store");
+      input = await store.read(getOriginalObjectKey(media));
+      if (checksum(input) === manifest.sourceHash) {
+        await report({ id: media.id, status: "skipped" });
+        continue;
+      }
     }
     if (apply)
       try {
         if (!store) throw new Error("Backfill requires a media store");
         const imageVariants = await optimizeImage({
-          input: await store.read(getOriginalObjectKey(media)),
+          input: input ?? (await store.read(getOriginalObjectKey(media))),
           point,
           write: store.write,
         });
