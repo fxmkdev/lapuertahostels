@@ -47,11 +47,17 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-function Subject({ data = initialData }: { data?: typeof initialData }) {
+function Subject({
+  data = initialData,
+  path = `pages/${data.id}`,
+}: {
+  data?: typeof initialData;
+  path?: string;
+}) {
   return (
     <StrictMode>
       <I18nextProvider i18n={i18n}>
-        <OptInLivePreview path={`pages/${data.id}`} data={data} depth={3}>
+        <OptInLivePreview path={path} data={data} depth={3}>
           {(page) => (
             <main>
               {page.hero?.map((block) => (
@@ -69,14 +75,18 @@ function Subject({ data = initialData }: { data?: typeof initialData }) {
 }
 
 // Exercise the real Payload hook and subscription; only the HTTP boundary is mocked.
-async function sendUpdate(data = editedData, locale = "en") {
+async function sendUpdate(
+  data = editedData,
+  locale = "en",
+  collectionSlug = "pages",
+) {
   await act(async () => {
     window.dispatchEvent(
       new MessageEvent("message", {
         origin: environment.payloadCmsBaseUrl,
         data: {
           type: "payload-live-preview",
-          collectionSlug: "pages",
+          collectionSlug,
           data,
           locale,
         },
@@ -304,4 +314,24 @@ test("ordinary pages do not subscribe to live preview", async () => {
   );
   expect(fetchMock).not.toHaveBeenCalled();
   expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+});
+
+test("brand previews retain their content on failure and recover on the brand endpoint", async () => {
+  environment.preview = "brands/page-one";
+  render(<Subject path="brands/page-one" />);
+  fetchMock.mockResolvedValueOnce(
+    Response.json({ errors: [] }, { status: 403 }),
+  );
+  await sendUpdate(editedData, "en", "brands");
+  expect(screen.getByRole("main")).toHaveTextContent("Initial content");
+  expect(screen.getByRole("alert")).toBeInTheDocument();
+
+  fetchMock.mockResolvedValueOnce(Response.json(editedData));
+  await sendUpdate(editedData, "en", "brands");
+  expect(screen.getByRole("main")).toHaveTextContent("Edited content");
+  expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
+    "https://cms.example.com/api/brands/page-one",
+    "https://cms.example.com/api/brands/page-one",
+  ]);
 });
