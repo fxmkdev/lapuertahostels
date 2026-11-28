@@ -23,13 +23,18 @@ export function NavbarBrandLogo({
   function getComponent(children: ReactNode) {
     const href = getBrandHomeHref(brand, i18n.language);
     return href !== "about:blank" ? (
-      <Link to={href}>{children}</Link>
+      <Link
+        to={href}
+        className="mobile-touch-target inline-flex items-center md:inline"
+      >
+        {children}
+      </Link>
     ) : (
       <span>{children}</span>
     );
   }
   return (
-    <h1 className={cn("h-10", className)}>
+    <h1 className={cn("h-12 md:h-10", className)}>
       {getComponent(
         allBrands.map((b) => (
           <Transition
@@ -42,7 +47,12 @@ export function NavbarBrandLogo({
             enterTo="translate-x-0 opacity-100"
             leave="hidden"
           >
-            <BrandLogo size="large" type="with-wordmark" brand={brand} />
+            <BrandLogo
+              size="large"
+              type="with-wordmark"
+              brand={brand}
+              className="max-md:gap-2 max-md:text-base"
+            />
           </Transition>
         )),
       )}

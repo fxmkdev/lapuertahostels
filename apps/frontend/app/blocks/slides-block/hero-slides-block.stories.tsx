@@ -84,3 +84,14 @@ export const SingleSlide: Story = {
     slides: Default.args?.slides?.slice(0, 1),
   },
 };
+
+export const ManySlides: Story = {
+  args: {
+    ...Default.args,
+    autoplayIntervalInSeconds: 3600,
+    slides: Array.from({ length: 10 }, (_, index) => ({
+      ...Default.args!.slides![index % Default.args!.slides!.length],
+      id: `slide-${index}`,
+    })),
+  },
+};

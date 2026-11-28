@@ -11,6 +11,8 @@ const meta = {
   parameters: {
     chromatic: {
       modes: {
+        "viewport-small-mobile": allModes["viewport-small-mobile"],
+        "viewport-large-mobile": allModes["viewport-large-mobile"],
         "brand-aqua": allModes["brand-aqua"],
         "brand-azul": allModes["brand-azul"],
       },
@@ -36,5 +38,14 @@ export const WithoutCallToAction: Story = {
   args: {
     ...Default.args,
     cta: undefined,
+  },
+};
+
+export const LongSpanishLabel: Story = {
+  args: {
+    ...Default.args,
+    id: "mobile-spanish",
+    message: "Descubre Santa Marta y disfruta de nuestras ofertas especiales.",
+    cta: callToAction2("Reserva ahora tu próxima estancia con nosotros"),
   },
 };

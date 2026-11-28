@@ -106,3 +106,16 @@ export const Scrollable: Story = {
     </>
   ),
 };
+
+export const LongSpanishLabel: Story = {
+  args: {
+    ...Default.args,
+    brand: {
+      ...puertaBrand,
+      bookCta: {
+        ...puertaBrand.bookCta!,
+        label: "Reserva ahora tu próxima estancia con nosotros",
+      },
+    },
+  },
+};

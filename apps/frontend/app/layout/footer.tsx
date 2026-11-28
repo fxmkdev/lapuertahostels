@@ -30,7 +30,12 @@ export function Footer({ content, brand, allBrands }: FooterProps) {
     if (!puertaBrand) throw new Error("Puerta brand not found");
     const href = getBrandHomeHref(puertaBrand, i18n.language);
     return href !== "about:blank" ? (
-      <Link to={href}>{children}</Link>
+      <Link
+        to={href}
+        className="mobile-touch-target inline-flex items-center md:inline"
+      >
+        {children}
+      </Link>
     ) : (
       <span>{children}</span>
     );
@@ -59,14 +64,14 @@ export function Footer({ content, brand, allBrands }: FooterProps) {
                 />
               </p>
             )}
-            <div className="flex space-x-6">
+            <div className="flex flex-wrap gap-6">
               {content?.socialLinks?.map((socialLink) => {
                 const social = socials[socialLink.platform];
                 return (
                   <PageLink
                     key={socialLink.platform}
                     link={socialLink.link}
-                    className="text-neutral-400 hover:text-neutral-500"
+                    className="mobile-touch-target inline-flex items-center justify-center text-neutral-400 hover:text-neutral-500"
                   >
                     <span className="sr-only">{social.name}</span>
                     <social.icon className="h-6 w-6" aria-hidden="true" />
@@ -75,7 +80,7 @@ export function Footer({ content, brand, allBrands }: FooterProps) {
               })}
             </div>
           </div>
-          <div className="mt-16 grid grid-cols-3 gap-8 xl:col-span-2 xl:mt-0">
+          <div className="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-3 xl:col-span-2 xl:mt-0">
             {brand.footer?.linkGroups?.map((linkGroup) => {
               return (
                 <div key={linkGroup.id}>
@@ -88,7 +93,7 @@ export function Footer({ content, brand, allBrands }: FooterProps) {
                         <li key={link.id}>
                           <PageLink
                             link={link.link}
-                            className="text-sm leading-6 text-neutral-600 hover:text-neutral-900"
+                            className="mobile-touch-target inline-flex items-center text-sm leading-6 text-neutral-600 hover:text-neutral-900 md:inline"
                           >
                             {link.label}
                           </PageLink>
@@ -112,7 +117,7 @@ export function Footer({ content, brand, allBrands }: FooterProps) {
                 {content.newsletter.description}
               </p>
             </div>
-            <form className="mt-6 sm:flex sm:max-w-md lg:mt-0">
+            <form className="mt-6 md:flex md:max-w-md lg:mt-0">
               <label htmlFor="email-address" className="sr-only">
                 {t("footer.newsletter.emailLabel")}
               </label>
@@ -124,7 +129,7 @@ export function Footer({ content, brand, allBrands }: FooterProps) {
                 required
                 placeholder={content.newsletter.emailPlaceholder ?? ""}
               />
-              <div className="mt-4 sm:mt-0 sm:ml-4 sm:shrink-0">
+              <div className="mt-4 md:mt-0 md:ml-4 md:shrink-0">
                 <Button
                   size="small"
                   type="submit"

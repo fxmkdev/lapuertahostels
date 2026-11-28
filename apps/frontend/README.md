@@ -19,6 +19,21 @@ or relevant Payload dependency changes, run
 repository root and commit both generated files. CI checks that they are
 current.
 
+## Mobile touch targets
+
+Below the `md` breakpoint (768px), standalone controls and text inputs use the
+`mobile-touch-target` utility to provide at least 48×48 CSS pixels of
+interactive space. Apply it to the clickable element itself, keeping adjacent
+hit areas separate. Icons can remain visually small; multiline labels may grow
+the control. Desktop minimum dimensions are unchanged. Links embedded in prose
+retain their normal text flow.
+
+The isolated browser checks use Storybook fixtures and do not require CMS or
+MongoDB. Run them from the repository root with
+`pnpm --filter @lapuertahostels/e2e exec playwright test --config playwright.touch.config.ts`.
+They cover mobile dimensions, overflow, controls, forms, and desktop geometry.
+Playwright retains screenshots and measured bounds in its test results.
+
 ## Type checking
 
 `pnpm typecheck` generates React Router types and checks the frontend with

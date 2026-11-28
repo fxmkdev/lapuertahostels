@@ -18,6 +18,8 @@ const meta = {
     layout: "fullscreen",
     chromatic: {
       modes: {
+        "viewport-small-mobile": allModes["viewport-small-mobile"],
+        "viewport-large-mobile": allModes["viewport-large-mobile"],
         "brand-aqua": allModes["brand-aqua"],
         "brand-azul": allModes["brand-azul"],
       },
@@ -141,5 +143,18 @@ Colombia`),
     },
     allBrands: [puertaBrand],
     brand: puertaBrand,
+  },
+};
+
+export const LongSpanishLabel: Story = {
+  args: {
+    ...Default.args,
+    content: {
+      ...Default.args!.content!,
+      newsletter: {
+        ...Default.args!.content!.newsletter!,
+        buttonLabel: "Suscríbete para recibir novedades y ofertas especiales",
+      },
+    },
   },
 };

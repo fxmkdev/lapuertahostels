@@ -375,8 +375,8 @@ jobs:
           NEEDS: ${{ toJSON(needs) }}
       - name: Setup
         uses: ./.github/actions/setup
-      - name: Install dependencies for e2e
-        run: pnpm --filter e2e install --frozen-lockfile
+      - name: Install dependencies for e2e and touch fixtures
+        run: pnpm --filter e2e --filter frontend install --frozen-lockfile
       - name: Set up flyctl
         uses: superfly/flyctl-actions/setup-flyctl@v1
         with:
@@ -473,6 +473,9 @@ jobs:
           FRONTEND_BASE_URL: http://localhost:${{ env.FRONTEND_INTERNAL_PORT }}
           CMS_BASE_URL: http://localhost:${{ env.CMS_INTERNAL_PORT }}
           CMS_API_KEY: ${{ env.CMS_API_KEY }}
+      - name: Run mobile touch target checks
+        run: pnpm playwright test --config playwright.touch.config.ts
+        working-directory: tests/e2e
       - name: Upload Playwright report
         uses: actions/upload-artifact@v7
         if: always()

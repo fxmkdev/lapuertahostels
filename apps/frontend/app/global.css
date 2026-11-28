@@ -2,6 +2,14 @@
 
 @plugin "@tailwindcss/forms";
 
+/* Apply to standalone controls, never to links embedded in prose. */
+@utility mobile-touch-target {
+  @media (width < 48rem) {
+    min-height: 3rem;
+    min-width: 3rem;
+  }
+}
+
 @theme {
   --color-*: initial;
   --color-inherit: inherit;
