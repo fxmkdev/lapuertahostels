@@ -96,7 +96,10 @@ export function snapshot(cwd, ref) {
     ),
     frontend: packageKey(files, packages, "@lapuertahostels/frontend"),
     cms,
-    e2e: packageKey(files, packages, "@lapuertahostels/e2e"),
+    e2e: digest(
+      packageKey(files, packages, "@lapuertahostels/e2e"),
+      files.filter(({ path }) => path.startsWith("tests/snapshots/")),
+    ),
   };
 }
 export function baseline(cwd, eventName, event) {

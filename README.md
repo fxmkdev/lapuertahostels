@@ -87,3 +87,9 @@ security fixes and audit results.
 See [selective CI and image reuse](docs/ci-build-reuse.md) for dependency
 tracking, generated CMS types, deployment image aliases, release behavior, and
 forced rebuilds.
+
+## Content Snapshots
+
+See [preview and staging content snapshots](docs/content-snapshots.md) for
+private snapshot storage, deployment restoration, credential preservation,
+staged rollout, and recovery after interrupted deployments.

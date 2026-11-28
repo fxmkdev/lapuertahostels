@@ -83,6 +83,7 @@ const cases = [
   [".github/actions/setup/action.yml", true, true, true],
   ["scripts/ci/inputs.mjs", true, true, true],
   ["tests/e2e/tests/basic.spec.ts", false, false, true],
+  ["tests/snapshots/compose.yml", false, false, true],
   ["README.md", false, false, false],
   ["docs/ci.md", false, false, false],
 ];

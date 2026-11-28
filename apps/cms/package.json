@@ -16,10 +16,12 @@
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "start": "cross-env NODE_OPTIONS=--no-deprecation PORT=3001 next start",
     "check-format": "prettier --check .",
-    "typecheck": "next typegen && tsc --noEmit"
+    "typecheck": "next typegen && tsc --noEmit",
+    "test:snapshots": "node --test scripts/content-snapshots/*.test.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1147.0",
+    "@lapuertahostels/live-preview": "workspace:../../libs/live-preview",
     "@payloadcms/db-mongodb": "^3.94.1",
     "@payloadcms/email-resend": "^3.94.1",
     "@payloadcms/next": "^3.94.1",
@@ -31,14 +33,14 @@
     "cross-env": "^10.1.0",
     "deepl-node": "^1.29.0",
     "jsdom": "29.1.1",
+    "mongodb": "6.20.0",
     "next": "~16.4.6",
     "openai": "^6.38.0",
     "payload": "^3.94.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "sharp": "0.35.5",
-    "zod": "^4.4.3",
-    "@lapuertahostels/live-preview": "workspace:../../libs/live-preview"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@testing-library/react": "^16.3.2",

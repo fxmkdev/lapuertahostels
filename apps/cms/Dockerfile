@@ -39,6 +39,9 @@ RUN node -e "const fs = require('fs'); const [file, version] = process.argv.slic
 # Production image, copy all the files and run next
 FROM base AS runner
 
+# Used only by explicit snapshot maintenance commands.
+RUN apk add --no-cache mongodb-tools
+
 # Dependencies are fixed at build time, including for Payload maintenance scripts.
 ENV PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN=false
 ENV NODE_ENV=production

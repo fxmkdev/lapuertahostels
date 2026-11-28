@@ -429,6 +429,29 @@ jobs:
         env:
           FRONTEND_IMAGE: ${{ needs.frontend-build-push.outputs.digest }}
           CMS_IMAGE: ${{ needs.cms-build-push.outputs.digest }}
+      - uses: docker/setup-buildx-action@v4
+      - name: Build disposable snapshot storage fixture
+        uses: docker/build-push-action@v7
+        with:
+          context: tests/snapshots
+          file: tests/snapshots/Dockerfile.minio
+          tags: lapuertahostels-snapshot-test-storage:2025-09-07
+          load: true
+          cache-from: type=gha,scope=snapshot-minio
+          cache-to: type=gha,mode=max,scope=snapshot-minio
+      - name: Test content snapshot export and restoration
+        env:
+          SNAPSHOT_TEST_IMAGE: ${{ needs.cms-build-push.outputs.digest }}
+        run: |
+          set -euo pipefail
+          docker compose -f tests/snapshots/compose.yml up --wait --wait-timeout 90
+          docker run --rm --network host \
+            --env SNAPSHOT_TEST_MONGODB_URI=mongodb://127.0.0.1:27141 \
+            --env SNAPSHOT_TEST_S3_ENDPOINT=http://127.0.0.1:9014 \
+            "$SNAPSHOT_TEST_IMAGE" node --test apps/cms/scripts/content-snapshots/*.test.mjs
+      - name: Stop snapshot test services
+        if: always()
+        run: docker compose -f tests/snapshots/compose.yml down --volumes
       - name: Start services
         run: docker compose up -d && sleep 3
         env:
@@ -545,6 +568,9 @@ jobs:
 
   deploy:
     name: Deploy
+    permissions:
+      contents: read
+      actions: read
     if: >-
       always() && !cancelled() && github.event_name != 'pull_request' &&
       needs.ci-result.result == 'success' && needs.ci-result.outputs.deploy ==
@@ -561,11 +587,10 @@ jobs:
 
   deploy-preview:
     name: Deploy Preview
-    # Hold this lock across provisioning and both app deployments.
-    concurrency:
-      group: fly-preview-lifecycle
-      queue: max
-      cancel-in-progress: false
+    permissions:
+      contents: read
+      actions: read
+    # The reusable deployment holds the shared preview lifecycle lock.
     if: >-
       always() && !cancelled() && github.event_name == 'pull_request' &&
       needs.ci-result.result == 'success' && needs.ci-result.outputs.deploy ==
