@@ -161,7 +161,7 @@ export function Navbar({
                       cta={brand.bookCta}
                       size="medium"
                       className={cn(
-                        "pointer-events-auto transition-shadow duration-200 motion-reduce:transition-none",
+                        "pointer-events-auto transition-shadow duration-500 ease-in-out motion-reduce:transition-none",
                         navbarHidden && "sm:shadow-lg sm:shadow-black/20",
                       )}
                     />

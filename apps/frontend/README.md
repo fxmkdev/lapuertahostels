@@ -58,6 +58,25 @@ The banner waits until hydration checks storage before appearing. If storage is
 blocked or full, or a banner has no ID, dismissal works only in memory for the
 current mount.
 
+## Navbar scrolling
+
+The sticky navbar hides when scrolling down past 100px and reappears when
+scrolling up or navigating to another page. At widths of 640px and above, the
+desktop booking button stays in its top-right position while the navbar
+background and other controls slide away over 500ms. The same button remains
+mounted, with its size and shape unchanged; its shadow strengthens over 500ms
+with ease-in-out easing when the navbar is hidden. The transparent header area
+lets clicks reach the page underneath.
+
+At widths below 640px, the floating booking button is always available at the
+bottom right. Both versions use the brand's CMS booking configuration.
+
+Keyboard focus on other navbar controls reveals the navbar and keeps it visible
+while those controls are focused. Focusing the stationary desktop booking button
+preserves the collapsed state. All transitions respect reduced-motion
+preferences. Try this behavior in Storybook under `layout/Navbar → Scrollable`,
+which also includes a dismissible banner.
+
 ## Live preview
 
 All CMS live previews, including popup windows, populate content through the
@@ -162,25 +181,6 @@ See Plausible's
 [proxy requirements](https://plausible.io/docs/proxy/introduction), and
 [Events API diagnostics](https://plausible.io/docs/events-api), plus Fly's
 [visitor IP documentation](https://fly.io/docs/networking/request-headers/).
-
-## Navbar scrolling
-
-The sticky navbar hides when scrolling down past 100px and reappears when
-scrolling up or navigating to another page. At widths of 640px and above, the
-desktop booking button stays in its top-right position while the navbar
-background and other controls slide away over 500ms. The same button remains
-mounted, with its size and shape unchanged; its shadow strengthens over 200ms
-when the navbar is hidden. The transparent header area lets clicks reach the
-page underneath.
-
-At widths below 640px, the floating booking button is always available at the
-bottom right. Both versions use the brand's CMS booking configuration.
-
-Keyboard focus on other navbar controls reveals the navbar and keeps it visible
-while those controls are focused. Focusing the stationary desktop booking button
-preserves the collapsed state. All transitions respect reduced-motion
-preferences. Try this behavior in Storybook under `layout/Navbar → Scrollable`,
-which also includes a dismissible banner.
 
 ## Deployment
 
