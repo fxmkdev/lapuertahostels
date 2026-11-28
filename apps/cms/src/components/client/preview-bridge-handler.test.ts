@@ -252,3 +252,31 @@ test("supports brand documents and valid empty arrays", async () => {
     }),
   );
 });
+
+test.each(["globals/footer", "globals/common", "banners/banner-one"])(
+  "populates %s using only the active target",
+  async (documentPath) => {
+    const global = documentPath.startsWith("globals/");
+    context!.documentPath = documentPath;
+    context!.id = global ? undefined : "banner-one";
+    const document = global
+      ? { uiLabels: {}, updatedAt: "now" }
+      : { id: "banner-one", message: "Unsaved" };
+    fetchMock.mockResolvedValueOnce(Response.json(document));
+    send({ ...request, documentPath: "globals/settings" });
+    expect(fetchMock).not.toHaveBeenCalled();
+    send({ ...request, documentPath });
+    await vi.waitFor(() =>
+      expect(previewWindow.postMessage).toHaveBeenCalledOnce(),
+    );
+    expect(fetchMock.mock.lastCall?.[0]).toBe(`/api/${documentPath}`);
+    const body = JSON.parse(fetchMock.mock.lastCall![1]!.body as string);
+    expect(body.data).toEqual(
+      global ? formData : { ...formData, id: "banner-one" },
+    );
+    expect(previewWindow.postMessage.mock.lastCall?.[0]).toMatchObject({
+      status: 200,
+      data: document,
+    });
+  },
+);

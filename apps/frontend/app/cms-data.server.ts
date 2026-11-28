@@ -1,5 +1,6 @@
 import type {
   Brand,
+  Banner,
   Common,
   Settings,
   Page,
@@ -325,4 +326,17 @@ export async function purgeCache() {
 
 function formatError(error: unknown) {
   return error instanceof Error ? error.message : String(error);
+}
+
+export async function getBanner(request: Request, id: string, locale: string) {
+  const banner = await getData<Banner, Banner>(
+    request,
+    `banners/${encodeURIComponent(id)}`,
+    `banners:${id}`,
+    locale,
+    2,
+  );
+  if (!banner)
+    throw new Response(null, { status: 404, statusText: "Banner not found" });
+  return banner;
 }

@@ -241,3 +241,48 @@ test("brand previews retain their content on failure and recover on the brand en
     "brands/page-one",
   ]);
 });
+
+test.each(["banners/banner-one", "globals/footer", "globals/common"])(
+  "previews %s through the authenticated bridge",
+  async (path) => {
+    environment.preview = path;
+    const data = { ...initialData, id: path.split("/")[1] };
+    render(<Subject path={path} data={data} />);
+    const updated = {
+      ...data,
+      content: [{ id: "content", text: "Unsaved global or banner" }],
+    };
+    // Globals need no collection-document ID in the population response.
+    const response = path.startsWith("globals/")
+      ? { ...updated, id: undefined }
+      : updated;
+    fetchMock.mockResolvedValueOnce(Response.json(response));
+    await act(async () => {
+      window.dispatchEvent(
+        new MessageEvent("message", {
+          origin: environment.payloadCmsBaseUrl,
+          data: {
+            type: "payload-live-preview",
+            data: updated,
+            locale: "en",
+            ...(path.startsWith("globals/")
+              ? { globalSlug: path.split("/")[1] }
+              : { collectionSlug: "banners" }),
+          },
+        }),
+      );
+    });
+    expect(screen.getByRole("main")).toHaveTextContent(
+      "Unsaved global or banner",
+    );
+    expect(fetchMock.mock.lastCall?.[0]).toBe(path);
+    fetchMock.mockResolvedValueOnce(Response.json({}, { status: 403 }));
+    await sendUpdate(data, "en", "banners");
+    expect(screen.getByRole("main")).toHaveTextContent(
+      "Unsaved global or banner",
+    );
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Check your CMS session",
+    );
+  },
+);

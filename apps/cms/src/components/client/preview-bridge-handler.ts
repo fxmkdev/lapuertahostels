@@ -13,7 +13,7 @@ import type {
 export type PreviewContext = {
   previewWindow: Window;
   documentPath: string;
-  id: string | number;
+  id?: string | number;
   locale: string;
   apiRoute: string;
   getData: () => Record<string, unknown>;
@@ -36,7 +36,10 @@ async function populate(
         "X-Payload-HTTP-Method-Override": "GET",
       },
       body: JSON.stringify({
-        data: { ...context.getData(), id: context.id },
+        data: {
+          ...context.getData(),
+          ...(context.id === undefined ? {} : { id: context.id }),
+        },
         depth: request.depth,
         flattenLocales: false,
         locale: context.locale,

@@ -406,3 +406,46 @@ async function fetchCms(path: string, init?: RequestInit) {
 
   return await result.json();
 }
+
+// Preview documents need real homepages even in an otherwise empty test CMS.
+export async function ensurePreviewHomepages() {
+  const puerta = await getPuertaBrand();
+  await withCmsDatabase(async (client) => {
+    const db = client.db();
+    const now = new Date().toISOString();
+    for (const id of ["puerta", "aqua", "azul"]) {
+      const pathname = id === "puerta" ? "/" : `/${id}`;
+      await db.collection<BrandSeedDocument>("brands").updateOne(
+        { _id: id },
+        {
+          $setOnInsert: {
+            id,
+            name: id === "puerta" ? "La Puerta Hostels" : id,
+            rootPath: localizeForAllLocales(pathname),
+            themeColor: id,
+            logo: toObjectId((puerta.logo as Media).id),
+            footer: { linkGroups: [] },
+            createdAt: now,
+            updatedAt: now,
+          },
+        },
+        { upsert: true },
+      );
+      await db.collection("pages").updateOne(
+        { "pathname.en": pathname },
+        {
+          $setOnInsert: {
+            brand: id,
+            pathname: localizeForAllLocales(pathname),
+            title: localizeForAllLocales(`${id} home`),
+            hero: [],
+            content: [],
+            createdAt: now,
+            updatedAt: now,
+          },
+        },
+        { upsert: true },
+      );
+    }
+  });
+}

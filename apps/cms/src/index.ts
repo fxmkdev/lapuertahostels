@@ -137,7 +137,7 @@ export const cmsPlugin =
     config.collections.push(Users);
     config.collections.push(ApiKeys);
     config.collections.push(LocaleConfigs);
-    config.collections.push(Banners);
+    config.collections.push(Banners(livePreviewBaseUrl));
     config.collections.push(
       Pages({
         additionalContentBlocks,
@@ -153,7 +153,9 @@ export const cmsPlugin =
     }
 
     config.globals.push(Settings);
-    config.globals.push(Common({ additionalUiLabelFields }));
+    config.globals.push(
+      Common({ additionalUiLabelFields, livePreviewBaseUrl }),
+    );
 
     if (!config.admin) {
       config.admin = {};

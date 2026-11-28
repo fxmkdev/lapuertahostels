@@ -1,4 +1,7 @@
-import { isPreviewDocument } from "@lapuertahostels/live-preview";
+import {
+  isGlobalPreviewPath,
+  isPreviewDocument,
+} from "@lapuertahostels/live-preview";
 import {
   createPreviewBridgeClient,
   PreviewConnectionError,
@@ -28,7 +31,9 @@ export function createPreviewRequestHandler<T>({
   const bridge = createPreviewBridgeClient(documentPath, locale);
   let lastValidData = initialData;
   let latestRequest = 0;
-  const expectedId = (initialData as { id?: unknown }).id;
+  const expectedId = isGlobalPreviewPath(documentPath)
+    ? undefined
+    : (initialData as { id?: unknown }).id;
 
   const requestHandler: RequestHandler = async (args) => {
     const request = ++latestRequest;

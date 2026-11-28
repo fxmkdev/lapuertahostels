@@ -15,8 +15,7 @@ export function createPreviewBridgeClient(
   const pending = new Set<() => void>();
 
   function request(cmsURL: string, depth: number): Promise<Response> {
-    const host =
-      window.opener || (window.parent !== window ? window.parent : null);
+    const host = getPreviewHost();
     if (!host)
       return Promise.reject(
         new PreviewConnectionError("CMS window unavailable"),
@@ -86,4 +85,8 @@ function waitForResult(
       cancel();
     }
   });
+}
+
+export function getPreviewHost(): Window | null {
+  return window.opener || (window.parent !== window ? window.parent : null);
 }

@@ -78,9 +78,9 @@ export async function loader({ request, url }: LoaderFunctionArgs) {
 }
 
 export default function Route() {
+  const { t } = useTranslation();
   // This seems to return incorrect types
   // const actionData = useActionData<typeof action}>();
-  const { t } = useTranslation();
   const actionData = useActionData<{
     errorMessage: string;
     values: { email: string };

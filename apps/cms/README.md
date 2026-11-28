@@ -125,13 +125,32 @@ legacy JPEG once from S3. It does not rotate or regenerate originals/thumbnails.
 
 ## Live preview authentication
 
-Pages and Brands register a nonvisual `LivePreviewBridge` before the document
-controls. It accepts population requests only from the active preview iframe or
-popup at the exact `LIVE_PREVIEW_URL` origin, for the current document and
-locale. It reads unsaved data directly from the form and populates it with the
-existing same-origin Payload document endpoint and CMS session cookie. The
-preview never receives credentials and cannot choose an arbitrary endpoint or
-document.
+Pages, Brands, Banners, Footer, and Common register a nonvisual
+`LivePreviewBridge` before the document controls. It accepts population requests
+only from the active preview iframe or popup at the exact `LIVE_PREVIEW_URL`
+origin, for the current document and locale. It reads unsaved data directly from
+the form and populates it with the existing same-origin Payload document
+endpoint and CMS session cookie. The preview never receives credentials and
+cannot choose an arbitrary endpoint or document.
+
+Set `LIVE_PREVIEW_URL` to enable preview for Banner, Footer, and Common. New
+Banners must be saved once before preview is available. Banner/Footer preview
+the selected brand's real homepage; Common has dedicated Page not found and
+Server error scenarios. No preview Page documents are needed.
+
+Invisible UI components in Common's error tabs notify the active preview when a
+tab becomes active. Notifications use the existing preview channel and are
+validated against the CMS origin, source window, document, locale, and scenario.
+Synchronization is one-way: the frontend selector does not change the CMS tab.
+Selecting UI Labels leaves the last error preview visible. UI fields do not
+store content, and the UI Labels tab and its saved data remain unchanged.
+
+The bridge allows `pages/:id`, `brands/:id`, `banners/:id`, `globals/footer`,
+and `globals/common`. Globals use their active slug and existing
+`/api/globals/:slug` population endpoint without requiring a collection-document
+ID. Unsaved data is never saved or written to frontend caches. The generated
+preview URL carries the content locale, cache bypass, and editor language for
+preview controls.
 
 The protocol is shared with the website in `@lapuertahostels/live-preview`. It
 supports relationship depths zero through three, cancels requests on navigation,

@@ -14,7 +14,6 @@ import {
 
 import styles from "./global.css?url";
 import { useTranslation } from "react-i18next";
-import { Footer } from "./layout/footer";
 import type { BrandId } from "./brands";
 import {
   getBrands,
@@ -24,10 +23,8 @@ import {
   tryGetPage,
 } from "./cms-data.server";
 import { OptInLivePreview } from "./common/live-preview";
-import { ThemeProvider } from "./themes";
 import type { ReactNode } from "react";
 import { createContext, useContext, useState } from "react";
-import { Header } from "./layout/header";
 import {
   getLocaleAndPageUrl,
   getRequestUrl,
@@ -38,12 +35,17 @@ import type { Brand, LocaleConfig } from "@lapuertahostels/payload-types";
 import { GlobalErrorBoundary } from "./global-error-boundary";
 import { AnalyticsScript } from "./analytics-script";
 import { getAnalyticsScriptUrl } from "./analytics-proxy.server";
-import { PreviewBar } from "./layout/preview-bar";
-import { getHeaderLocale, i18nextMiddleware } from "./i18next.server";
+import { i18nextMiddleware } from "./i18next.server";
 import { isAuthenticated } from "./common/auth";
 import { getVersion } from "./common/version.server";
 import { APIProvider as GoogleMapsAPIProvider } from "@vis.gl/react-google-maps";
 import { BRANDS_DEPTH } from "./cms-data";
+import { isCommonPreview } from "./common/shared-preview";
+import {
+  getPreviewAdminLocale,
+  loadSharedPreview,
+} from "./common/shared-preview.server";
+import { SiteLayout } from "./layout/site-layout";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: styles },
@@ -64,6 +66,9 @@ export const links: LinksFunction = () => [
 export const meta: MetaFunction<typeof loader> = ({ loaderData }) => {
   const brandId = (loaderData?.brand?.id as BrandId) ?? "puerta";
   return [
+    ...(loaderData?.isContentPreview
+      ? [{ name: "robots", content: "noindex, nofollow" }]
+      : []),
     {
       tagName: "link",
       rel: "icon",
@@ -128,15 +133,29 @@ export async function loader({ request, url }: LoaderFunctionArgs) {
   const brandId = page
     ? ((page.brand as Brand).id as BrandId)
     : ("puerta" as BrandId);
-  const brand = allBrands.find((b) => b.id === brandId);
+  const preview = requestUrl.searchParams.get("preview");
+  const sharedPreview = await loadSharedPreview(
+    request,
+    requestUrl,
+    locale,
+    allBrands,
+    isAuthorized,
+  );
+  const brand = sharedPreview?.brand ?? allBrands.find((b) => b.id === brandId);
   if (!brand) throw new Error("Brand not found");
-
+  const banner = sharedPreview?.banner ?? null;
+  const isContentPreview = !!sharedPreview || isCommonPreview(preview, pageUrl);
   return {
     isAuthorized,
+    isContentPreview,
+    banner,
     locale,
-    adminLocale: settings.maintenanceScreen?.show
-      ? await getHeaderLocale(request)
-      : undefined,
+    adminLocale: await getPreviewAdminLocale(
+      request,
+      requestUrl,
+      isContentPreview,
+      !!settings.maintenanceScreen?.show,
+    ),
     brand,
     allBrands,
     settings,
@@ -151,7 +170,7 @@ export async function loader({ request, url }: LoaderFunctionArgs) {
       preview: requestUrl.searchParams.get("preview") || undefined,
       useImageCacheBuster: false, // Cache busting is only used in Storybook for Chromatic
     },
-    analyticsEnabled: !!getAnalyticsScriptUrl(),
+    analyticsEnabled: !isContentPreview && !!getAnalyticsScriptUrl(),
     publishedLocales: settings.publishedLocales
       .publishedLocales as LocaleConfig[],
   };
@@ -206,18 +225,21 @@ export function Layout({ children }: { children: ReactNode }) {
 }
 
 export default function App() {
+  const data = useLoaderData<typeof loader>();
   const {
     brand,
     settings,
     footer,
-    allBrands,
-    isAuthorized,
-    adminLocale,
+    banner,
     environment,
     publishedLocales,
-  } = useLoaderData<typeof loader>();
+    isContentPreview,
+  } = data;
   const { i18n } = useTranslation();
   const setHeaderHeight = useContext(HeaderHeightContext);
+
+  if (isContentPreview && environment.preview === "globals/common")
+    return <Outlet />;
 
   return (
     <GoogleMapsAPIProvider
@@ -228,35 +250,41 @@ export default function App() {
       }
       region={settings.maps?.region || undefined}
     >
-      <ThemeProvider themeColor={brand.themeColor}>
-        {settings.maintenanceScreen?.show && isAuthorized && (
-          <PreviewBar adminLocale={adminLocale!} />
-        )}
-        <OptInLivePreview
-          path={`brands/${brand.id}`}
-          data={brand}
-          depth={BRANDS_DEPTH}
-        >
-          {(brand) => (
-            <>
-              {isAuthorized && (
-                <Header
-                  brand={brand}
-                  allBrands={allBrands}
-                  publishedLocales={publishedLocales}
-                  onHeightChanged={setHeaderHeight}
-                />
-              )}
-              <main>
-                <Outlet />
-              </main>
-              {isAuthorized && (
-                <Footer brand={brand} allBrands={allBrands} content={footer} />
-              )}
-            </>
-          )}
-        </OptInLivePreview>
-      </ThemeProvider>
+      <OptInLivePreview
+        path={`brands/${brand.id}`}
+        data={brand}
+        depth={BRANDS_DEPTH}
+      >
+        {(liveBrand) => {
+          const renderSite = (
+            previewBrand: Brand,
+            previewFooter: typeof footer,
+          ) => (
+            <SiteLayout
+              {...data}
+              brand={previewBrand}
+              footer={previewFooter}
+              previewBanner={!!banner}
+              onHeaderHeightChanged={setHeaderHeight}
+            />
+          );
+          return banner ? (
+            <OptInLivePreview
+              path={`banners/${banner.id}`}
+              data={banner}
+              depth={2}
+            >
+              {(liveBanner) =>
+                renderSite({ ...liveBrand, banner: liveBanner }, footer)
+              }
+            </OptInLivePreview>
+          ) : (
+            <OptInLivePreview path="globals/footer" data={footer} depth={2}>
+              {(liveFooter) => renderSite(liveBrand, liveFooter)}
+            </OptInLivePreview>
+          );
+        }}
+      </OptInLivePreview>
     </GoogleMapsAPIProvider>
   );
 }

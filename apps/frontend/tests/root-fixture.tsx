@@ -50,6 +50,8 @@ export function makeData(): RootData {
     baseTitle: "Hostel Azul",
   });
   return {
+    isContentPreview: false,
+    banner: null,
     locale: "es",
     brand,
     allBrands: [brand],

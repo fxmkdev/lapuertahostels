@@ -8,11 +8,19 @@ import { optionalTextareaField } from "../../fields/textarea";
 import { contentGroup } from "../../groups";
 import { allTranslations, translated } from "../../translations/translations";
 
+import {
+  commonPreviewScenarioField,
+  livePreviewAdmin,
+  livePreviewBridge,
+} from "../../common/live-preview";
+
 type CommonOptions = {
+  livePreviewBaseUrl?: string;
   additionalUiLabelFields?: Field[];
 };
 
 export function Common({
+  livePreviewBaseUrl,
   additionalUiLabelFields,
 }: CommonOptions): GlobalConfig {
   return {
@@ -21,6 +29,15 @@ export function Common({
       update: canManageContent,
     },
     admin: {
+      components: {
+        elements: {
+          beforeDocumentControls: livePreviewBridge(livePreviewBaseUrl),
+        },
+      },
+      ...livePreviewAdmin(livePreviewBaseUrl, () => ({
+        pathname: "/preview/common",
+        documentPath: "globals/common",
+      })),
       group: contentGroup,
     },
     fields: [
@@ -30,6 +47,7 @@ export function Common({
           {
             name: "pageNotFoundScreen",
             fields: [
+              commonPreviewScenarioField("notFound", livePreviewBaseUrl),
               descriptionField(
                 allTranslations(
                   (v) =>
@@ -51,6 +69,7 @@ export function Common({
           {
             name: "errorScreen",
             fields: [
+              commonPreviewScenarioField("serverError", livePreviewBaseUrl),
               descriptionField({
                 en: "This screen is shown when the server encounters an error.",
                 es: "Esta pantalla se muestra cuando el servidor encuentra un error.",

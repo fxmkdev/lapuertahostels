@@ -100,6 +100,33 @@ preview from the CMS; there is no direct cross-site request fallback. Deploy the
 CMS and website together; mixed versions retain content and show a connection
 alert.
 
+Banner and Footer previews open real brand homepages. Both brand selectors use
+the CMS editor's language, independently of the content locale. Banner defaults
+to the first brand using it (Puerta, Aqua, then Azul), or Puerta when
+unassigned. The preview injects the edited banner even when it is not assigned
+to that brand, and ignores stored banner dismissal. Save a new Banner once
+before opening live preview. Its brand selector retains its floating placement.
+
+Footer defaults to Puerta and puts its selector in a full-width top toolbar,
+separate from the page's scrollable area. The toolbar stays visible without
+covering content. Footer scrolls into view on opening and brand changes, with
+space for the navigation. Brand selection preserves the active document and
+locale.
+
+Common opens `/:locale/preview/common?preview=globals/common` with Page not
+found and Server error scenarios. It shares Footer's toolbar/scrolling layout.
+Scenarios are preserved in the URL; removed or invalid values fall back to Page
+not found. The CMS's selected error tab automatically selects its preview
+scenario, including on opening, restoring a saved tab, and switching locale or
+iframe/popup windows. The frontend selector remains independent: it does not
+change the CMS tab, and the next CMS error-tab change takes precedence.
+Selecting the CMS UI Labels tab leaves the last error preview visible; a fresh
+preview from that tab defaults to Page not found. UI-label editing remains
+available in the CMS without a dedicated preview scenario. Error scenarios reuse
+production presentation without throwing an application error. Preview routes
+have no navigation or sitemap entry, use `noindex, nofollow`, and suppress
+analytics.
+
 `PAYLOAD_CMS_BASE_URL` is used for server-to-server requests. Set optional
 `PAYLOAD_CMS_PUBLIC_URL` when the browser must use a different address;
 otherwise it defaults to `PAYLOAD_CMS_BASE_URL`. The public URL must match the

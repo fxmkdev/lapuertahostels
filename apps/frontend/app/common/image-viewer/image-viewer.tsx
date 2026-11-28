@@ -12,10 +12,10 @@ export type ImageViewerProps = {
 };
 
 export function ImageViewer({ images, className }: ImageViewerProps) {
+  const { t } = useTranslation();
   const [currentImageIndex, setCurrentImageIndex] = useState<
     number | undefined
   >(undefined);
-  const [t] = useTranslation();
   return (
     <div className={className}>
       <div className="grid max-w-[35rem] grid-cols-4 grid-rows-[auto_auto] gap-1.5 overflow-hidden sm:gap-2 sm:rounded-md">
@@ -67,9 +67,7 @@ export function ImageViewer({ images, className }: ImageViewerProps) {
             {images.length > 5 && index === 3 && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/40 p-6">
                 <Heading as="h4" size="extra-small" variant="white">
-                  {t("imageViewer.seeMoreImages", {
-                    count: images.length - 4,
-                  })}
+                  {t("imageViewer.seeMoreImages", { count: images.length - 4 })}
                 </Heading>
               </div>
             )}

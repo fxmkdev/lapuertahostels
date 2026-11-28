@@ -8,6 +8,10 @@ import {
   useLivePreviewContext,
   useLocale,
 } from "@payloadcms/ui";
+import {
+  isGlobalPreviewPath,
+  isPreviewPath,
+} from "@lapuertahostels/live-preview";
 import { listenForPreviewRequests } from "./preview-bridge-handler";
 
 export function LivePreviewBridge({
@@ -15,7 +19,11 @@ export function LivePreviewBridge({
 }: {
   previewOrigin: string;
 }) {
-  const { id, collectionSlug } = useDocumentInfo();
+  const { id, collectionSlug, globalSlug } = useDocumentInfo();
+  const documentPath = globalSlug
+    ? `globals/${globalSlug}`
+    : `${collectionSlug}/${id}`;
+  const global = isGlobalPreviewPath(documentPath);
   const { getData } = useForm();
   const { config } = useConfig();
   const { code: locale } = useLocale();
@@ -32,8 +40,8 @@ export function LivePreviewBridge({
     if (
       !isLivePreviewing ||
       !previewOrigin ||
-      !id ||
-      !collectionSlug ||
+      !isPreviewPath(documentPath) ||
+      (!global && (!id || !collectionSlug)) ||
       !url ||
       new URL(url).origin !== previewOrigin
     )
@@ -46,8 +54,8 @@ export function LivePreviewBridge({
       return previewWindow && !previewWindow.closed
         ? {
             previewWindow,
-            documentPath: `${collectionSlug}/${id}`,
-            id,
+            documentPath,
+            id: global ? undefined : id!,
             locale,
             apiRoute: config.routes.api,
             getData,
@@ -57,6 +65,8 @@ export function LivePreviewBridge({
   }, [
     id,
     collectionSlug,
+    documentPath,
+    global,
     locale,
     getData,
     config.routes.api,
