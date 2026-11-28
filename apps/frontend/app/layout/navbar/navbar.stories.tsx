@@ -29,18 +29,22 @@ const puertaBrand = brand({
   rootPath: "/",
   navLinks: [
     {
+      id: "accommodations",
       label: "Accommodations",
       link: internalLink("/accommodations"),
     },
     {
+      id: "santa-marta",
       label: "Santa Marta",
       link: internalLink("/santa-marta"),
     },
     {
+      id: "about-us",
       label: "About Us",
       link: internalLink("/about-us"),
     },
     {
+      id: "contact",
       label: "Contact",
       link: internalLink("/contact"),
     },

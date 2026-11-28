@@ -111,7 +111,11 @@ test("hides the navbar background beyond 100px while desktop booking stays in pl
   expect(background(nav)).toHaveClass(HIDDEN_TRANSLATION);
   expect(nav).not.toHaveClass(HIDDEN_TRANSLATION);
   expect(nav).toHaveClass("pointer-events-none");
-  expect(background(nav)).not.toHaveClass("pointer-events-auto");
+  // Moving controls stay interactive until their bounds leave the viewport.
+  expect(background(nav)).toHaveClass("pointer-events-auto");
+  expect(screen.getByRole("link", { name: "Rooms" }).parentElement).toHaveClass(
+    "pointer-events-auto",
+  );
   expect(desktopBooking(nav)).toBe(booking);
   expect(booking).toHaveClass("pointer-events-auto", "sm:shadow-lg");
   expect(booking).toHaveAttribute("href", "https://booking.example.com");

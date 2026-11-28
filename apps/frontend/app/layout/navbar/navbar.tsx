@@ -57,12 +57,12 @@ export function Navbar({
   useNavbarHeightObserver(navbarRef, onHeightChanged);
 
   const slideClassName = cn(
+    // The transformed bounds let clicks through once controls leave the viewport.
     // Reveal the focused control before the browser scrolls it into view;
     // React state then reveals the rest of the navbar in the same frame.
-    "transition-transform ease-in-out focus-within:translate-y-0 focus-within:duration-0 motion-reduce:transition-none",
+    "pointer-events-auto transition-transform ease-in-out focus-within:translate-y-0 focus-within:duration-0 motion-reduce:transition-none",
     navbarFocused ? "duration-0" : "duration-500",
     navbarHidden ? "-translate-y-[var(--navbar-height)]" : "translate-y-0",
-    !navbarHidden && "pointer-events-auto",
   );
 
   const navLinks = allBrands.find((b) => b.id === brand.id)?.navLinks;
