@@ -100,13 +100,14 @@ on missing objects or incomplete static-image manifests.
 `MEDIA_WRITES_PAUSED=true` blocks media create/update/delete operations on the
 CMS, including focal saves. Maintenance backfills use a server-only request
 context to continue. Before applying cleanup, pause writes on all CMS machines
-and set this variable in the maintenance process too. Cleanup only removes
-unreferenced `optimized/` objects whose retirement tags are at least 14 days
-old; originals are protected. The first applied cleanup marks newly unreferenced
-files for retirement. A later cleanup may delete them after the window; file
-creation age alone never permits deletion. Regenerating/reusing a key clears its
-retirement tag before publishing the new reference. This also protects
-in-progress generations. Inspect the dry-run report first.
+and stop any backfill or other maintenance writers. Set this variable in the
+cleanup process too; cleanup and backfill must not run concurrently. Cleanup
+only removes unreferenced `optimized/` objects whose retirement tags are at
+least 14 days old; originals are protected. The first applied cleanup marks
+newly unreferenced files for retirement. A later cleanup may delete them after
+the window; file creation age alone never permits deletion. Regenerating/reusing
+a key clears its retirement tag before publishing the new reference. This also
+protects in-progress generations. Inspect the dry-run report first.
 
 `backup.sh` and `restore.sh` use these Tigris settings with the AWS-compatible
 CLI. They retain the existing database settings and store objects in

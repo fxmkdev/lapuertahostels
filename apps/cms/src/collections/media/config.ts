@@ -1,3 +1,4 @@
+import { APIError } from "payload";
 import { readImageManifest } from "../../../../../libs/payload-types/src/media";
 import type {
   CollectionConfig,
@@ -211,8 +212,9 @@ export function Media({
               operation,
             )
           )
-            throw new Error(
+            throw new APIError(
               "Media editing is temporarily paused for maintenance",
+              503,
             );
         },
       ],
