@@ -1,7 +1,11 @@
 // @vitest-environment node
 import { expect, test, vi } from "vitest";
-import { copyObject } from "./copy";
-import { canRemoveDerivative, backfillMedia } from "./maintenance";
+import { copyObject, copyBatch } from "./copy";
+import {
+  canRemoveDerivative,
+  backfillMedia,
+  referencedKeys,
+} from "./maintenance";
 import type { S3Client } from "@aws-sdk/client-s3";
 import type { Payload } from "payload";
 const object = (value: string) => ({
@@ -134,4 +138,83 @@ test("cleanup protects referenced files, originals, and the retention window", (
   expect(canRemoveDerivative("optimized/unmarked", undefined, refs, now)).toBe(
     false,
   );
+});
+
+test("cleanup reference inventory protects originals and legacy thumbnails in the reserved namespace", async () => {
+  const payload = {
+    find: vi.fn().mockResolvedValue({
+      docs: [
+        {
+          id: "legacy",
+          filename: "original.jpg",
+          _objectKey: "optimized/legacy",
+          sizes: { thumbnail: { filename: "thumbnail.jpg" } },
+          imageVariants: {
+            recipeVersion: 1,
+            sourceHash: "a".repeat(64),
+            focalX: 50,
+            focalY: 50,
+            variants: [
+              {
+                preset: "natural",
+                key: "optimized/derived.webp",
+                width: 100,
+                height: 100,
+                mimeType: "image/webp",
+                focalX: 50,
+                focalY: 50,
+                sha256: "b".repeat(64),
+              },
+            ],
+          },
+        },
+      ],
+      hasNextPage: false,
+    }),
+  } as unknown as Payload;
+  const references = await referencedKeys(payload);
+  expect(references).toEqual(
+    new Set([
+      "optimized/legacy/original.jpg",
+      "optimized/legacy/thumbnail.jpg",
+      "optimized/derived.webp",
+    ]),
+  );
+  const old = new Date("2026-01-01");
+  for (const key of references)
+    expect(canRemoveDerivative(key, old, references)).toBe(false);
+});
+
+test("a failed copy batch reports completed objects and resumes without overwriting matching bytes", async () => {
+  const source = {
+    send: vi.fn(async (command) => {
+      if (command.input.Key === "missing")
+        throw Object.assign(new Error("missing source"), { name: "NoSuchKey" });
+      return object("same");
+    }),
+  } as unknown as S3Client;
+  const targetSend = vi.fn(
+    async (_command: { constructor: { name: string } }) => object("same"),
+  );
+  const options = {
+    source,
+    target: { send: targetSend } as unknown as S3Client,
+    sourceBucket: "old",
+    targetBucket: "new",
+    apply: true,
+  };
+  const report = vi.fn(async (_value: object) => {});
+  await expect(
+    copyBatch(["first", "missing", "last"], options, report),
+  ).rejects.toThrow("missing source");
+  expect(report.mock.calls.map(([value]) => value)).toEqual([
+    expect.objectContaining({ key: "first", status: "verified" }),
+    expect.objectContaining({ key: "last", status: "verified" }),
+  ]);
+  await copyBatch(["first", "last"], options, report);
+  expect(
+    targetSend.mock.calls.every(
+      ([command]) => command.constructor.name === "GetObjectCommand",
+    ),
+  ).toBe(true);
 });

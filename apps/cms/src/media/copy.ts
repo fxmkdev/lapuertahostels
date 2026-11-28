@@ -112,3 +112,18 @@ export async function copyObject({
     );
   }
 }
+
+/** Finish every in-flight object and persist successful progress before failing. */
+export async function copyBatch(
+  keys: string[],
+  options: Omit<Parameters<typeof copyObject>[0], "key">,
+  report: (value: object) => Promise<void>,
+) {
+  const results = await Promise.allSettled(
+    keys.map((key) => copyObject({ ...options, key })),
+  );
+  for (const result of results)
+    if (result.status === "fulfilled") await report(result.value);
+  const failed = results.find((result) => result.status === "rejected");
+  if (failed?.status === "rejected") throw failed.reason;
+}

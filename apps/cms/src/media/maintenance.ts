@@ -104,10 +104,12 @@ export async function verifyMedia(
           throw new Error(`Stale derivatives for media ${media.id}`);
         if (manifest.sourceHash !== checksum(original))
           throw new Error(`Original changed for media ${media.id}`);
-        for (const variant of manifest.variants) {
-          if (checksum(await store.read(variant.key)) !== variant.sha256)
-            throw new Error(`Derivative checksum mismatch: ${variant.key}`);
-        }
+        await Promise.all(
+          manifest.variants.map(async (variant) => {
+            if (checksum(await store.read(variant.key)) !== variant.sha256)
+              throw new Error(`Derivative checksum mismatch: ${variant.key}`);
+          }),
+        );
       } else if (
         media.mimeType?.startsWith("image/") &&
         media.mimeType !== "image/svg+xml"
@@ -142,9 +144,14 @@ export async function verifyMedia(
 }
 export async function referencedKeys(payload: Payload) {
   const keys = new Set<string>();
-  for await (const doc of mediaDocuments(payload))
+  for await (const doc of mediaDocuments(payload)) {
+    keys.add(getOriginalObjectKey(doc));
+    for (const size of Object.values(doc.sizes ?? {}))
+      if (size?.filename)
+        keys.add(getOriginalObjectKey({ ...doc, filename: size.filename }));
     for (const variant of readImageManifest(doc.imageVariants)?.variants ?? [])
       keys.add(variant.key);
+  }
   return keys;
 }
 export function canRemoveDerivative(

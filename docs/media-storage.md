@@ -82,8 +82,10 @@ client. Inventory lists database media records; with source settings supplied,
 it also lists source objects. Copy commands do not initialize Payload or access
 the database. Copy and verification compare actual bytes with SHA-256, including
 multipart objects; ETags are not checksums. Existing matching targets are left
-alone. A retry scans again and only writes missing/changed files, retaining keys
-and prefixes. Target-only files are retained.
+alone. Copy and copy-verification process four objects at a time; progress
+reports are saved sequentially, including successful items from a failed batch.
+A retry scans again and only writes missing/changed files, retaining keys and
+prefixes. Target-only files are retained.
 
 Set `MEDIA_MIGRATION_REPORT` to a private absolute JSON file path to persist
 progress atomically after each object/document. A failure exits nonzero and
@@ -93,7 +95,8 @@ must not remain configured on the finished apps.
 Backfill reads originals sequentially from Tigris and preserves document IDs,
 filenames, localized text, relationships, and focal metadata. Current manifests
 are skipped. Set `MEDIA_REGENERATE_ALL=true` to repair missing derivatives or
-force regeneration. Verification checks originals, derivative hashes, saved
+force regeneration. Verification reads one media record at a time, with its
+derivative reads in parallel. It checks originals, derivative hashes, saved
 focal points, the recipe version, and any referenced legacy thumbnails. It fails
 on missing objects or incomplete static-image manifests.
 

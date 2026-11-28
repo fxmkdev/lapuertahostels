@@ -3,7 +3,7 @@ import { performance } from "node:perf_hooks";
 import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getPayload } from "payload";
 import { createMediaStore, mediaStorageFromEnv } from "./storage";
-import { copyObject, listObjects } from "./copy";
+import { copyBatch, listObjects } from "./copy";
 import {
   backfillMedia,
   canRemoveDerivative,
@@ -106,6 +106,20 @@ async function run() {
           : undefined,
       });
       try {
+        const pending: string[] = [];
+        const flush = () =>
+          copyBatch(
+            pending.splice(0),
+            {
+              source,
+              target: store.client,
+              sourceBucket,
+              targetBucket: storage.bucket,
+              apply,
+              verifyOnly: command === "verify-copy",
+            },
+            report,
+          );
         for await (const object of listObjects(source, sourceBucket)) {
           if (command === "inventory")
             await report({
@@ -113,19 +127,12 @@ async function run() {
               bytes: object.Size,
               modified: object.LastModified,
             });
-          else
-            await report(
-              await copyObject({
-                source,
-                target: store.client,
-                sourceBucket,
-                targetBucket: storage.bucket,
-                key: object.Key!,
-                apply,
-                verifyOnly: command === "verify-copy",
-              }),
-            );
+          else {
+            pending.push(object.Key!);
+            if (pending.length === 4) await flush();
+          }
         }
+        await flush();
       } finally {
         source.destroy();
       }
