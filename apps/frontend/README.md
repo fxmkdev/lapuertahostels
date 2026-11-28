@@ -58,6 +58,20 @@ The banner waits until hydration checks storage before appearing. If storage is
 blocked or full, or a banner has no ID, dismissal works only in memory for the
 current mount.
 
+## Live preview
+
+CMS live preview retains the last valid document when an update fails, rather
+than replacing page content with an API error response. A translated alert
+explains the failure and clears after the next successful update. Authentication
+errors ask editors to sign back into the CMS and reopen preview; other failures
+can be retried by editing again or reloading preview.
+
+The preview request handler preserves Payload's cookie authentication, method
+override, locale, and relationship depth. It validates response status and
+document identity, ignores superseded responses, and resets when the document or
+language changes. Valid empty block arrays still remove content intentionally.
+This guard does not change CMS authentication or access permissions.
+
 ## Deployment
 
 First, build your app for production:
