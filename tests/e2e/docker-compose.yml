@@ -10,6 +10,7 @@ services:
       CANONICAL_HOSTNAME: canonical.localhost
       IMAGEKIT_BASE_URL: ${IMAGEKIT_BASE_URL}
       REDIS_URL: redis://redis:6379
+      ANALYTICS_SCRIPT_URL: ${ANALYTICS_SCRIPT_URL:-}
 
   cms:
     image: ${CMS_IMAGE}

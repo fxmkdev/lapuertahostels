@@ -37,6 +37,7 @@ import {
 import type { Brand, LocaleConfig } from "@lapuertahostels/payload-types";
 import { GlobalErrorBoundary } from "./global-error-boundary";
 import { AnalyticsScript } from "./analytics-script";
+import { getAnalyticsScriptUrl } from "./analytics-proxy.server";
 import { PreviewBar } from "./layout/preview-bar";
 import { getHeaderLocale, i18nextMiddleware } from "./i18next.server";
 import { isAuthenticated } from "./common/auth";
@@ -149,7 +150,7 @@ export async function loader({ request, url }: LoaderFunctionArgs) {
       preview: requestUrl.searchParams.get("preview") || undefined,
       useImageCacheBuster: false, // Cache busting is only used in Storybook for Chromatic
     },
-    analyticsDomain: process.env.ANALYTICS_DOMAIN,
+    analyticsEnabled: !!getAnalyticsScriptUrl(),
     publishedLocales: settings.publishedLocales
       .publishedLocales as LocaleConfig[],
   };
@@ -189,7 +190,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <Meta />
         <Links />
         {rootLoaderData && !isMaintenanceError && (
-          <AnalyticsScript analyticsDomain={rootLoaderData.analyticsDomain} />
+          <AnalyticsScript enabled={rootLoaderData.analyticsEnabled} />
         )}
       </head>
       <body className="bg-white text-neutral-900 antialiased">

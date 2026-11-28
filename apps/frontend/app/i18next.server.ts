@@ -15,6 +15,7 @@ import {
   toRelativeUrl,
 } from "./common/routing";
 import type { LocaleConfig } from "@lapuertahostels/payload-types";
+import { isAnalyticsProxyPath } from "./analytics";
 
 export const localeCookie = createCookie("locale");
 
@@ -25,6 +26,8 @@ export const i18nextMiddleware: MiddlewareFunction<Response> = async (
   { request, context },
   next,
 ) => {
+  if (isAnalyticsProxyPath(new URL(request.url).pathname)) return await next();
+
   const { instance, locale } = await createI18next(request);
 
   context.set(localeContext, locale);
