@@ -25,6 +25,39 @@ export async function noOverflow(page: Page) {
   ).toBeLessThanOrEqual(await page.evaluate(() => window.innerWidth));
 }
 
+export async function swipeLeft(
+  page: Page,
+  start: { x: number; y: number },
+  distance: number,
+) {
+  const session = await page.context().newCDPSession(page);
+  try {
+    await session.send("Input.dispatchTouchEvent", {
+      type: "touchStart",
+      touchPoints: [start],
+    });
+    // Move the finger over rendered frames so Chromium performs native scrolling.
+    for (let step = 1; step <= 6; step++) {
+      await session.send("Input.dispatchTouchEvent", {
+        type: "touchMove",
+        touchPoints: [{ x: start.x - (distance * step) / 6, y: start.y }],
+      });
+      await page.evaluate(
+        () =>
+          new Promise<void>((resolve) => {
+            requestAnimationFrame(() => resolve());
+          }),
+      );
+    }
+    await session.send("Input.dispatchTouchEvent", {
+      type: "touchEnd",
+      touchPoints: [],
+    });
+  } finally {
+    await session.detach();
+  }
+}
+
 export async function targets(locator: Locator, info: TestInfo, name: string) {
   const visible = locator.filter({ visible: true });
   await expect(visible.first()).toBeVisible();

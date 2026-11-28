@@ -1,5 +1,12 @@
 import { expect, test } from "@playwright/test";
-import { story, capture, noOverflow, targets, waitForGallery } from "./helpers";
+import {
+  story,
+  capture,
+  noOverflow,
+  targets,
+  waitForGallery,
+  swipeLeft,
+} from "./helpers";
 
 const widths = [320, 375, 640, 767];
 
@@ -179,15 +186,7 @@ for (const width of widths) {
     if (width < 480) {
       const strip = selectors.first().locator("..");
       const box = (await strip.boundingBox())!;
-      const session = await page.context().newCDPSession(page);
-      await session.send("Input.synthesizeScrollGesture", {
-        x: width - 32,
-        y: box.y + box.height / 2,
-        xDistance: -120,
-        yDistance: 0,
-        gestureSourceType: "touch",
-      });
-      await session.detach();
+      await swipeLeft(page, { x: width - 32, y: box.y + box.height / 2 }, 120);
       await expect
         .poll(() => strip.evaluate((element) => element.scrollLeft))
         .toBeGreaterThan(0);
