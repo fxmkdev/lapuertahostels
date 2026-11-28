@@ -305,6 +305,12 @@ test("start retries Fly's asynchronous replacement precondition", async () => {
   assert.equal(waits, 1);
 });
 
+test("auto-destroying release workers are terminal when Fly reports destroyed", async () => {
+  const fly = new Fly(env);
+  fly.machine = async () => ({ state: "destroyed" });
+  assert.equal((await fly.stopped("preview-abc", "worker")).state, "destroyed");
+});
+
 test("failure cleanup attempts other CMS Machines when one app cannot be updated", async () => {
   const dir = await mkdtemp(join(tmpdir(), "snapshot-halt-test-"));
   const cwd = process.cwd();
@@ -318,6 +324,37 @@ test("failure cleanup attempts other CMS Machines when one app cannot be updated
     };
     await assert.rejects(fly.halt(), /could not be kept offline/);
     assert.equal(machines.get("preview-def")[0].state, "stopped");
+  } finally {
+    process.chdir(cwd);
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("cancellation stops release-command workers before releasing shared database maintenance", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "snapshot-cancellation-test-"));
+  const cwd = process.cwd();
+  process.chdir(dir);
+  try {
+    const { fly, machines, calls } = fixture();
+    machines.get("preview-abc").push({
+      id: "release-worker",
+      state: "started",
+      config: {
+        env: { RELEASE_COMMAND: "1" },
+        metadata: { fly_process_group: "fly_app_release_command" },
+        services: [],
+      },
+    });
+    await fly.halt();
+    assert.equal(machines.get("preview-abc")[1].state, "stopped");
+    const workerStop = calls.findIndex(
+      ({ id, action }) => id === "release-worker" && action === "stop",
+    );
+    const appPause = calls.findIndex(({ body }) => body?.config);
+    assert(workerStop >= 0 && workerStop < appPause);
+    assert(
+      !calls.some(({ id, body }) => id === "release-worker" && body?.config),
+    );
   } finally {
     process.chdir(cwd);
     await rm(dir, { recursive: true, force: true });

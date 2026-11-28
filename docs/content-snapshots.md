@@ -105,6 +105,9 @@ invalidation secret is evaluated within each frontend Machine and never printed.
 
 ## Failure and recovery
 
+Cancellation cleanup stops any active release-command worker before pausing app
+Machines, preventing a background restore from outliving the workflow lock.
+
 On restore, migration, deployment or invalidation failure after maintenance
 begins, the workflow keeps affected CMS apps offline, including newly created
 Machines. Each paused Machine retains original autostart/restart settings and

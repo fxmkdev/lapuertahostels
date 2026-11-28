@@ -63,7 +63,7 @@ export class Fly {
   async stopped(app, id) {
     for (let i = 0; i < 90; i++) {
       const machine = await this.machine(app, id);
-      if (machine.state === "stopped") return machine;
+      if (["stopped", "destroyed"].includes(machine.state)) return machine;
       await this.wait(2000);
     }
     throw new Error(`Timed out stopping ${app}/${id}`);
@@ -246,9 +246,36 @@ export class Fly {
     }
   }
   async halt() {
-    // Also catches Machines created by a deploy that failed after the release
-    // command. Existing markers preserve the original recovery configuration.
-    await this.pause(true);
+    const errors = [];
+    // A cancelled runner must stop its release command too, so it cannot keep
+    // modifying the shared DB after the workflow's lifecycle lock releases.
+    for (const app of await this.maintenanceApps()) {
+      try {
+        for (const machine of (await this.machines(app)).filter(
+          isReleaseMachine,
+        )) {
+          try {
+            await this.stop(app, machine);
+          } catch (error) {
+            if (error.status !== 404) errors.push(error);
+          } // auto_destroy
+        }
+      } catch (error) {
+        errors.push(error);
+      }
+    }
+    // Also catches application VMs created by a failed deployment. Existing
+    // markers preserve their original recovery configuration.
+    try {
+      await this.pause(true);
+    } catch (error) {
+      errors.push(error);
+    }
+    if (errors.length)
+      throw new AggregateError(
+        errors,
+        "Some CMS Machines could not be kept offline; inspect Fly state",
+      );
   }
   async invalidate() {
     let apps;
@@ -374,9 +401,15 @@ export class Fly {
     throw new Error("Snapshot publisher exceeded 30 minutes");
   }
 }
+function isReleaseMachine(machine) {
+  return (
+    machine.config?.env?.RELEASE_COMMAND === "1" ||
+    machine.config?.metadata?.fly_process_group === "fly_app_release_command"
+  );
+}
 export function isAppMachine(machine) {
   return (
-    !machine.config?.metadata?.fly_release_command &&
+    !isReleaseMachine(machine) &&
     (machine.config?.metadata?.fly_process_group === "app" ||
       machine.config?.services?.length > 0)
   );
