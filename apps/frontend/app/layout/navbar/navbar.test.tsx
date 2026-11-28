@@ -9,7 +9,7 @@ import type { NavbarProps } from "./navbar";
 import { Navbar } from "./navbar";
 
 vi.mock("~/common/environment", () => ({
-  useEnvironment: () => ({ imagekitBaseUrl: "https://images.example.com" }),
+  useEnvironment: () => ({ mediaBaseUrl: "https://images.example.com" }),
 }));
 
 const i18n = createInstance();

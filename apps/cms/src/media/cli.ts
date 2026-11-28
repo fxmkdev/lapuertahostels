@@ -149,6 +149,7 @@ async function run() {
           apply,
           report,
           process.env.MEDIA_REGENERATE_ALL === "true",
+          store,
         );
       if (command === "verify") await verifyMedia(payload, store, report);
       if (command === "cleanup") {

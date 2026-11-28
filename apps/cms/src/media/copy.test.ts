@@ -70,33 +70,54 @@ test("verification rejects mismatches and missing source objects", async () => {
   vi.mocked(source.send).mockRejectedValue(new Error("source missing"));
   await expect(copyObject(options)).rejects.toThrow("source missing");
 });
-test("backfill preserves documents and performs no writes in dry run", async () => {
+test("backfill only writes manifests, preserves absent focal points and resumes", async () => {
   const doc = {
     id: "stable",
     filename: "photo.jpg",
     mimeType: "image/jpeg",
     alt: "Localized",
-    focalX: 0,
-    focalY: 100,
+    updatedAt: "2026-11-28T00:00:00.000Z",
   };
   const before = structuredClone(doc);
-  const update = vi.fn();
+  const updateOne = vi.fn(async ({ data }) => Object.assign(doc, data));
   const payload = {
-    find: vi.fn().mockResolvedValue({ docs: [doc], hasNextPage: false }),
-    update,
+    find: vi.fn(async () => ({ docs: [doc], hasNextPage: false })),
+    db: { updateOne },
   } as unknown as Payload;
-  await backfillMedia(payload, false, async () => {});
-  expect(update).not.toHaveBeenCalled();
-  expect(doc).toEqual(before);
-  await backfillMedia(payload, true, async () => {});
-  expect(update).toHaveBeenCalledWith(
-    expect.objectContaining({
-      id: "stable",
-      data: {},
-      context: { regenerateImages: true, mediaMaintenance: true },
-    }),
-  );
-  expect(doc).toEqual(before);
+  const sharp = (await import("sharp")).default;
+  const input = await sharp({
+    create: { width: 20, height: 10, channels: 3, background: "red" },
+  })
+    .jpeg()
+    .toBuffer();
+  const store = {
+    read: vi.fn(async () => input),
+    write: vi.fn(async () => {}),
+  };
+  await backfillMedia(payload, false, async () => {}, false, store);
+  expect(updateOne).not.toHaveBeenCalled();
+  expect(store.read).not.toHaveBeenCalled();
+  await backfillMedia(payload, true, async () => {}, false, store);
+  expect(updateOne).toHaveBeenCalledWith({
+    collection: "media",
+    where: {
+      and: [
+        { id: { equals: "stable" } },
+        { updatedAt: { equals: before.updatedAt } },
+      ],
+    },
+    data: {
+      imageVariants: expect.objectContaining({ focalX: 50, focalY: 50 }),
+    },
+  });
+  const { imageVariants, ...preserved } = doc as typeof doc & {
+    imageVariants: unknown;
+  };
+  expect(imageVariants).toBeDefined();
+  expect(preserved).toEqual(before);
+  await backfillMedia(payload, true, async () => {}, false, store);
+  expect(updateOne).toHaveBeenCalledTimes(1);
+  expect(store.read).toHaveBeenCalledTimes(1);
 });
 test("cleanup protects referenced files, originals, and the retention window", () => {
   const now = new Date("2026-11-28").getTime();

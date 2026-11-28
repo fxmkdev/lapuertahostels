@@ -2,7 +2,12 @@ import sharp from "sharp";
 import type { Payload } from "payload";
 import { readImageManifest } from "@lapuertahostels/payload-types";
 import { getOriginalObjectKey } from "../collections/media/migrate-display-dimensions";
-import { IMAGE_RECIPE_VERSION, checksum, normalizePoint } from "./optimize";
+import {
+  IMAGE_RECIPE_VERSION,
+  checksum,
+  normalizePoint,
+  optimizeImage,
+} from "./optimize";
 import type { MediaStore } from "./storage";
 
 export async function* mediaDocuments(payload: Payload) {
@@ -27,6 +32,7 @@ export async function backfillMedia(
   apply: boolean,
   report: (value: object) => Promise<void>,
   force = false,
+  store?: Pick<MediaStore, "read" | "write">,
 ) {
   for await (const media of mediaDocuments(payload)) {
     const manifest = readImageManifest(media.imageVariants);
@@ -47,13 +53,26 @@ export async function backfillMedia(
     }
     if (apply)
       try {
-        await payload.update({
-          collection: "media",
-          id: media.id,
-          data: {},
-          overrideAccess: true,
-          context: { regenerateImages: true, mediaMaintenance: true },
+        if (!store) throw new Error("Backfill requires a media store");
+        const imageVariants = await optimizeImage({
+          input: await store.read(getOriginalObjectKey(media)),
+          point,
+          write: store.write,
         });
+        // Use the adapter directly: normal document updates fill missing focal
+        // defaults and run unrelated localization hooks on legacy records.
+        const updated = await payload.db.updateOne({
+          collection: "media",
+          where: {
+            and: [
+              { id: { equals: media.id } },
+              { updatedAt: { equals: media.updatedAt } },
+            ],
+          },
+          data: { imageVariants },
+        });
+        if (!updated)
+          throw new Error("Media changed during backfill; retry it");
       } catch (error) {
         throw new Error(
           `Backfill failed for media ${media.id} (${media.filename}): ${error instanceof Error ? error.message : String(error)}`,
