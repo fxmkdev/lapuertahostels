@@ -1,12 +1,5 @@
-import {
-  expect,
-  test,
-  type Locator,
-  type Page,
-  type TestInfo,
-} from "@playwright/test";
-
-import { writeFile } from "node:fs/promises";
+import { expect, test } from "@playwright/test";
+import { story, capture, noOverflow, targets, waitForGallery } from "./helpers";
 
 const widths = [320, 375, 640, 767];
 
@@ -22,95 +15,6 @@ test.beforeEach(async ({ page }) => {
     route.fulfill({ body: "" }),
   );
 });
-
-async function story(page: Page, id: string, width: number) {
-  await page.setViewportSize({ width, height: 900 });
-  await page.goto(`/iframe.html?id=${id}&viewMode=story`);
-  await expect(page.locator("#storybook-root")).not.toBeEmpty();
-}
-
-async function capture(
-  page: Page,
-  info: TestInfo,
-  name: string,
-  fullPage = false,
-) {
-  const path = info.outputPath(name);
-  await page.screenshot({ path, fullPage, animations: "disabled" });
-  await info.attach(name, { path, contentType: "image/png" });
-}
-
-async function noOverflow(page: Page) {
-  expect(
-    await page.evaluate(() => document.documentElement.scrollWidth),
-  ).toBeLessThanOrEqual(await page.evaluate(() => window.innerWidth));
-}
-
-async function targets(locator: Locator, info: TestInfo, name: string) {
-  const visible = locator.filter({ visible: true });
-  await expect(visible.first()).toBeVisible();
-  // Wait for entry scaling, allowing floating-point noise below 0.01 CSS pixels.
-  await expect
-    .poll(() =>
-      visible.evaluateAll((elements) =>
-        Math.min(
-          ...elements.flatMap((element) => {
-            const rect = element.getBoundingClientRect();
-            return [rect.width, rect.height].map(
-              (value) => Math.round(value * 100) / 100,
-            );
-          }),
-        ),
-      ),
-    )
-    .toBeGreaterThanOrEqual(48);
-  const bounds = await visible.evaluateAll((elements) =>
-    elements.map((element) => {
-      const { x, y, width, height } = element.getBoundingClientRect();
-      return {
-        label:
-          element.getAttribute("aria-label") ||
-          element.textContent?.trim() ||
-          element.tagName,
-        x,
-        y,
-        width,
-        height,
-      };
-    }),
-  );
-  for (const bound of bounds) {
-    expect(
-      Math.round(bound.width * 100) / 100,
-      `${name}: ${bound.label} width`,
-    ).toBeGreaterThanOrEqual(48);
-    expect(
-      Math.round(bound.height * 100) / 100,
-      `${name}: ${bound.label} height`,
-    ).toBeGreaterThanOrEqual(48);
-  }
-  // Compare actual target rectangles, including targets outside the viewport.
-  for (let i = 0; i < bounds.length; i++) {
-    for (let j = i + 1; j < bounds.length; j++) {
-      const a = bounds[i],
-        b = bounds[j];
-      const overlapWidth =
-        Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x);
-      const overlapHeight =
-        Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y);
-      expect(
-        overlapWidth > 0.5 && overlapHeight > 0.5,
-        `${name}: overlapping targets ${a.label} / ${b.label}`,
-      ).toBe(false);
-    }
-  }
-  const path = info.outputPath(`${name}-bounds.json`);
-  await writeFile(path, JSON.stringify(bounds, null, 2));
-  await info.attach(`${name}-bounds`, {
-    path,
-    contentType: "application/json",
-  });
-}
 
 for (const width of widths) {
   test(`shared button variants and form validation at ${width}px`, async ({
@@ -189,16 +93,16 @@ for (const width of widths) {
     await expect(
       page.getByText("Locale selected", { exact: true }),
     ).toBeVisible();
-    if (width < 640) {
-      await story(page, "layout-navbar--long-spanish-label", width);
-      await targets(page.locator("a, button"), info, "long-booking-label");
-      const rect = await page
-        .getByRole("link", { name: "Reserva ahora" })
-        .boundingBox();
-      expect(rect!.x).toBeGreaterThanOrEqual(24);
-      expect(rect!.x + rect!.width).toBeLessThanOrEqual(width - 24);
-      await noOverflow(page);
-    }
+    await story(page, "layout-navbar--long-spanish-label", width);
+    await targets(page.locator("a, button"), info, "long-booking-label");
+    const rect = await page
+      .getByRole("link", { name: "Reserva ahora" })
+      .boundingBox();
+    expect(rect!.x).toBeGreaterThanOrEqual(width < 640 ? 24 : 16);
+    expect(rect!.x + rect!.width).toBeLessThanOrEqual(
+      width - (width < 640 ? 24 : 16),
+    );
+    await noOverflow(page);
   });
 
   test(`banner, footer, preview bar and CTAs at ${width}px`, async ({
@@ -232,9 +136,7 @@ for (const width of widths) {
     }
   });
 
-  test(`gallery and dense slide selectors at ${width}px`, async ({
-    page,
-  }, info) => {
+  test(`gallery controls at ${width}px`, async ({ page }, info) => {
     await story(page, "common-image-viewer--default", width);
     await targets(page.getByRole("button"), info, "gallery-thumbnails");
     await page.getByRole("button").first().tap();
@@ -247,36 +149,7 @@ for (const width of widths) {
     await expect(dialog.getByText("2 / 7")).toBeVisible();
     await dialog.getByRole("button", { name: "Previous", exact: true }).tap();
     await expect(dialog.getByText("1 / 7")).toBeVisible();
-    await expect
-      .poll(() =>
-        dialog
-          .locator("img")
-          .evaluateAll(
-            (images) =>
-              images.length > 0 &&
-              images.every(
-                (image) =>
-                  image instanceof HTMLImageElement &&
-                  image.complete &&
-                  image.naturalWidth > 0,
-              ),
-          ),
-      )
-      .toBe(true);
-    await expect
-      .poll(() =>
-        page.evaluate(
-          () =>
-            document
-              .getAnimations()
-              .filter(
-                (animation) =>
-                  animation.playState === "running" &&
-                  animation.effect?.getComputedTiming().iterations !== Infinity,
-              ).length,
-        ),
-      )
-      .toBe(0);
+    await waitForGallery(page, dialog);
     await capture(page, info, "gallery.png");
     const fullscreen = dialog.getByRole("button", {
       name: "Full Screen",
@@ -296,7 +169,9 @@ for (const width of widths) {
     }
     await dialog.getByRole("button", { name: "Close", exact: true }).tap();
     await expect(dialog).toBeHidden();
+  });
 
+  test(`dense slide selectors at ${width}px`, async ({ page }, info) => {
     await story(page, "blocks-hero-slides-block--many-slides", width);
     const selectors = page.getByRole("button").filter({ visible: true });
     await targets(page.locator("a, button"), info, "slides-and-cta");

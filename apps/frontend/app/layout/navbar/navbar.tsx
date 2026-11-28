@@ -119,11 +119,11 @@ export function Navbar({
                   );
                 })}
               </div>
-              <div className="flex shrink-0 items-center justify-end gap-4">
+              <div className="flex shrink-0 items-center justify-end gap-4 max-md:min-w-0 max-md:shrink">
                 {showLocaleSwitcher && (
                   <div
                     className={cn(
-                      "hidden items-center justify-center gap-4 sm:flex xl:gap-8",
+                      "hidden items-center justify-center gap-4 max-md:shrink-0 sm:flex xl:gap-8",
                       slideClassName,
                     )}
                   >
@@ -141,7 +141,7 @@ export function Navbar({
                 )}
                 <div
                   className={cn(
-                    "-mr-2 flex items-center sm:mr-0 xl:hidden",
+                    "-mr-2 flex items-center max-md:shrink-0 sm:mr-0 xl:hidden",
                     slideClassName,
                   )}
                 >
@@ -156,7 +156,10 @@ export function Navbar({
                   </MenuButton>
                 </div>
                 {brand.bookCta?.show ? (
-                  <div ref={desktopBookingRef} className="hidden sm:block">
+                  <div
+                    ref={desktopBookingRef}
+                    className="hidden max-md:min-w-0 sm:block"
+                  >
                     <BookButton
                       cta={brand.bookCta}
                       size="medium"
