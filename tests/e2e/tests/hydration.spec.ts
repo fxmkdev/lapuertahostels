@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import type { Page as BrowserPage } from "@playwright/test";
 import { paragraph, richTextRoot, text } from "@lapuertahostels/rich-text";
 import { createPage } from "../common/cms";
+import { openMenu } from "../common/menu";
 
 function captureBrowserErrors(page: BrowserPage) {
   const errors: string[] = [];
@@ -56,8 +57,7 @@ async function expectClientNavigation(
   const documentStarted = await page.evaluate(() => performance.timeOrigin);
 
   // A working menu proves hydration finished before checking SPA navigation.
-  await page.getByRole("button", { name: "English", exact: true }).click();
-  await expect(page.getByRole("menuitem", { name: "Español" })).toBeVisible();
+  await openMenu(page, "English", "Español");
   await page.keyboard.press("Escape");
   await page.getByRole("link", { name: "Continue to destination" }).click();
   await expect(page).toHaveURL(new RegExp(`/en${destinationPathname}$`));
@@ -87,8 +87,7 @@ async function expectMobileLocaleSwitch(
 ) {
   // The mobile menu and dialog exercise Headless UI portals and locale forms.
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.getByRole("button", { name: "Open main menu" }).click();
-  await page.getByRole("menuitem", { name: "English", exact: true }).click();
+  await (await openMenu(page, "Open main menu", "English")).click();
   const dialog = page.getByRole("dialog");
   await expect(
     dialog.getByRole("button", { name: "Español", exact: true }),
@@ -100,8 +99,7 @@ async function expectMobileLocaleSwitch(
   await expect(
     page.getByRole("heading", { name: "Destination heading" }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Open main menu" }).click();
-  await page.getByRole("menuitem", { name: "Español", exact: true }).click();
+  await (await openMenu(page, "Open main menu", "Español")).click();
   await expect(
     page
       .getByRole("dialog")

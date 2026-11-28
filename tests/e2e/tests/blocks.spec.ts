@@ -59,6 +59,8 @@ test("hero slides block", async ({ page }) => {
       {
         blockType: "HeroSlides",
         seoPageHeading: "Hero Slides Test",
+        // Keep autoplay outside the test timeout so only manual selection can pass.
+        autoplayIntervalInSeconds: 60,
         slides: [
           {
             image: media1.id,
@@ -103,11 +105,14 @@ test("hero slides block", async ({ page }) => {
     /mesmerizing-scenery-seascape-with-lush-nature-daytime\.jpg/,
   );
 
-  await page.getByRole("button", { name: "Go to slide 2" }).click();
-
-  await expect(
-    page.getByRole("heading", { level: 3, name: "Slide 2 Text" }),
-  ).toBeVisible();
+  // The button is server-rendered before idle hydration attaches its handler.
+  // Selecting a fixed slide is idempotent; retry until the control responds.
+  await expect(async () => {
+    await page.getByRole("button", { name: "Go to slide 2" }).click();
+    await expect(
+      page.getByRole("heading", { level: 3, name: "Slide 2 Text" }),
+    ).toBeVisible({ timeout: 1000 });
+  }).toPass({ timeout: 10_000 });
 
   // Need to find out how we can wait for lazily loaded images in Playwright
   // await expect(

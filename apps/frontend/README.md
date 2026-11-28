@@ -88,6 +88,81 @@ CMS address used by editors. The disposable E2E services use `http://cms:3001`
 internally, `http://localhost:3001` in the browser, and `http://127.0.0.1:3000`
 for the preview.
 
+## Plausible analytics
+
+Analytics is optional. Set the server-side `ANALYTICS_SCRIPT_URL` to the
+site-specific script URL from Plausible → Site settings → General → Site
+installation. For `lapuertahostels.co`, the current value is:
+
+```text
+https://plausible.io/js/pa-mNmGQe_APpMrQMvTp8u6q.js
+```
+
+This replaces `ANALYTICS_DOMAIN`: the current script already contains the site
+domain. Set the `ANALYTICS_SCRIPT_URL` GitHub environment variable in
+`production-frontend` before deploying this change. Leave it unset in staging,
+preview, and local development unless deliberately testing analytics. Missing or
+invalid configuration disables the snippet and returns 404 from both proxy
+endpoints. Only HTTPS script URLs on `plausible.io` directly under `/js/` are
+accepted; credentials, query strings, and fragments are rejected.
+
+The browser loads `/js/script.js` and sends events to `/api/event` on the same
+origin. These resource routes bypass CMS translation loading. The script proxy
+preserves Plausible's cache policy; event responses and errors use `no-store`.
+Upstream requests time out after ten seconds and do not follow redirects. No
+cookies or authorization credentials are sent to Plausible. Event bodies larger
+than 64 KiB return an uncached 413 response before any upstream request. The
+limit is enforced while reading the upload, including chunked requests and
+requests with an incorrect `Content-Length`.
+
+The event proxy assumes visitors connect **directly through Fly Proxy**. It
+validates `Fly-Client-IP` and forwards it as `X-Forwarded-For`, together with
+the browser identification headers recommended by Plausible. Missing or invalid
+IPs return 400; caller-supplied forwarding headers are ignored. If another CDN
+or reverse proxy is introduced ahead of Fly, review this trust boundary before
+enabling tracking: `Fly-Client-IP` would then identify that proxy. Do not expose
+the application port directly to untrusted clients.
+
+### Automated tracking verification
+
+Run frontend unit tests with
+`pnpm --filter @lapuertahostels/frontend test --run`. They check forwarding,
+credential filtering, IP validation, failures, CMS independence, document
+rendering, and initialization.
+
+For the real tracker browser smoke, set `ANALYTICS_SCRIPT_URL` to the value
+above on both the production-built test frontend and the test runner, start the
+disposable E2E services, and run:
+
+```sh
+pnpm --filter @lapuertahostels/e2e exec playwright test analytics.spec.ts
+```
+
+Use the normal E2E environment variables described below. The test enables
+localhost capture only in its browser, fetches the real script through the
+frontend proxy, and intercepts event POSTs so test visits never enter Plausible.
+It checks initial pageviews, client navigation, back/forward navigation, custom
+events, same-origin requests, and duplicate initialization. It requires access
+to Plausible's script CDN and skips when `ANALYTICS_SCRIPT_URL` is unset.
+
+### Later deployment verification
+
+Automated verification does not establish live ingestion or clear Plausible's
+outdated-script warning; those require deploying the updated installation. After
+a later deployment, check browser requests use the two same-origin paths. For an
+IP diagnostic, POST a normal event payload to `/api/event` from the real
+visitor's browser with `X-Debug-Request: true`. The proxy forwards this
+diagnostic header; Plausible returns the IP it sees without recording that
+request. For normal events, check that `x-plausible-dropped: 1` is absent, then
+confirm a test visit in the dashboard. HTTP 202 alone does not prove an event
+was recorded. Do not log visitor IPs or event payloads during these checks.
+
+See Plausible's
+[script migration guide](https://plausible.io/docs/script-update-guide),
+[proxy requirements](https://plausible.io/docs/proxy/introduction), and
+[Events API diagnostics](https://plausible.io/docs/events-api), plus Fly's
+[visitor IP documentation](https://fly.io/docs/networking/request-headers/).
+
 ## Deployment
 
 First, build your app for production:
@@ -148,3 +223,79 @@ hero alignment. A valid saved point overrides automatic/custom ImageKit focus
 and hero alignment. Full-image lightboxes, uncropped logos, and videos retain
 their existing presentation. See the CMS README for the editor workflow and
 cache-refresh timing.
+
+## CMS content freshness
+
+CMS content is cached in Redis for one minute. Once an entry reaches one minute
+old, the request waits for fresh CMS data. If the CMS is unreachable, times out
+(after five seconds), or returns HTTP 5xx, the request may return the previous
+value only while it is less than five minutes old in total. Failed refreshes do
+not reset that age. Redis entries expire at five minutes; missing content and
+non-transient errors such as 401/403 do not use stale fallback. Malformed cache
+entries are treated as misses. Redis failures bypass caching.
+
+CMS content saves and deletes invalidate the whole content cache across locales,
+including populated relationships: editing a banner invalidates brands that
+embed it, and editing a page invalidates links pointing to it. Saves inside a
+transaction notify the frontend only after the outer commit, including nested
+brand home-link updates. Rollbacks do not notify. Without transactions,
+notification runs at the end of the save/delete hooks. Notifications are awaited
+with a three-second timeout. Failure logs a CMS warning but does not fail the
+save; the one-minute freshness check remains the fallback. During a simultaneous
+CMS outage, the five-minute stale limit still applies.
+
+The next page request after successful invalidation loads current content. An
+already-running request may finish with its prior result. Open pages require
+navigation or reload to request new data; this does not change banner dismissal.
+
+Server translation resources are isolated per request, so CMS UI labels follow
+the same invalidation and expiry rules. The UI-label endpoint uses `no-store` to
+prevent browser caching from keeping old translations after a reload.
+
+Cache keys are isolated by CMS origin and a random Redis generation.
+Invalidation rotates that generation, so an earlier in-flight request cannot
+restore active stale content. Old generations expire naturally. The
+authenticated manual purge uses the same operation and no longer flushes
+unrelated Redis data. `?skipcache=true` bypasses cache reads and writes and has
+no stale fallback.
+
+### Configuration and rollout
+
+- Frontend: set `CMS_CACHE_INVALIDATION_SECRET` to a random secret.
+- CMS: set the same `CMS_CACHE_INVALIDATION_SECRET` and set
+  `FRONTEND_CACHE_INVALIDATION_URL` to the frontend's complete
+  `/api/invalidate-cms-cache` URL.
+- The callback is a server-to-server `POST` with
+  `Authorization: Bearer <secret>`. It returns 204 on success, 401 on invalid
+  credentials, and 503 when unconfigured or Redis invalidation fails. It
+  bypasses CMS-backed translation middleware and authenticates locally without
+  calling the CMS, including when the CMS is unavailable.
+- Missing CMS configuration logs a startup warning and disables immediate
+  invalidation; timed expiry still works.
+
+Provision matching Fly secrets on both staging/production apps before rollout.
+Deploy the frontend before the CMS so the callback exists before saves notify
+it. The deployment workflow derives the callback URL from `LIVE_PREVIEW_URL`
+(configure that URL without a trailing slash). For each preview app pair, a
+shared provisioning job generates a fresh 32-byte invalidation secret, masks it,
+and stages the same value on both Fly apps before deployment. Only the app names
+are passed between jobs; the generated secret stays within provisioning. Preview
+deployments do not require a separately configured invalidation secret. Staging
+and production continue to use their persistent Fly secrets. The e2e Compose
+stack uses a local test secret and callback URL.
+
+Preview deployments and both cleanup paths share the `fly-preview-lifecycle`
+concurrency group. The lock covers provisioning and both app deployments, so
+cleanup cannot delete a newly created app while it is waiting to be deployed.
+Pending operations queue with `queue: max` (up to GitHub's 100-item limit) and
+do not cancel running operations. Builds, tests, staging, and production remain
+outside this queue; cleanup retention rules are unchanged.
+
+When rolling out this coordination, let workflows using the old definitions
+finish first. Refresh older PR branches before rerunning their preview workflows
+so all deployments and cleanup jobs use the same concurrency group.
+
+After rollout, warm a page, save a related banner, reload once, and confirm the
+new content. Check CMS logs for invalidation warnings and frontend logs for
+Redis failures. No Payload schema migration is required. Legacy cache keys are
+ignored; they had no Redis TTL and can be removed separately during maintenance.

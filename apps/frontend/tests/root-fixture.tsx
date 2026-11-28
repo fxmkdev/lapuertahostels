@@ -85,7 +85,7 @@ export function makeData(): RootData {
         updatedAt: "2026-01-01",
       },
     ],
-    analyticsDomain: "example.com",
+    analyticsEnabled: true,
   };
 }
 

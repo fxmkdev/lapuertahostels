@@ -16,7 +16,8 @@ export async function loader({ request, url }: LoaderFunctionArgs) {
   const common = await getCommon(request, lng);
   return Response.json(common.uiLabels, {
     headers: {
-      "Cache-Control": "max-age=3600", // Cache for 1 hour
+      // Redis controls freshness; a browser cache would outlive CMS invalidation.
+      "Cache-Control": "no-store",
     },
   });
 }
