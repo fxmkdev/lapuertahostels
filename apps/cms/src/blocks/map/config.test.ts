@@ -169,6 +169,9 @@ test.each(["en", "es", "all"])(
     );
 
     expect(locations[0].address).toBe(legacy.address);
+    expect(locations[0].overlayTextBox.text).toEqual(
+      locale === "all" ? localizedOverlay.text : legacy.overlayTextBox.text,
+    );
     expect(locations[0].overlayTextBox.heading).toEqual(
       locale === "all"
         ? localizedOverlay.heading

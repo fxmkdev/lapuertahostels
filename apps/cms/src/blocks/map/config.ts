@@ -100,7 +100,15 @@ export const MapBlock: Block = {
       required: true,
       minRows: 1,
       hooks: {
-        afterRead: [readMapHeading, readLegacyLocations],
+        afterRead: [
+          (args) => {
+            // Clone the legacy locale maps before Payload can flatten sibling fields
+            // while awaiting hooks. Separate hooks introduce a yield between reads.
+            const locations = readLegacyLocations(args);
+            readMapHeading(args);
+            return locations;
+          },
+        ],
         beforeValidate: [writeLegacyLocations],
         beforeChange: [preserveLegacyLocales],
       },

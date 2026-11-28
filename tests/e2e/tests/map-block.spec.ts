@@ -109,6 +109,9 @@ test("legacy CMS maps become editable locations and retain translations on save"
   expect(map.heading).toBe("Aqua");
   expect(map.locations).toHaveLength(1);
   expect(map.locations[0].address).toBe(legacyBlock.address);
+  expect(map.locations[0].overlayTextBox.text).toEqual(
+    legacyBlock.overlayTextBox.text,
+  );
   const saved = await request.patch(`${url}?locale=en`, {
     data: {
       content: [
@@ -140,6 +143,9 @@ test("legacy CMS maps become editable locations and retain translations on save"
   const spanish = await spanishResponse.json();
   expect(spanish.content[0].heading).toBe("Visítanos");
   expect(spanish.content[0].locations).toHaveLength(2);
+  expect(spanish.content[0].locations[0].overlayTextBox.text).toEqual(
+    legacyBlock.overlayTextBox.text,
+  );
   expect(spanish.content[0].locations[0].overlayTextBox.heading).toBe(
     "Visítanos",
   );
