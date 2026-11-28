@@ -1463,17 +1463,37 @@ export interface TextColumnsWithImages {
  * via the `definition` "Map".
  */
 export interface Map {
-  /**
-   * Enter the address to display on the map, including the business name. It should resolve unambiguously to a place on Google Maps.
-   */
-  address: string;
-  /**
-   * Enter a number from 0 to 22. The level of detail for the different zoom levels is approximately: 1—World, 5—Landmass/continent, 10—City, 15—Streets, 20—Buildings. Floating point numbers are allowed, e.g. 14.5.
-   */
-  zoomLevel: number;
-  overlayTextBox: {
-    heading: string;
-    text: {
+  locations: {
+    /**
+     * Enter the address to display on the map, including the business name. It should resolve unambiguously to a place on Google Maps.
+     */
+    address: string;
+    overlayTextBox: {
+      heading: string;
+      text: {
+        root: {
+          type: string;
+          children: {
+            type: any;
+            version: number;
+            [k: string]: unknown;
+          }[];
+          direction: ('ltr' | 'rtl') | null;
+          format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+          indent: number;
+          version: number;
+        };
+        [k: string]: unknown;
+      };
+      callToActionLabel?: string | null;
+      position?: ('top-left' | 'top-right' | 'bottom-left' | 'bottom-right') | null;
+    };
+    id?: string | null;
+  }[];
+  address?: string | null;
+  overlayTextBox?: {
+    heading?: string | null;
+    text?: {
       root: {
         type: string;
         children: {
@@ -1487,10 +1507,14 @@ export interface Map {
         version: number;
       };
       [k: string]: unknown;
-    };
+    } | null;
     callToActionLabel?: string | null;
     position?: ('top-left' | 'top-right' | 'bottom-left' | 'bottom-right') | null;
   };
+  /**
+   * For multiple locations, this is the maximum automatic zoom. Enter a number from 0 to 22. The level of detail for the different zoom levels is approximately: 1—World, 5—Landmass/continent, 10—City, 15—Streets, 20—Buildings. Floating point numbers are allowed, e.g. 14.5.
+   */
+  zoomLevel: number;
   elementId?: string | null;
   id?: string | null;
   blockName?: string | null;
@@ -2182,8 +2206,21 @@ export interface TextColumnsWithImagesSelect<T extends boolean = true> {
  * via the `definition` "Map_select".
  */
 export interface MapSelect<T extends boolean = true> {
+  locations?:
+    | T
+    | {
+        address?: T;
+        overlayTextBox?:
+          | T
+          | {
+              heading?: T;
+              text?: T;
+              callToActionLabel?: T;
+              position?: T;
+            };
+        id?: T;
+      };
   address?: T;
-  zoomLevel?: T;
   overlayTextBox?:
     | T
     | {
@@ -2192,6 +2229,7 @@ export interface MapSelect<T extends boolean = true> {
         callToActionLabel?: T;
         position?: T;
       };
+  zoomLevel?: T;
   elementId?: T;
   id?: T;
   blockName?: T;

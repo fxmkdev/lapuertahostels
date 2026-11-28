@@ -48,8 +48,47 @@ export const Default: Story = {
           ),
         ),
         paragraph(text("We're looking forward to meeting you!")),
-      ) as unknown as MapBlockProps["overlayTextBox"]["text"],
+      ) as unknown as NonNullable<MapBlockProps["overlayTextBox"]>["text"],
       callToActionLabel: "Get Directions",
     },
+  },
+};
+
+export const LegacySingleLocation: Story = Default;
+
+export const SingleLocation: Story = {
+  args: {
+    blockType: "Map",
+    zoomLevel: 14.5,
+    locations: [
+      {
+        address: Default.args!.address!,
+        overlayTextBox: {
+          ...Default.args!.overlayTextBox!,
+          heading: "Puerta Aqua",
+          text: Default.args!.overlayTextBox!.text!,
+        },
+      },
+    ],
+  },
+};
+
+export const MultipleLocations: Story = {
+  args: {
+    ...SingleLocation.args,
+    locations: [
+      ...SingleLocation.args!.locations!,
+      {
+        address: "Parque de los Novios, Santa Marta, Colombia",
+        overlayTextBox: {
+          heading: "Parque de los Novios",
+          text: richTextRoot(
+            paragraph(text("Explore the heart of Santa Marta.")),
+          ),
+          callToActionLabel: "Get Directions",
+          position: "top-right",
+        },
+      },
+    ],
   },
 };

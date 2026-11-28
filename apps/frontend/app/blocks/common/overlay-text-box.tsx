@@ -2,6 +2,8 @@ import type {
   ComponentPropsWithoutRef,
   ComponentType,
   ElementType,
+  ReactNode,
+  Ref,
 } from "react";
 import { Button } from "~/common/button";
 import { cn } from "~/common/cn";
@@ -10,6 +12,8 @@ import { RichTextParagraph } from "~/common/paragraph";
 import type { RichTextObject } from "@lapuertahostels/rich-text";
 
 type OverlayTextBoxProps<TCta extends ElementType = ElementType> = {
+  ref?: Ref<HTMLDivElement>;
+  children?: ReactNode;
   position?: "top-left" | "top-right" | "bottom-left" | "bottom-right" | null;
   heading: string | undefined | null;
   text: RichTextObject | undefined | null;
@@ -22,6 +26,8 @@ type OverlayTextBoxProps<TCta extends ElementType = ElementType> = {
 };
 
 export function OverlayTextBox({
+  ref,
+  children,
   position,
   cta,
   heading,
@@ -31,6 +37,7 @@ export function OverlayTextBox({
 
   return (
     <div
+      ref={ref}
       className={cn(
         "w-full bg-white px-6 pt-3 pb-6 text-center lg:absolute lg:w-auto lg:max-w-xs lg:rounded-md lg:px-8 lg:pt-5 lg:pb-8 lg:text-left lg:shadow-lg xl:max-w-sm 2xl:max-w-md",
         {
@@ -49,6 +56,7 @@ export function OverlayTextBox({
         {heading}
       </Heading>
       {text && <RichTextParagraph className="mt-2">{text}</RichTextParagraph>}
+      {children}
       {cta && (
         <Button {...cta} className="mt-4">
           {cta.label}

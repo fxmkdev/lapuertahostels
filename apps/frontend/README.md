@@ -318,3 +318,18 @@ After rollout, warm a page, save a related banner, reload once, and confirm the
 new content. Check CMS logs for invalidation warnings and frontend logs for
 Redis failures. No Payload schema migration is required. Legacy cache keys are
 ignored; they had no Redis TTL and can be removed separately during maintenance.
+
+## Maps with multiple locations
+
+Map blocks render each configured location as a selectable pin, with a location
+button alternative for keyboard users and coincident pins. Selecting a location
+switches its overlay and directions link while retaining an overview of all
+resolved locations. Bounds refit when the map or desktop overlay changes size;
+the configured zoom is the maximum for an overview and the exact zoom for one
+resolved location. Old single-address responses remain supported.
+
+Address lookups are debounced, repeated addresses share one lookup, failed
+locations are omitted, and stale responses after edits are ignored. When every
+lookup fails, the block is hidden. Map unit tests use mocked Google Maps APIs;
+Storybook includes legacy, single-location, and multiple-location examples for
+checking real Maps rendering with `STORYBOOK_GOOGLE_MAPS_API_KEY` configured.

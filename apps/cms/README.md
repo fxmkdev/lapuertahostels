@@ -145,3 +145,22 @@ uses a fresh cookie-authenticated editor context without the suite's API-key
 headers. With the CMS on `localhost` and the website on `127.0.0.1`, it verifies
 that a direct cross-site request fails while unsaved edits appear in both
 preview modes through same-origin CMS requests.
+
+## Map locations
+
+A Map block contains an ordered **Locations** list. Add an address (including
+the business name) and an overlay with its heading, text, optional directions
+label, and position for each location. Addresses must identify a place on Google
+Maps. The first available location is selected initially. Selecting a pin or a
+location button switches its details and directions destination.
+
+Single-location maps retain their configured zoom. Maps with multiple locations
+fit all available pins, reserving room for the desktop overlay; **Zoom Level**
+limits how closely they zoom in. Failed lookups are omitted, and a map with no
+resolved locations is hidden.
+
+Existing single-address blocks and historical versions remain compatible. Field
+hooks present their address and overlay as the first editable location; saving
+persists the location list. Explicit location lists take precedence over legacy
+fields. No bulk migration is needed. Deploy the updated frontend before the CMS
+(or deploy both together), since older frontends cannot render the new list.
