@@ -107,18 +107,23 @@ branch keeps the app from PR-based deletion. Missing or conflicting source
 branches, missing PRs, and overlapping prefix configurations also skip PR-based
 deletion. Existing age/count rules still apply to these apps.
 
-Deployment, status, and PR lists are paginated. A GitHub lookup failure logs a
-warning and skips PR-based deletion for the affected environment or branch;
-retention cleanup continues. Fly discovery and deletion failures fail the job.
-Each app is deleted at most once, with its deletion reasons logged. Shared
-databases and media are not deleted.
+Deployment and PR lists are paginated. Deployment statuses are fetched in
+GraphQL batches of 50 deployments, with REST pagination for histories exceeding
+100 statuses, so scanning deployment history does not require one request per
+deployment. Partial or mismatched batch responses skip PR-based deletion. A
+GitHub lookup failure logs a warning and skips PR-based deletion for the
+affected environment or branch; retention cleanup continues. Fly discovery and
+deletion failures fail the job. Each app is deleted at most once, with its
+deletion reasons logged. Shared databases and media are not deleted.
 
 The close trigger uses `pull_request_target` restricted to `closed`. Every
-cleanup run explicitly checks out trusted `main` with persisted credentials
-disabled; it never checks out the PR's branch. Cleanup and its callers grant
-only `contents: read`, `pull-requests: read`, and `deployments: read`.
-Authentication uses the existing `GITHUB_TOKEN` and `FLY_API_TOKEN`; no new
-secrets are needed.
+cleanup caller pins the reusable workflow to this repository's `main`, and the
+workflow explicitly checks out `main` with persisted credentials disabled. This
+keeps the workflow and its helper in sync before merge; PR builds use the
+currently deployed cleanup until the new helper lands. Cleanup never checks out
+the PR's branch. Cleanup and its callers grant only `contents: read`,
+`pull-requests: read`, and `deployments: read`. Authentication uses the existing
+`GITHUB_TOKEN` and `FLY_API_TOKEN`; no new secrets are needed.
 
 ## Local verification
 

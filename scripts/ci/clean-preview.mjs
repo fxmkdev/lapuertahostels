@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
+import { githubClient } from "./preview-github.mjs";
 
 const day = 24 * 60 * 60 * 1000;
 const environments = ["preview-frontend", "preview-cms"];
@@ -50,41 +51,6 @@ export function retentionCandidates(apps) {
   return candidates;
 }
 
-export function githubClient({
-  token,
-  apiUrl = "https://api.github.com",
-  request = fetch,
-  pageSize = 100,
-}) {
-  return {
-    async *pages(path, parameters = {}) {
-      if (!token) throw new Error("GITHUB_TOKEN is required for PR lookup");
-      for (let page = 1; ; page++) {
-        const url = new URL(`${apiUrl.replace(/\/$/, "")}${path}`);
-        url.search = new URLSearchParams({
-          ...parameters,
-          per_page: String(pageSize),
-          page: String(page),
-        });
-        const response = await request(url, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/vnd.github+json",
-          },
-          signal: AbortSignal.timeout(30_000),
-        });
-        if (!response.ok)
-          throw new Error(`GitHub ${path} returned HTTP ${response.status}`);
-        const items = await response.json();
-        if (!Array.isArray(items))
-          throw new Error(`GitHub ${path} returned an invalid list`);
-        yield items;
-        if (items.length < pageSize) return;
-      }
-    },
-  };
-}
-
 function appFromUrl(value, apps) {
   try {
     const url = new URL(value);
@@ -99,18 +65,15 @@ async function deploymentBranches(github, repoPath, environment, apps) {
   for await (const deployments of github.pages(`${repoPath}/deployments`, {
     environment,
   })) {
-    for (const deployment of deployments) {
-      if (!Number.isSafeInteger(deployment.id) || !deployment.ref)
-        throw new Error("Invalid deployment record");
-      // Inspect every page and record: one app may have multiple deployments.
-      // Conflicting source branches must not become a deletion decision.
-      for await (const statuses of github.pages(
-        `${repoPath}/deployments/${deployment.id}/statuses`,
-      )) {
-        for (const status of statuses) {
-          const app = appFromUrl(status.environment_url, apps);
-          if (app) branches.get(app.id).add(deployment.ref);
-        }
+    // Inspect every record: conflicting source branches must not become a
+    // deletion decision. Batch the status reads to keep history scans cheap.
+    for await (const { deployment, statuses } of github.deploymentStatuses(
+      repoPath,
+      deployments,
+    )) {
+      for (const status of statuses) {
+        const app = appFromUrl(status.environment_url, apps);
+        if (app) branches.get(app.id).add(deployment.ref);
       }
     }
   }

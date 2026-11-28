@@ -1,10 +1,7 @@
+import { githubClient } from "./preview-github.mjs";
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import {
-  closedPrCandidates,
-  githubClient,
-  previewApps,
-} from "./clean-preview.mjs";
+import { closedPrCandidates, previewApps } from "./clean-preview.mjs";
 import {
   api,
   app,

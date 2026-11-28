@@ -1,9 +1,5 @@
-import {
-  cleanup,
-  closedPrCandidates,
-  githubClient,
-  previewApps,
-} from "../clean-preview.mjs";
+import { githubClient } from "../preview-github.mjs";
+import { cleanup, closedPrCandidates, previewApps } from "../clean-preview.mjs";
 
 export const now = Date.parse("2026-11-28T12:00:00Z");
 export const prefixes = ["site-preview", "cms-preview"];
@@ -41,16 +37,43 @@ export function api(routes = {}, pageSize = 100) {
   const calls = [];
   const request = async (url, options) => {
     calls.push({ url, options });
-    const route = routes[url.pathname];
-    if (route instanceof Error) throw route;
-    const result = typeof route === "function" ? route(url) : (route ?? []);
+    const resultAt = (path, routeUrl) => {
+      const route = routes[path];
+      if (route instanceof Error) throw route;
+      return typeof route === "function" ? route(routeUrl) : (route ?? []);
+    };
+    if (url.pathname === "/graphql") {
+      const ids = JSON.parse(options.body).variables.ids;
+      const nodes = ids.map((id) => {
+        const statusUrl = new URL(
+          `/repos/example/site/deployments/${id}/statuses?page=1`,
+          url,
+        );
+        const statuses = resultAt(statusUrl.pathname, statusUrl);
+        if (!Array.isArray(statuses)) return null;
+        return {
+          databaseId: Number(id),
+          statuses: {
+            nodes: statuses
+              .slice(0, pageSize)
+              .map((status) => ({ environmentUrl: status.environment_url })),
+            pageInfo: { hasNextPage: statuses.length >= pageSize },
+          },
+        };
+      });
+      return { ok: true, json: async () => ({ data: { nodes } }) };
+    }
+    const result = resultAt(url.pathname, url);
     if (!Array.isArray(result))
       return { ok: false, status: result.status ?? 403 };
     const offset = (Number(url.searchParams.get("page")) - 1) * pageSize;
-    return {
-      ok: true,
-      json: async () => result.slice(offset, offset + pageSize),
-    };
+    let items = result.slice(offset, offset + pageSize);
+    if (url.pathname.endsWith("/deployments"))
+      items = items.map((deployment) => ({
+        node_id: String(deployment.id),
+        ...deployment,
+      }));
+    return { ok: true, json: async () => items };
   };
   return {
     calls,

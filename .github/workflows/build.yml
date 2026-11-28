@@ -612,6 +612,7 @@ jobs:
       contents: read
       pull-requests: read
       deployments: read
-    uses: ./.github/workflows/clean-preview-reusable.yml
+    # Keep the workflow and its checked-out helper on the same trusted revision.
+    uses: fxmkdev/lapuertahostels/.github/workflows/clean-preview-reusable.yml@main
     secrets: inherit
     needs: deploy-preview
