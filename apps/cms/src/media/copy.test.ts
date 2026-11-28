@@ -85,7 +85,11 @@ test("backfill only writes manifests, preserves absent focal points and resumes"
     updatedAt: "2026-11-28T00:00:00.000Z",
   };
   const before = structuredClone(doc);
-  const updateOne = vi.fn(async ({ data }) => Object.assign(doc, data));
+  const updateOne = vi.fn(async ({ data }) => {
+    const changes = { ...data };
+    delete changes.updatedAt;
+    return Object.assign(doc, changes);
+  });
   const payload = {
     find: vi.fn(async () => ({ docs: [doc], hasNextPage: false })),
     db: { updateOne },
@@ -113,6 +117,7 @@ test("backfill only writes manifests, preserves absent focal points and resumes"
       ],
     },
     data: {
+      updatedAt: null,
       imageVariants: expect.objectContaining({ focalX: 50, focalY: 50 }),
     },
   });

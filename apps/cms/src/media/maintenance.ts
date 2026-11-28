@@ -68,8 +68,7 @@ export async function backfillMedia(
           });
           continue;
         }
-        // Use the adapter directly: normal document updates fill missing focal
-        // defaults and run unrelated localization hooks on legacy records.
+        // Bypass upload/localization hooks and preserve the original focal fields.
         const updated = await payload.db.updateOne({
           collection: "media",
           where: {
@@ -78,7 +77,8 @@ export async function backfillMedia(
               { updatedAt: { equals: media.updatedAt } },
             ],
           },
-          data: { imageVariants },
+          // The adapter treats null as an instruction to preserve updatedAt.
+          data: { imageVariants, updatedAt: null },
         });
         if (!updated)
           throw new Error("Media changed during backfill; retry it");
