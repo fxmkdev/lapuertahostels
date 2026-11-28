@@ -47,6 +47,20 @@ export function Brands({
       update: canManageContent,
     },
     admin: {
+      components: {
+        edit: {
+          beforeDocumentControls: [
+            {
+              path: "/src/components/client/live-preview-bridge#LivePreviewBridge",
+              clientProps: {
+                previewOrigin: livePreviewBaseUrl
+                  ? new URL(livePreviewBaseUrl).origin
+                  : "",
+              },
+            },
+          ],
+        },
+      },
       defaultColumns: ["name", "rootPath", "themeColor", "logo", "updatedAt"],
       group: contentGroup,
       listSearchableFields: ["id", "name"],

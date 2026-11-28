@@ -20,11 +20,13 @@ ENV CI=true
 COPY --link package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY --link patches patches
 COPY --link apps/cms/package.json apps/cms/
+COPY --link libs/live-preview/package.json libs/live-preview/
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store,sharing=locked \
     pnpm --config.store-dir=/pnpm/store --filter @lapuertahostels/cms install --frozen-lockfile
 
 # Copy application code
 COPY apps/cms apps/cms
+COPY libs/live-preview libs/live-preview
 
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry

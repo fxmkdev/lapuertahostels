@@ -15,7 +15,11 @@ removal blockers and rollback instructions.
 
 The CMS and shared-library generated types are committed. Fresh checkouts can
 use them without running type generation, and CMS builds generate only the admin
-import map before Next builds the application.
+import map before Next builds the application. The import map is committed;
+regenerate it with `pnpm --filter @lapuertahostels/cms generate:importmap` when
+custom component registrations change. The bridge component is registered
+unconditionally so build-time generation also works without runtime preview
+settings.
 
 After schema changes or Payload dependency changes that affect generated types,
 run this command from the repository root and commit both generated files:
@@ -118,3 +122,26 @@ JPEG metadata fail the migration with the affected media ID; correct the source
 or storage access and rerun the migration. The migration helper also supports a
 `dryRun` option for an audit without database writes. This work may read each
 legacy JPEG once from S3. It does not rotate or regenerate originals/thumbnails.
+
+## Live preview authentication
+
+Pages and Brands register a nonvisual `LivePreviewBridge` before the document
+controls. It accepts population requests only from the active preview iframe or
+popup at the exact `LIVE_PREVIEW_URL` origin, for the current document and
+locale. It reads unsaved data directly from the form and populates it with the
+existing same-origin Payload document endpoint and CMS session cookie. The
+preview never receives credentials and cannot choose an arbitrary endpoint or
+document.
+
+The protocol is shared with the website in `@lapuertahostels/live-preview`. It
+supports relationship depths zero through three, cancels requests on navigation,
+and sanitizes failures to status codes. Existing access control, cookie
+settings, and CSRF/CORS restrictions remain in force. No content or database
+migration is required. Deploy the website and CMS together; incompatible
+versions show a connection error while keeping the last loaded content.
+
+CMS tests cover request validation and iframe/popup wiring. The E2E preview test
+uses a fresh cookie-authenticated editor context without the suite's API-key
+headers. With the CMS on `localhost` and the website on `127.0.0.1`, it verifies
+that a direct cross-site request fails while unsaved edits appear in both
+preview modes through same-origin CMS requests.

@@ -7,7 +7,8 @@ services:
       SESSION_SECRET: ${SESSION_SECRET}
       PAYLOAD_CMS_API_KEY: ${CMS_API_KEY}
       PAYLOAD_CMS_BASE_URL: http://cms:3001
-      CANONICAL_HOSTNAME: canonical.localhost
+      PAYLOAD_CMS_PUBLIC_URL: http://localhost:3001
+      CANONICAL_HOSTNAME: 127.0.0.1
       IMAGEKIT_BASE_URL: ${IMAGEKIT_BASE_URL}
       REDIS_URL: redis://redis:6379
       ANALYTICS_SCRIPT_URL: ${ANALYTICS_SCRIPT_URL:-}
@@ -29,7 +30,7 @@ services:
       MEDIA_S3_SECRET_ACCESS_KEY: ${MEDIA_S3_SECRET_ACCESS_KEY}
       FRONTEND_CACHE_INVALIDATION_URL: http://frontend:3000/api/invalidate-cms-cache
       CMS_CACHE_INVALIDATION_SECRET: e2e-cache-invalidation-secret
-      LIVE_PREVIEW_URL: http://frontend:3000
+      LIVE_PREVIEW_URL: http://127.0.0.1:3000
       IMAGEKIT_BASE_URL: ${IMAGEKIT_BASE_URL}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
 

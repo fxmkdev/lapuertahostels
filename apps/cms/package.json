@@ -37,7 +37,8 @@
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "sharp": "0.35.5",
-    "zod": "^4.4.3"
+    "zod": "^4.4.3",
+    "@lapuertahostels/live-preview": "workspace:../../libs/live-preview"
   },
   "devDependencies": {
     "@testing-library/react": "^16.3.2",
