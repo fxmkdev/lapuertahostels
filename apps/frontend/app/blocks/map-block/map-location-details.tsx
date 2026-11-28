@@ -4,6 +4,7 @@ import type { RichTextObject } from "@lapuertahostels/rich-text";
 import { useTranslation } from "react-i18next";
 import { Link } from "~/common/link";
 import { Tabs } from "~/common/tabs";
+import { Heading } from "~/common/heading";
 import {
   OverlayTextBoxContent,
   OverlayTextBoxShell,
@@ -11,6 +12,7 @@ import {
 import type { ResolvedMapLocation } from "./use-map-locations";
 
 type MapLocationDetailsProps = {
+  heading?: string | null;
   overlayRef: Ref<HTMLDivElement>;
   locations: ResolvedMapLocation[];
   selected: ResolvedMapLocation;
@@ -18,6 +20,7 @@ type MapLocationDetailsProps = {
 };
 
 export function MapLocationDetails({
+  heading,
   overlayRef,
   locations,
   selected,
@@ -29,6 +32,11 @@ export function MapLocationDetails({
       ref={overlayRef}
       position={selected.overlayTextBox?.position}
     >
+      {heading?.trim() && (
+        <Heading as="h3" size="small" className="mb-2">
+          {heading}
+        </Heading>
+      )}
       {locations.length > 1 ? (
         <Tabs
           label={t("mapBlock.locations", { defaultValue: "Locations" })}
@@ -52,7 +60,6 @@ function LocationContent({ entry }: { entry: ResolvedMapLocation }) {
   const details = entry.overlayTextBox;
   return (
     <OverlayTextBoxContent
-      heading={details?.heading}
       text={details?.text as RichTextObject | undefined}
       cta={
         details?.callToActionLabel

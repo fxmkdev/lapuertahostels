@@ -148,15 +148,19 @@ preview modes through same-origin CMS requests.
 
 ## Map locations
 
-A Map block contains an ordered **Locations** list. Add an address (including
-the business name) and an overlay with its heading, text, optional directions
-label, and position for each location. Addresses must identify a place on Google
-Maps. The first available location is selected initially. Selecting a pin or a
-location tab switches its details and directions destination.
+A Map block has an optional, translated **Heading** above its ordered
+**Locations** list. The heading appears once above the frontend tabs and remains
+the same when selecting another location. Clear it to omit the heading entirely.
+Add an address (including the business name) and an overlay with text, optional
+directions label, and position for each location. Addresses must identify a
+place on Google Maps. The first available location is selected initially.
+Selecting a pin or a location tab switches its details and directions
+destination.
 
 Each location also has an optional, translated **Name** for its tab and pin.
-This can differ from the overlay heading. Empty or whitespace-only names fall
-back to the heading, then the address. Existing content needs no name backfill.
+This is independent of the shared heading. Empty or whitespace-only names fall
+back to the address for new content. Existing unnamed locations can still use
+their old location headings as labels.
 
 The frontend shows themed tabs above the details when multiple locations
 resolve. The Google Maps directions link remains a separate action button. The
@@ -169,7 +173,10 @@ limits how closely they zoom in. Failed lookups are omitted, and a map with no
 resolved locations is hidden.
 
 Existing single-address blocks and historical versions remain compatible. Field
-hooks present their address and overlay as the first editable location; saving
-persists the location list. Explicit location lists take precedence over legacy
-fields. No bulk migration is needed. Deploy the updated frontend before the CMS
-(or deploy both together), since older frontends cannot render the new list.
+hooks present their address and overlay as the first editable location. When the
+shared heading is absent, the first nonblank old location heading (or the
+original single-address heading) initializes it, preserving translations.
+Explicitly cleared headings stay cleared. Saving persists the location list and
+shared heading. Explicit location lists take precedence over legacy fields. No
+bulk migration is needed. Deploy the updated frontend before the CMS (or deploy
+both together), since older frontends cannot render the new list.

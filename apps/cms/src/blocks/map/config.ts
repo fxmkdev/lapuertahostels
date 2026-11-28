@@ -4,6 +4,11 @@ import { elementIdField } from "../../fields/element-id";
 import { moreOptionsField } from "../../fields/more-options";
 import { overlayTextBoxField } from "../../fields/overlay-text-box";
 import { optionalTextField } from "../../fields/text";
+import {
+  readMapHeading,
+  writeMapHeading,
+  preserveMapHeadingLocales,
+} from "./heading";
 
 // Keep legacy fields in the schema so old documents and versions remain readable.
 const addressField: TextareaField = {
@@ -25,6 +30,14 @@ const overlayField = overlayTextBoxField({
   callToActionLabelOnly: true,
   optional: false,
 });
+const locationOverlayField: GroupField = {
+  ...overlayField,
+  fields: overlayField.fields.map((field) =>
+    field.type === "text" && field.name === "heading"
+      ? { ...field, required: false, admin: { ...field.admin, hidden: true } }
+      : field,
+  ),
+};
 const legacyOverlayField: GroupField = {
   ...overlayField,
   admin: { hidden: true },
@@ -68,6 +81,14 @@ export const preserveLegacyLocales: FieldHook = (args) => {
 export const MapBlock: Block = {
   slug: "Map",
   fields: [
+    optionalTextField({
+      name: "heading",
+      label: { en: "Heading", es: "Título" },
+      hooks: {
+        beforeValidate: [writeMapHeading],
+        beforeChange: [preserveMapHeadingLocales],
+      },
+    }),
     {
       name: "locations",
       type: "array",
@@ -79,7 +100,7 @@ export const MapBlock: Block = {
       required: true,
       minRows: 1,
       hooks: {
-        afterRead: [readLegacyLocations],
+        afterRead: [readMapHeading, readLegacyLocations],
         beforeValidate: [writeLegacyLocations],
         beforeChange: [preserveLegacyLocales],
       },
@@ -89,13 +110,13 @@ export const MapBlock: Block = {
           label: { en: "Name", es: "Nombre" },
           admin: {
             description: {
-              en: "Optional name for the location tab and map pin, independent of the overlay heading. If empty, the heading or address is used.",
-              es: "Nombre opcional para la pestaña de ubicación y el marcador del mapa, independiente del título. Si está vacío, se usa el título o la dirección.",
+              en: "Optional name for the location tab and map pin, independent of the shared heading. If empty, the address is used.",
+              es: "Nombre opcional para la pestaña de ubicación y el marcador del mapa, independiente del título general. Si está vacío, se usa la dirección.",
             },
           },
         }),
         addressField,
-        overlayField,
+        locationOverlayField,
       ],
     },
     { ...addressField, required: false, admin: { hidden: true } },

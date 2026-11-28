@@ -61,6 +61,7 @@ const azul = location("Azul");
 const props: MapBlockProps = {
   blockType: "Map",
   zoomLevel: 14.5,
+  heading: "Visit our locations",
   locations: [aqua, azul],
 };
 const place = (name: string) => ({
@@ -103,9 +104,9 @@ test("selecting pins and location tabs switches details and directions", async (
   render(<MapBlock {...props} />, { wrapper: Wrapper });
   await load();
   expect(screen.getAllByRole("button", { name: /^Pin / })).toHaveLength(2);
-  expect(screen.getByRole("heading", { name: "Aqua" })).toBeVisible();
+  expect(screen.getByRole("heading", { name: props.heading! })).toBeVisible();
   fireEvent.click(screen.getByRole("button", { name: "Pin Azul" }));
-  expect(screen.getByRole("heading", { name: "Azul" })).toBeVisible();
+  expect(screen.getByRole("heading", { name: props.heading! })).toBeVisible();
   expect(screen.getByText("Azul details")).toBeVisible();
   expect(
     screen.getByRole("link", { name: "Directions to Azul" }),
@@ -115,7 +116,7 @@ test("selecting pins and location tabs switches details and directions", async (
     "aria-selected",
     "true",
   );
-  expect(screen.getByRole("heading", { name: "Aqua" })).toBeVisible();
+  expect(screen.getByRole("heading", { name: props.heading! })).toBeVisible();
 });
 
 test("new locations take precedence over legacy fields", async () => {
@@ -130,7 +131,7 @@ test("partial failures preserve the first successful location and all failures o
     wrapper: Wrapper,
   });
   await load();
-  expect(screen.getByRole("heading", { name: "Azul" })).toBeVisible();
+  expect(screen.getByRole("heading", { name: props.heading! })).toBeVisible();
   expect(screen.getAllByRole("button", { name: /^Pin / })).toHaveLength(1);
   resolvePlace.mockRejectedValue(new Error("not found"));
   rerender(<MapBlock {...props} locations={[location("Missing")]} />);
@@ -155,10 +156,8 @@ test("late results cannot replace edited addresses and selection resets for new 
   await act(async () => {
     finish(place("Aqua"));
   });
-  expect(screen.getByRole("heading", { name: "Azul" })).toBeVisible();
-  expect(
-    screen.queryByRole("heading", { name: "Aqua" }),
-  ).not.toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: props.heading! })).toBeVisible();
+  expect(screen.queryByText("Aqua details")).not.toBeInTheDocument();
 });
 
 test("debounces edits, deduplicates lookups, and keeps coincident locations selectable", async () => {
@@ -174,7 +173,7 @@ test("debounces edits, deduplicates lookups, and keeps coincident locations sele
   await load();
   expect(resolvePlace).toHaveBeenCalledTimes(1);
   fireEvent.click(screen.getByRole("tab", { name: "Azul" }));
-  expect(screen.getByRole("heading", { name: "Azul" })).toBeVisible();
+  expect(screen.getByRole("heading", { name: props.heading! })).toBeVisible();
   rerender(<MapBlock {...props} locations={[location("Changed")]} />);
   unmount();
   await load();
@@ -190,7 +189,7 @@ test("incomplete live-preview rows do not hide completed locations", async () =>
     { wrapper: Wrapper },
   );
   await load();
-  expect(screen.getByRole("heading", { name: "Aqua" })).toBeVisible();
+  expect(screen.getByRole("heading", { name: props.heading! })).toBeVisible();
   expect(resolvePlace).toHaveBeenCalledTimes(1);
   rerender(
     <MapBlock
@@ -215,14 +214,14 @@ test("names label tabs and pins independently from headings and stay in sync", a
     "aria-selected",
     "true",
   );
-  expect(screen.getByRole("heading", { name: "Aqua" })).toBeVisible();
+  expect(screen.getByRole("heading", { name: props.heading! })).toBeVisible();
   expect(screen.getByRole("tablist", { name: "Locations" })).toBeVisible();
   fireEvent.click(screen.getByRole("button", { name: "Pin Azul Hostel" }));
   expect(screen.getByRole("tab", { name: "Azul Hostel" })).toHaveAttribute(
     "aria-selected",
     "true",
   );
-  expect(screen.getByRole("heading", { name: "Azul" })).toBeVisible();
+  expect(screen.getByRole("heading", { name: props.heading! })).toBeVisible();
   expect(
     screen.getByRole("link", { name: "Directions to Azul" }),
   ).toHaveAttribute("href", place("Azul").url);
@@ -232,7 +231,7 @@ test("names label tabs and pins independently from headings and stay in sync", a
     "aria-labelledby",
     screen.getByRole("tab", { name: "Aqua Hostel" }).id,
   );
-  expect(screen.getByRole("heading", { name: "Aqua" })).toBeVisible();
+  expect(screen.getByRole("heading", { name: props.heading! })).toBeVisible();
 });
 
 test.each([undefined, "", "   "])(
@@ -281,4 +280,60 @@ test("editing a location name updates labels without another address lookup", as
   expect(screen.getByRole("tab", { name: "Renamed Aqua" })).toBeVisible();
   await load();
   expect(resolvePlace).toHaveBeenCalledTimes(2);
+});
+
+test("the shared heading stays above tabs and outside changing panels", async () => {
+  render(<MapBlock {...props} />, { wrapper: Wrapper });
+  await load();
+  const heading = screen.getByRole("heading", { name: props.heading! });
+  const tabs = screen.getByRole("tablist");
+  expect(
+    heading.compareDocumentPosition(tabs) & Node.DOCUMENT_POSITION_FOLLOWING,
+  ).toBeTruthy();
+  expect(screen.getByRole("tabpanel").querySelector("h3")).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Pin Azul" }));
+  expect(screen.getByRole("heading", { name: props.heading! })).toBe(heading);
+  expect(screen.getByText("Azul details")).toBeVisible();
+  expect(screen.getAllByRole("heading")).toHaveLength(1);
+});
+
+test.each([null, "", "   "])(
+  "an explicitly cleared heading %s suppresses old headings",
+  async (heading) => {
+    render(<MapBlock {...props} heading={heading} />, { wrapper: Wrapper });
+    await load();
+    expect(screen.queryByRole("heading")).not.toBeInTheDocument();
+    expect(document.querySelector("h3")).toBeNull();
+    expect(screen.getByRole("tab", { name: "Aqua" })).toBeVisible();
+    fireEvent.click(screen.getByRole("tab", { name: "Azul" }));
+    expect(screen.queryByRole("heading")).not.toBeInTheDocument();
+  },
+);
+
+test("new unnamed locations use their addresses, not the shared heading", async () => {
+  const locations = [aqua, azul].map((entry) => ({
+    address: entry.address,
+    overlayTextBox: {
+      text: entry.overlayTextBox.text,
+      callToActionLabel: entry.overlayTextBox.callToActionLabel,
+    },
+  }));
+  const { rerender } = render(
+    <MapBlock {...props} heading={undefined} locations={locations} />,
+    { wrapper: Wrapper },
+  );
+  await load();
+  expect(screen.queryByRole("heading")).not.toBeInTheDocument();
+  expect(screen.getByRole("tab", { name: aqua.address })).toBeVisible();
+  rerender(<MapBlock {...props} locations={locations} />);
+  expect(screen.getByRole("heading", { name: props.heading! })).toBeVisible();
+  expect(screen.getByRole("tab", { name: aqua.address })).toBeVisible();
+});
+
+test("cached location headings initialize one stable heading from the first configured location", async () => {
+  resolvePlace.mockRejectedValueOnce(new Error("not found"));
+  render(<MapBlock {...props} heading={undefined} />, { wrapper: Wrapper });
+  await load();
+  expect(screen.getByRole("heading", { name: "Aqua" })).toBeVisible();
+  expect(screen.getByText("Azul details")).toBeVisible();
 });

@@ -137,8 +137,18 @@ test.each(["en", "es", "all"])(
       await Promise.all(populationPromises.splice(0));
     }
     const block = (doc.content as Record<string, unknown>[])[0];
+    expect(block.heading).toEqual(
+      locale === "all"
+        ? localizedOverlay.heading
+        : localizedOverlay.heading[locale as "en" | "es"],
+    );
     const locations = block.locations as (typeof legacy)[];
     const namedBlock = (doc.content as Record<string, unknown>[])[1];
+    expect(namedBlock.heading).toEqual(
+      locale === "all"
+        ? localizedOverlay.heading
+        : localizedOverlay.heading[locale as "en" | "es"],
+    );
     const named = (
       namedBlock.locations as {
         name: unknown;
@@ -172,101 +182,139 @@ test.each(["en", "es", "all"])(
   },
 );
 
-test("saving a legacy location keeps other locales when adding another row", async () => {
-  const config = await buildConfig({
-    secret: "map-test",
-    db: mongooseAdapter({ url: "mongodb://127.0.0.1/map-tests" }),
-    editor: lexicalEditor(),
-    localization: { locales: ["en", "es"], defaultLocale: "en" },
-    collections: [
-      {
-        slug: "pages",
-        fields: [{ name: "content", type: "blocks", blocks: [MapBlock] }],
-      },
-    ],
-  });
-  const collection = config.collections.find(({ slug }) => slug === "pages")!;
-  const original: JsonObject = {
-    content: [
-      {
-        blockType: "Map",
-        ...legacy,
-        overlayTextBox: {
-          ...legacy.overlayTextBox,
-          heading: { en: "Visit us", es: "Visítanos" },
-          text: {
-            en: legacy.overlayTextBox.text,
-            es: legacy.overlayTextBox.text,
-          },
-          callToActionLabel: { en: "Directions", es: "Indicaciones" },
+test.each(["Updated shared heading", null, "", "   "])(
+  "saving shared heading %s preserves other locales and explicit clears",
+  async (heading) => {
+    const config = await buildConfig({
+      secret: "map-test",
+      db: mongooseAdapter({ url: "mongodb://127.0.0.1/map-tests" }),
+      editor: lexicalEditor(),
+      localization: { locales: ["en", "es"], defaultLocale: "en" },
+      collections: [
+        {
+          slug: "pages",
+          fields: [{ name: "content", type: "blocks", blocks: [MapBlock] }],
         },
-      },
-    ],
-  };
-  const data: JsonObject = {
-    content: [
-      {
-        blockType: "Map",
-        ...legacy,
-        zoomLevel: 14,
-        locations: [
-          {
-            ...legacy,
-            overlayTextBox: {
-              ...legacy.overlayTextBox,
-              heading: "Updated English",
+      ],
+    });
+    const collection = config.collections.find(({ slug }) => slug === "pages")!;
+    const original: JsonObject = {
+      content: [
+        {
+          blockType: "Map",
+          ...structuredClone(legacy),
+          overlayTextBox: {
+            ...structuredClone(legacy.overlayTextBox),
+            heading: { en: "Visit us", es: "Visítanos" },
+            text: {
+              en: legacy.overlayTextBox.text,
+              es: legacy.overlayTextBox.text,
             },
+            callToActionLabel: { en: "Directions", es: "Indicaciones" },
           },
-          {
-            ...legacy,
-            id: "000000000000000000000354",
-            address: "Another place",
-          },
-        ],
-      },
-    ],
-  };
-  const req = {
-    locale: "en",
-    payload: { config },
-    context: {},
-    t: (key: string) => key,
-    i18n: { language: "en", t: (key: string) => key },
-  } as unknown as PayloadRequest;
-  const mergeLocaleActions: (() => Promise<void> | void)[] = [];
-  await beforeChangeTraverseFields({
-    collection,
-    context: {},
-    data,
-    doc: {},
-    docWithLocales: original,
-    errors: [],
-    fieldLabelPath: "",
-    fields: collection.fields,
-    global: null,
-    mergeLocaleActions,
-    operation: "update",
-    overrideAccess: true,
-    parentIndexPath: "",
-    parentPath: "",
-    parentSchemaPath: "",
-    req,
-    siblingData: data,
-    siblingDoc: {},
-    siblingDocWithLocales: original,
-    skipValidation: true,
-  });
-  for (const merge of mergeLocaleActions) await merge();
-  const block = (data.content as Record<string, unknown>[])[0];
-  const rows = block.locations as {
-    overlayTextBox: { heading: unknown; callToActionLabel: unknown };
-  }[];
-  expect(rows[0].overlayTextBox.heading).toEqual({
-    en: "Updated English",
-    es: "Visítanos",
-  });
-  expect(rows[0].overlayTextBox.callToActionLabel).toEqual({
-    en: "Directions",
-    es: "Indicaciones",
-  });
-});
+        },
+      ],
+    };
+    const data: JsonObject = {
+      content: [
+        {
+          blockType: "Map",
+          ...structuredClone(legacy),
+          zoomLevel: 14,
+          heading,
+          locations: [
+            {
+              ...structuredClone(legacy),
+              overlayTextBox: {
+                ...structuredClone(legacy.overlayTextBox),
+                heading: "Updated English",
+              },
+            },
+            {
+              ...structuredClone(legacy),
+              id: "000000000000000000000354",
+              address: "Another place",
+            },
+          ],
+        },
+      ],
+    };
+    const req = {
+      locale: "en",
+      payload: { config },
+      context: {},
+      t: (key: string) => key,
+      i18n: { language: "en", t: (key: string) => key },
+    } as unknown as PayloadRequest;
+    const mergeLocaleActions: (() => Promise<void> | void)[] = [];
+    await beforeChangeTraverseFields({
+      collection,
+      context: {},
+      data,
+      doc: {},
+      docWithLocales: original,
+      errors: [],
+      fieldLabelPath: "",
+      fields: collection.fields,
+      global: null,
+      mergeLocaleActions,
+      operation: "update",
+      overrideAccess: true,
+      parentIndexPath: "",
+      parentPath: "",
+      parentSchemaPath: "",
+      req,
+      siblingData: data,
+      siblingDoc: {},
+      siblingDocWithLocales: original,
+      skipValidation: true,
+    });
+    for (const merge of mergeLocaleActions) await merge();
+    const block = (data.content as Record<string, unknown>[])[0];
+    expect(block.heading).toEqual({ en: heading, es: "Visítanos" });
+    const fieldPromises: Promise<void>[] = [];
+    const populationPromises: Promise<void>[] = [];
+    const read = structuredClone(data);
+    afterReadTraverseFields({
+      collection,
+      context: {},
+      currentDepth: 1,
+      depth: 0,
+      doc: read,
+      draft: false,
+      fallbackLocale: "en",
+      fieldPromises,
+      fields: collection.fields,
+      findMany: false,
+      flattenLocales: true,
+      global: null,
+      locale: "en",
+      overrideAccess: true,
+      parentIndexPath: "",
+      parentPath: "",
+      parentSchemaPath: "",
+      populationPromises,
+      req,
+      showHiddenFields: false,
+      siblingDoc: read,
+    });
+    while (fieldPromises.length || populationPromises.length) {
+      await Promise.all(fieldPromises.splice(0));
+      await Promise.all(populationPromises.splice(0));
+    }
+    expect((read.content as Record<string, unknown>[])[0].heading).toBe(
+      heading,
+    );
+    const rows = block.locations as {
+      overlayTextBox: { heading: unknown; callToActionLabel: unknown };
+    }[];
+    expect(rows[0].overlayTextBox.heading).toEqual({
+      en: "Updated English",
+      es: "Visítanos",
+    });
+    expect(rows[0].overlayTextBox.callToActionLabel).toEqual({
+      en: "Directions",
+      es: "Indicaciones",
+    });
+  },
+);

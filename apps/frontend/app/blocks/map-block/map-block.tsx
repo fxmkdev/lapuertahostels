@@ -19,6 +19,7 @@ export type MapBlockProps = Omit<MapType, "locations"> & {
 
 export function MapBlock({
   elementId,
+  heading,
   address,
   locations,
   zoomLevel,
@@ -33,6 +34,11 @@ export function MapBlock({
           : [],
     [locations, address, overlayTextBox],
   );
+  const sharedHeading =
+    heading === undefined
+      ? entries.find((entry) => entry.overlayTextBox?.heading?.trim())
+          ?.overlayTextBox?.heading || overlayTextBox?.heading
+      : heading;
   const { addresses, ready, resolved } = useMapLocations(entries);
   const [selection, setSelection] = useState<{
     addresses: string;
@@ -106,6 +112,7 @@ export function MapBlock({
 
         {selected && (
           <MapLocationDetails
+            heading={sharedHeading}
             overlayRef={overlayRef}
             locations={resolved}
             selected={selected}

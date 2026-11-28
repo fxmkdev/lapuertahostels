@@ -19,7 +19,7 @@ type OverlayTextBoxShellProps = {
 
 type OverlayTextBoxContentProps<TCta extends ElementType = ElementType> = {
   children?: ReactNode;
-  heading: string | undefined | null;
+  heading?: string | null;
   text: RichTextObject | undefined | null;
   cta?: {
     as: TCta;
@@ -81,10 +81,16 @@ export function OverlayTextBoxContent({
 }: OverlayTextBoxContentProps) {
   return (
     <>
-      <Heading as="h3" size="small">
-        {heading}
-      </Heading>
-      {text && <RichTextParagraph className="mt-2">{text}</RichTextParagraph>}
+      {heading?.trim() && (
+        <Heading as="h3" size="small">
+          {heading}
+        </Heading>
+      )}
+      {text && (
+        <RichTextParagraph className={heading?.trim() ? "mt-2" : undefined}>
+          {text}
+        </RichTextParagraph>
+      )}
       {children}
       {cta && (
         <Button {...cta} className="mt-4">

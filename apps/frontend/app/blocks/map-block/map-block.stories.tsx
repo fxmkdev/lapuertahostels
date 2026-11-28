@@ -68,15 +68,15 @@ export const LegacySingleLocation: Story = Default;
 export const SingleLocation: Story = {
   args: {
     blockType: "Map",
+    heading: "Visit Us",
     zoomLevel: 14.5,
     locations: [
       {
         name: "Aqua Hostel",
         address: Default.args!.address!,
         overlayTextBox: {
-          ...Default.args!.overlayTextBox!,
-          heading: "Stay with us at Puerta Aqua",
           text: Default.args!.overlayTextBox!.text!,
+          callToActionLabel: "Get Directions",
         },
       },
     ],
@@ -92,7 +92,6 @@ export const MultipleLocations: Story = {
         name: "Parque de los Novios",
         address: "Parque de los Novios, Santa Marta, Colombia",
         overlayTextBox: {
-          heading: "Explore our neighborhood",
           text: richTextRoot(
             paragraph(text("Explore the heart of Santa Marta.")),
           ),
@@ -102,4 +101,8 @@ export const MultipleLocations: Story = {
       },
     ],
   },
+};
+
+export const WithoutHeading: Story = {
+  args: { ...MultipleLocations.args, heading: null },
 };

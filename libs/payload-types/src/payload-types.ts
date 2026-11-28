@@ -1463,9 +1463,10 @@ export interface TextColumnsWithImages {
  * via the `definition` "Map".
  */
 export interface Map {
+  heading?: string | null;
   locations: {
     /**
-     * Optional name for the location tab and map pin, independent of the overlay heading. If empty, the heading or address is used.
+     * Optional name for the location tab and map pin, independent of the shared heading. If empty, the address is used.
      */
     name?: string | null;
     /**
@@ -1473,7 +1474,7 @@ export interface Map {
      */
     address: string;
     overlayTextBox: {
-      heading: string;
+      heading?: string | null;
       text: {
         root: {
           type: string;
@@ -2210,6 +2211,7 @@ export interface TextColumnsWithImagesSelect<T extends boolean = true> {
  * via the `definition` "Map_select".
  */
 export interface MapSelect<T extends boolean = true> {
+  heading?: T;
   locations?:
     | T
     | {

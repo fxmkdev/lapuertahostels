@@ -16,13 +16,13 @@ for (const width of [1280, 390]) {
         {
           blockType: "Map",
           elementId: "locations",
+          heading: "Visit our locations",
           zoomLevel: 14.5,
           locations: ["Aqua", "Azul"].map((name) => ({
             id: `location-${name}`,
             name: `${name} Hostel`,
             address: `${name} test address`,
             overlayTextBox: {
-              heading: name,
               text: richTextRoot(paragraph(text(`${name} location details`))),
               callToActionLabel: `Directions to ${name}`,
             },
@@ -33,8 +33,19 @@ for (const width of [1280, 390]) {
     await page.goto(`/en${testPage.pathname}`);
     const block = page.locator("#locations");
     await expect(
-      block.getByRole("heading", { name: "Aqua", exact: true }),
+      block.getByRole("heading", { name: "Visit our locations", exact: true }),
     ).toBeVisible();
+    expect(
+      await block
+        .getByRole("heading", { name: "Visit our locations" })
+        .evaluate((heading) =>
+          Boolean(
+            heading.compareDocumentPosition(
+              heading.parentElement!.querySelector('[role="tablist"]')!,
+            ) & Node.DOCUMENT_POSITION_FOLLOWING,
+          ),
+        ),
+    ).toBe(true);
     await expect(block.getByTestId("google-map")).toHaveAttribute(
       "data-bounds",
       /11.24.*11.25/,
@@ -43,7 +54,7 @@ for (const width of [1280, 390]) {
       .getByRole("button", { name: "Pin Azul Hostel", exact: true })
       .click();
     await expect(
-      block.getByRole("heading", { name: "Azul", exact: true }),
+      block.getByRole("heading", { name: "Visit our locations", exact: true }),
     ).toBeVisible();
     await expect(block.getByText("Azul location details")).toBeVisible();
     await expect(
@@ -61,7 +72,7 @@ for (const width of [1280, 390]) {
     await expect(aqua).toBeFocused();
     await expect(aqua).toHaveAttribute("aria-selected", "true");
     await expect(
-      block.getByRole("heading", { name: "Aqua", exact: true }),
+      block.getByRole("heading", { name: "Visit our locations", exact: true }),
     ).toBeVisible();
     await page.keyboard.press("End");
     await expect(azul).toHaveAttribute("aria-selected", "true");
@@ -95,6 +106,7 @@ test("legacy CMS maps become editable locations and retain translations on save"
   expect(originalResponse.ok()).toBe(true);
   const original = await originalResponse.json();
   const map = original.content[0];
+  expect(map.heading).toBe("Aqua");
   expect(map.locations).toHaveLength(1);
   expect(map.locations[0].address).toBe(legacyBlock.address);
   const saved = await request.patch(`${url}?locale=en`, {
@@ -102,6 +114,7 @@ test("legacy CMS maps become editable locations and retain translations on save"
       content: [
         {
           ...map,
+          heading: "Updated shared heading",
           locations: [
             {
               ...map.locations[0],
@@ -113,7 +126,6 @@ test("legacy CMS maps become editable locations and retain translations on save"
             {
               address: "Azul test address",
               overlayTextBox: {
-                heading: "Azul",
                 text: richTextRoot(paragraph(text("Second location"))),
               },
             },
@@ -126,6 +138,7 @@ test("legacy CMS maps become editable locations and retain translations on save"
   const spanishResponse = await request.get(`${url}?locale=es&depth=0`);
   expect(spanishResponse.ok()).toBe(true);
   const spanish = await spanishResponse.json();
+  expect(spanish.content[0].heading).toBe("Visítanos");
   expect(spanish.content[0].locations).toHaveLength(2);
   expect(spanish.content[0].locations[0].overlayTextBox.heading).toBe(
     "Visítanos",
@@ -133,4 +146,11 @@ test("legacy CMS maps become editable locations and retain translations on save"
   expect(spanish.content[0].locations[0].overlayTextBox.callToActionLabel).toBe(
     "Indicaciones",
   );
+  const savedDoc = (await saved.json()).doc;
+  const cleared = await request.patch(`${url}?locale=en`, {
+    data: { content: [{ ...savedDoc.content[0], heading: null }] },
+  });
+  expect(cleared.ok(), await cleared.text()).toBe(true);
+  const reloaded = await request.get(`${url}?locale=en&depth=0`);
+  expect((await reloaded.json()).content[0].heading).toBeNull();
 });
