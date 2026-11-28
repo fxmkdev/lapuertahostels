@@ -20,7 +20,7 @@ export function ImageViewer({ images, className }: ImageViewerProps) {
     <div className={className}>
       <div className="grid max-w-[35rem] grid-cols-4 grid-rows-[auto_auto] gap-1.5 overflow-hidden sm:gap-2 sm:rounded-md">
         <button
-          className="group col-span-4 aspect-16/9 overflow-hidden bg-white shadow-md"
+          className="mobile-touch-target group col-span-4 aspect-16/9 overflow-hidden bg-white shadow-md"
           onClick={() => {
             setCurrentImageIndex(0);
           }}
@@ -45,7 +45,7 @@ export function ImageViewer({ images, className }: ImageViewerProps) {
         </button>
         {images?.slice(1, 5).map((image, index) => (
           <button
-            className="group relative block w-full overflow-hidden bg-white shadow-md"
+            className="mobile-touch-target group relative block w-full overflow-hidden bg-white shadow-md"
             key={image.src}
             onClick={() => {
               setCurrentImageIndex(index + 1);

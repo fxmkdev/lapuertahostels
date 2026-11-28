@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { TouchEvent } from "react";
 import { cn } from "../../common/cn";
 import { SlideImage } from "./slide-image";
 import { Transition } from "@headlessui/react";
@@ -44,10 +45,23 @@ export function HeroSlidesBlock({
     onMouseLeave: () => startInterval(),
   };
 
+  function handleSelectorTouch(event: TouchEvent<HTMLDivElement>) {
+    const selectors = event.currentTarget;
+    if (selectors.scrollWidth > selectors.clientWidth) {
+      // Let the overflowing strip scroll without triggering the hero's swipe.
+      event.stopPropagation();
+    }
+  }
+
   return (
     <div
       {...swipeHandlers}
-      className="bg-puerta-100 relative h-[30rem] focus:outline-hidden md:h-[40rem]"
+      className={cn(
+        "bg-puerta-100 relative h-[30rem] focus:outline-hidden md:h-[40rem]",
+        slides &&
+          slides.length > 1 &&
+          "[--overlay-bottom:4rem] md:[--overlay-bottom:2rem]",
+      )}
       onKeyDown={(e) => {
         if (e.key === "ArrowLeft") goToPrevious();
         if (e.key === "ArrowRight") goToNext();
@@ -83,12 +97,14 @@ export function HeroSlidesBlock({
             ))}
           </div>
           <div
-            className="absolute bottom-0 flex w-full justify-center md:hidden"
+            className="absolute bottom-0 z-10 flex w-full overflow-x-auto md:hidden"
+            onTouchStartCapture={handleSelectorTouch}
+            onTouchMoveCapture={handleSelectorTouch}
             {...pauseIntervalHandlers}
           >
             {slides.map((_, i) => (
               <button
-                className="group z-10 inline-flex h-10 grow items-end"
+                className="mobile-touch-target group inline-flex h-12 shrink-0 grow items-end"
                 key={i}
                 onClick={() => goTo(i)}
               >

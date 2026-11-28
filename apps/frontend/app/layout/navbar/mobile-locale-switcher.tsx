@@ -61,7 +61,7 @@ export function MobileLocaleSwitcher({
                     <button
                       type="submit"
                       className={cn(
-                        "flex w-full items-center gap-1.5 border-l-4 py-2 pr-8 pl-6 text-base font-bold",
+                        "mobile-touch-target flex w-full items-center gap-1.5 border-l-4 py-2 pr-8 pl-6 text-base font-bold",
                         currentLocale !== id
                           ? "border-transparent text-neutral-500 hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-700"
                           : theme.navButtonClassName,

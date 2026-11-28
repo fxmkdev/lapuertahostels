@@ -23,23 +23,23 @@ export function Banner({ id, message, cta }: BannerProps) {
       show={isVisible}
       as="div"
       className={cn(
-        "flex items-center gap-x-6 px-6 py-2.5 text-sm text-white transition-colors duration-500 ease-linear sm:px-3.5 sm:before:flex-1",
+        "flex items-center gap-x-3 px-6 py-2.5 text-sm text-white transition-colors duration-500 ease-linear sm:px-3.5 sm:before:flex-1 md:gap-x-6",
         theme.bannerBackgroundColor,
       )}
       leave="transition-transform ease-out duration-500"
       leaveFrom="translate-y-0"
       leaveTo="-translate-y-full"
     >
-      <div className="leading-6">
+      <div className="min-w-0 leading-6">
         {message}
         {cta?.show && (
           <>
             {" "}
-            <span className="mx-1">&middot;</span>{" "}
+            <span className="mx-1 hidden md:inline">&middot;</span>{" "}
             {isObject(cta?.link) && (
               <PageLink
                 link={cta.link}
-                className="font-bold text-nowrap after:content-['_→'] hover:underline"
+                className="mobile-touch-target inline-flex items-center font-bold after:content-['_→'] hover:underline md:inline md:text-nowrap"
               >
                 {cta.label}
               </PageLink>
@@ -47,11 +47,11 @@ export function Banner({ id, message, cta }: BannerProps) {
           </>
         )}
       </div>
-      <div className="flex flex-1 justify-end">
+      <div className="flex shrink-0 justify-end md:flex-1">
         <button
           onClick={dismiss}
           type="button"
-          className="-m-3 p-3 focus-visible:outline-offset-[-4px]"
+          className="mobile-touch-target inline-flex shrink-0 items-center justify-center p-3 focus-visible:outline-offset-[-4px] md:-m-3"
         >
           <span className="sr-only">{t("banner.dismiss")}</span>
           <XMarkIcon className="h-5 w-5 text-white" aria-hidden="true" />

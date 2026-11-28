@@ -119,11 +119,11 @@ export function Navbar({
                   );
                 })}
               </div>
-              <div className="flex shrink-0 items-center justify-end gap-4">
+              <div className="flex shrink-0 items-center justify-end gap-4 max-md:min-w-0 max-md:shrink">
                 {showLocaleSwitcher && (
                   <div
                     className={cn(
-                      "hidden items-center justify-center gap-4 sm:flex xl:gap-8",
+                      "hidden items-center justify-center gap-4 max-md:shrink-0 sm:flex xl:gap-8",
                       slideClassName,
                     )}
                   >
@@ -141,11 +141,11 @@ export function Navbar({
                 )}
                 <div
                   className={cn(
-                    "-mr-2 flex items-center sm:mr-0 xl:hidden",
+                    "-mr-2 flex items-center max-md:shrink-0 sm:mr-0 xl:hidden",
                     slideClassName,
                   )}
                 >
-                  <MenuButton className="relative inline-flex items-center justify-center rounded-md p-2 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-500 focus:ring-2 focus:ring-neutral-500 focus:outline-hidden focus:ring-inset">
+                  <MenuButton className="mobile-touch-target relative inline-flex shrink-0 items-center justify-center rounded-md p-2 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-500 focus:ring-2 focus:ring-neutral-500 focus:outline-hidden focus:ring-inset">
                     <span className="absolute -inset-0.5" />
                     <span className="sr-only">Open main menu</span>
                     {open ? (
@@ -156,7 +156,10 @@ export function Navbar({
                   </MenuButton>
                 </div>
                 {brand.bookCta?.show ? (
-                  <div ref={desktopBookingRef} className="hidden sm:block">
+                  <div
+                    ref={desktopBookingRef}
+                    className="hidden max-md:min-w-0 sm:block"
+                  >
                     <BookButton
                       cta={brand.bookCta}
                       size="medium"
@@ -178,7 +181,7 @@ export function Navbar({
                       key={navLink.id}
                       as={PageLink}
                       link={navLink.link}
-                      className="block border-l-4 border-transparent py-2 pr-4 pl-3 text-base font-bold text-neutral-500 hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-700"
+                      className="mobile-touch-target flex items-center border-l-4 border-transparent py-2 pr-4 pl-3 text-base font-bold text-neutral-500 hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-700"
                     >
                       {navLink.label}
                     </MenuItem>
@@ -191,7 +194,7 @@ export function Navbar({
                     <MenuItem
                       as="button"
                       onClick={() => setLocaleSwitcherOpen(true)}
-                      className="flex w-full items-center gap-1.5 border-l-4 border-transparent py-2 pr-4 pl-3 text-base font-bold text-neutral-500 hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-700"
+                      className="mobile-touch-target flex w-full items-center gap-1.5 border-l-4 border-transparent py-2 pr-4 pl-3 text-base font-bold text-neutral-500 hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-700"
                     >
                       <LanguageIcon className="h-5" />
                       {
@@ -219,7 +222,7 @@ export function Navbar({
         <BookButton
           cta={brand.bookCta}
           size="floating-action-button"
-          className="fixed right-6 bottom-6 z-50 sm:hidden"
+          className="fixed right-6 bottom-6 z-50 max-sm:max-w-[calc(100%-3rem)] sm:hidden"
         />
       ) : null}
     </>

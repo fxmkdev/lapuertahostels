@@ -9,6 +9,8 @@ const meta = {
   parameters: {
     chromatic: {
       modes: {
+        "viewport-small-mobile": allModes["viewport-small-mobile"],
+        "viewport-large-mobile": allModes["viewport-large-mobile"],
         "brand-aqua": allModes["brand-aqua"],
         "brand-azul": allModes["brand-azul"],
       },

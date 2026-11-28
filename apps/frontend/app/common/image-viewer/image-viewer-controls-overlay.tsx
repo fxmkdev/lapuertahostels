@@ -73,7 +73,7 @@ export function ImageViewerControlsOverlay({
         <div className="invisible grow overflow-hidden p-2 text-center text-ellipsis whitespace-nowrap sm:visible">
           {caption}
         </div>
-        <div className="flex items-center justify-end gap-1 md:gap-2">
+        <div className="flex shrink-0 items-center justify-end gap-1 md:gap-2">
           {supportsFullscreen &&
             (isFullscreen ? (
               <IconButton
@@ -163,7 +163,7 @@ function IconButton({
   return (
     <button
       className={cn(
-        "p-2 text-neutral-300 hover:text-white focus:text-white",
+        "mobile-touch-target inline-flex shrink-0 items-center justify-center p-2 text-neutral-300 hover:text-white focus:text-white",
         className,
       )}
       onClick={onClick}

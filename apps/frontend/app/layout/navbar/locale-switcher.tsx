@@ -21,7 +21,7 @@ export function LocaleSwitcher({
       button={
         <DropdownButton
           className={cn(
-            "flex items-center gap-1.5 text-sm font-bold text-neutral-500 hover:text-neutral-900",
+            "mobile-touch-target flex items-center justify-center gap-1.5 text-sm font-bold text-neutral-500 hover:text-neutral-900",
             className,
           )}
         >

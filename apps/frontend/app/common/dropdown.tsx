@@ -71,7 +71,7 @@ export function DropdownItem<T extends ElementType>({
         <Component
           className={cn(
             focus ? "bg-neutral-100 text-neutral-900" : "text-neutral-700",
-            "block w-full px-4 py-2 text-left text-sm",
+            "mobile-touch-target block w-full px-4 py-2 text-left text-sm",
             className,
           )}
           {...props}

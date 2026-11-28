@@ -43,11 +43,13 @@ export function OverlayTitle({
         })}
       />
       <div
-        className={cn("absolute max-w-xl", {
+        className={cn("absolute w-[calc(100%-4rem)] max-w-xl md:w-auto", {
           "top-8 left-8": position === "top-left",
           "top-8 right-8 text-right": position === "top-right",
-          "bottom-8 left-8": position === "bottom-left",
-          "right-8 bottom-8 text-right": position === "bottom-right",
+          "bottom-[var(--overlay-bottom,2rem)] left-8":
+            position === "bottom-left",
+          "right-8 bottom-[var(--overlay-bottom,2rem)] text-right":
+            position === "bottom-right",
           "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transform text-center":
             position === "center",
         })}
