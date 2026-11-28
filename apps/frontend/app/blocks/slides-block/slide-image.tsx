@@ -6,6 +6,7 @@ import { MediaImage } from "~/common/media";
 export type SlideImageProps = Pick<MediaImageProps, "media"> & {
   withPreview?: boolean;
   alignment?: "center" | "bottom";
+  sizes?: string;
   onLoadingFinished?: () => void;
 };
 
@@ -13,6 +14,7 @@ export function SlideImage({
   media,
   withPreview = false,
   alignment,
+  sizes = "100vw",
   onLoadingFinished,
 }: SlideImageProps) {
   const [state, setState] = useState<"loading" | "loaded">("loading");
@@ -20,7 +22,7 @@ export function SlideImage({
   const imageProps = {
     media,
     layout: "responsive",
-    sizes: "100vw",
+    sizes,
     className: cn("absolute top-0 h-full w-full object-cover", {
       "object-[center_90%]": alignment === "bottom",
     }),

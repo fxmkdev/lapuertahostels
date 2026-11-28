@@ -1,7 +1,7 @@
 import { createId } from "@paralleldrive/cuid2";
 import { expect, test } from "@playwright/test";
 import type { APIRequestContext, Page as BrowserPage } from "@playwright/test";
-import type { Media } from "@lapuertahostels/payload-types";
+import { readImageManifest, type Media } from "@lapuertahostels/payload-types";
 import { readFile } from "node:fs/promises";
 import { MongoClient, ObjectId } from "mongodb";
 import { create, createPage } from "../common/cms";
@@ -149,6 +149,23 @@ async function verifyFrontendFocalPoint(
     expect(
       await image.evaluate((element: HTMLImageElement) => element.naturalWidth),
     ).toBeGreaterThan(0);
+    const rendered = await image.evaluate((element: HTMLImageElement) => ({
+      src: element.currentSrc,
+      requiredWidth:
+        Math.max(element.clientWidth, (element.clientHeight * 4) / 3) *
+        devicePixelRatio,
+    }));
+    const availableWidth = Math.max(
+      ...readImageManifest(media.imageVariants)!
+        .variants.filter((v) => v.preset === "landscape")
+        .map((v) => v.width),
+    );
+    const selectedWidth = Number(
+      /-(\d+)x\d+\.webp$/.exec(new URL(rendered.src).pathname)?.[1],
+    );
+    expect(selectedWidth).toBeGreaterThanOrEqual(
+      Math.min(rendered.requiredWidth, availableWidth),
+    );
     await expect(page.locator('meta[name="og:image"]')).toHaveAttribute(
       "content",
       /optimized\//,
