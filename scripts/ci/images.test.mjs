@@ -209,9 +209,13 @@ test("build failure never aliases or promotes an image", async () => {
   );
   assert.equal(f.images.has(`${repository}:${inputs.imageTag}`), false);
 });
-for (const signal of ["SIGINT", "SIGTERM"]) {
+for (const [signal, cooperative] of [
+  ["SIGINT", true],
+  ["SIGTERM", true],
+  ["SIGTERM", false],
+]) {
   test(
-    `build cancellation forwards ${signal} and never aliases the image`,
+    `build cancellation ${cooperative ? "forwards" : "forces termination after ignored"} ${signal} and never aliases the image`,
     { timeout: 10_000 },
     async (t) => {
       const directory = await mkdtemp(join(tmpdir(), "ci-cancel-"));
@@ -226,7 +230,7 @@ const fs = require("node:fs");
 for (const signal of ["SIGINT", "SIGTERM"]) {
   process.on(signal, () => {
     fs.writeFileSync(${JSON.stringify(stopped)}, signal);
-    process.exit(0);
+    if (${cooperative}) process.exit(0);
   });
 }
 console.log(JSON.stringify({ pid: process.pid, args: process.argv.slice(2) }));

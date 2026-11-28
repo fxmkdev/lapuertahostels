@@ -82,6 +82,31 @@ jobs:
       - name: Verify committed CMS types
         run: pnpm --filter @lapuertahostels/payload-types check-payload-types
 
+  admit-images:
+    name: "Admit image requests"
+    runs-on: ubuntu-latest
+    needs: [detect-changes, verify-cms-types, version]
+    if: >-
+      !cancelled() && needs.detect-changes.result == 'success' &&
+      needs.version.result == 'success' && (needs.verify-cms-types.result ==
+      'success' || (needs.detect-changes.outputs.types_changed == 'false' &&
+      needs.verify-cms-types.result == 'skipped'))
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      current: ${{ steps.admit.outputs.current }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Check current PR revision before acquiring cancellation groups
+        id: admit
+        run: node scripts/ci/admit-images.mjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
   frontend-lint:
     name: "Build / Frontend: Lint"
     runs-on: ubuntu-latest
@@ -152,12 +177,13 @@ jobs:
 
   frontend-build-push:
     name: "Build / Frontend: Build and Push"
-    needs: [detect-changes, verify-cms-types, version]
+    needs: [detect-changes, verify-cms-types, version, admit-images]
     if: >-
       !cancelled() && needs.detect-changes.result == 'success' &&
       needs.version.result == 'success' && (needs.verify-cms-types.result ==
       'success' || (needs.detect-changes.outputs.types_changed == 'false' &&
-      needs.verify-cms-types.result == 'skipped'))
+      needs.verify-cms-types.result == 'skipped')) && needs.admit-images.result
+      == 'success' && needs.admit-images.outputs.current == 'true'
     # Replace only this PR's image work; deployments are outside this group.
     concurrency:
       group:
@@ -277,12 +303,13 @@ jobs:
 
   cms-build-push:
     name: "Build / CMS: Build and Push"
-    needs: [detect-changes, verify-cms-types, version]
+    needs: [detect-changes, verify-cms-types, version, admit-images]
     if: >-
       !cancelled() && needs.detect-changes.result == 'success' &&
       needs.version.result == 'success' && (needs.verify-cms-types.result ==
       'success' || (needs.detect-changes.outputs.types_changed == 'false' &&
-      needs.verify-cms-types.result == 'skipped'))
+      needs.verify-cms-types.result == 'skipped')) && needs.admit-images.result
+      == 'success' && needs.admit-images.outputs.current == 'true'
     # Replace only this PR's image work; deployments are outside this group.
     concurrency:
       group:
@@ -310,6 +337,7 @@ jobs:
         ci-tests,
         detect-changes,
         verify-cms-types,
+        admit-images,
         version,
         frontend-build-push,
         cms-build-push,
@@ -448,6 +476,7 @@ jobs:
       - ci-tests
       - detect-changes
       - verify-cms-types
+      - admit-images
       - frontend-build-push
       - cms-build-push
       - frontend-lint

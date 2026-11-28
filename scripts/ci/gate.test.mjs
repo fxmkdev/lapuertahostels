@@ -15,8 +15,10 @@ function fixture(frontend = false, cms = false, e2e = false) {
       "frontend-build-push",
       "cms-build-push",
       "ci-tests",
+      "admit-images",
     ].map((name) => [name, { result: "success", outputs: {} }]),
   );
+  needs["admit-images"].outputs.current = "true";
   for (const [app, required, names] of [
     ["frontend", frontend, frontendChecks],
     ["cms", cms, cmsChecks],
@@ -63,6 +65,12 @@ test("core jobs cannot be skipped", () => {
   const needs = fixture();
   needs["detect-changes"].result = "skipped";
   assert.throws(() => validate(needs), /detect-changes/);
+});
+test("stale image admission blocks E2E and promotion even with successful image jobs", () => {
+  const needs = fixture(true, true);
+  needs["admit-images"].outputs.current = "false";
+  assert.throws(() => validatePrerequisites(needs), /not admitted/);
+  assert.throws(() => validate(needs), /not admitted/);
 });
 for (const app of ["frontend", "cms"]) {
   test(`superseded ${app} image preparation blocks E2E and promotion`, () => {
@@ -112,6 +120,7 @@ test("verification cannot unexpectedly skip when type inputs changed", () => {
 test("missing or failed core prerequisites fail the existing required E2E check", () => {
   for (const job of [
     "ci-tests",
+    "admit-images",
     "detect-changes",
     "version",
     "frontend-build-push",

@@ -25,10 +25,13 @@ export function validatePrerequisites(needs) {
     "version",
     "detect-changes",
     "ci-tests",
+    "admit-images",
     "frontend-build-push",
     "cms-build-push",
   ])
     requireSuccess(needs, name);
+  if (needs["admit-images"].outputs.current !== "true")
+    throw new Error("Image requests were not admitted for this PR revision");
   const changed = needs["detect-changes"].outputs;
   for (const flag of [
     "frontend_changed",

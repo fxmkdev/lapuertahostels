@@ -74,6 +74,13 @@ manual runs have unique request groups and are not superseded. Cancellation does
 not cover checks or deployments already underway. The existing preview lifecycle
 lock continues to protect provisioning, deployment, and cleanup.
 
+After prerequisites finish, an admission job checks the PR's current head with
+GitHub before image requests can enter those cancellation groups. This rejects
+known stale runs whose prerequisites finished after a newer revision's, and
+rejects closed PRs. API errors fail closed. Main pushes and manual releases are
+admitted without a PR lookup. The result gate also requires successful
+admission, so rejected requests cannot promote images or deploy.
+
 The caller's request group and callee's builder group must remain distinct:
 reusing a group would make the nested workflow contend with or cancel itself. A
 canceled image job fails the result gate and cannot promote an image into the
@@ -87,7 +94,9 @@ The image step replaces its shell with the Node helper, which forwards `SIGINT`
 and `SIGTERM` to Fly and waits for it to exit. This gives Fly an opportunity to
 cancel its remote build session before the runner forcibly cleans up orphan
 processes. A signal received during a Fly build fails image preparation even if
-the CLI exits successfully, preventing subsequent alias publication.
+the CLI exits successfully, preventing subsequent alias publication. If Fly
+ignores cancellation or the one-hour build deadline, the helper forces
+termination after a five-second grace period so its app's queue can advance.
 
 ## Checks and deployments
 
