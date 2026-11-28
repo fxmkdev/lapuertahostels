@@ -238,7 +238,8 @@ no stale fallback.
 - The callback is a server-to-server `POST` with
   `Authorization: Bearer <secret>`. It returns 204 on success, 401 on invalid
   credentials, and 503 when unconfigured or Redis invalidation fails. It
-  authenticates locally without calling the CMS.
+  bypasses CMS-backed translation middleware and authenticates locally without
+  calling the CMS, including when the CMS is unavailable.
 - Missing CMS configuration logs a startup warning and disables immediate
   invalidation; timed expiry still works.
 

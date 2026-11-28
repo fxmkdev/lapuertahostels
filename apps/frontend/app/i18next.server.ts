@@ -2,6 +2,7 @@ import { createInstance, type i18n } from "i18next";
 import {
   createContext,
   createCookie,
+  matchPath,
   type MiddlewareFunction,
   type RouterContextProvider,
 } from "react-router";
@@ -23,11 +24,18 @@ const localeContext = createContext<string>();
 const i18nextContext = createContext<i18n>();
 
 export const i18nextMiddleware: MiddlewareFunction<Response> = async (
-  { request, context },
+  { request, context, url },
   next,
 ) => {
   if (isAnalyticsProxyPath(new URL(request.url).pathname)) return await next();
 
+  // Invalidation must reach its local authentication and Redis operation even
+  // when CMS-backed translations cannot load.
+  if (
+    matchPath("/api/invalidate-cms-cache", getRequestUrl(request, url).pathname)
+  ) {
+    return await next();
+  }
   const { instance, locale } = await createI18next(request);
 
   context.set(localeContext, locale);
