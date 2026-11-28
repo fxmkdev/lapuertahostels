@@ -8,74 +8,87 @@ import type {
 } from "@lapuertahostels/payload-types";
 import { BRANDS_DEPTH, PAGE_DEPTH } from "./cms-data";
 import { runRedisCommand } from "./redis";
+import { getCmsCachePrefix, invalidateCmsCache } from "./cms-cache.server";
 
-const CACHE_EXPIRY_IN_MS = 1000 * 60; // 1 min
-
-async function loadAndCacheData<TData, TResult>(
-  url: string,
-  locale: string | null,
-  cacheKeyWithLocale: string,
-  depth: number,
-  queryParams: Record<string, string>,
-  getResultFn: (data: TData | null) => TResult | null,
-) {
-  const result = getResultFn(await loadData(url, locale, depth, queryParams));
-
-  if (result) {
-    await cacheData(cacheKeyWithLocale, result);
-  } else {
-    console.log(`Deleting data for ${cacheKeyWithLocale} (if exists)`);
-    await deleteCachedData(cacheKeyWithLocale);
-  }
-
-  return result;
-}
-
-async function cacheData<TData>(cacheKeyWithLocale: string, data: TData) {
-  console.log(`Caching data to ${cacheKeyWithLocale}`);
-
-  try {
-    await runRedisCommand((redis) =>
-      redis.set(
-        cacheKeyWithLocale,
-        JSON.stringify({
-          data,
-          cachedAt: new Date().toJSON(),
-        } as CacheEntry<TData>),
-      ),
-    );
-  } catch (error) {
-    console.warn(
-      `Failed to cache data for ${cacheKeyWithLocale}. Continuing without Redis cache: ${formatError(error)}`,
-    );
-  }
-}
-
-async function deleteCachedData(cacheKeyWithLocale: string) {
-  try {
-    await runRedisCommand((redis) => redis.del(cacheKeyWithLocale));
-  } catch (error) {
-    console.warn(
-      `Failed to delete cache entry for ${cacheKeyWithLocale}. Continuing without Redis cache: ${formatError(error)}`,
-    );
-  }
-}
-
-async function getCachedData(cacheKeyWithLocale: string) {
-  try {
-    return await runRedisCommand((redis) => redis.get(cacheKeyWithLocale));
-  } catch (error) {
-    console.warn(
-      `Failed to read cache for ${cacheKeyWithLocale}. Treating as cache miss: ${formatError(error)}`,
-    );
-    return null;
-  }
-}
+const CACHE_FRESH_IN_MS = 60_000;
+const CACHE_MAX_AGE_IN_MS = 300_000;
 
 type CacheEntry<T> = {
+  version: 1;
   data: T;
-  cachedAt: string;
+  cachedAt: number;
 };
+
+class CmsLoadError extends Error {
+  constructor(
+    message: string,
+    readonly transient: boolean,
+    options?: ErrorOptions,
+  ) {
+    super(message, options);
+  }
+}
+
+async function deleteCachedData(key: string) {
+  try {
+    await runRedisCommand((redis) => redis.del(key));
+  } catch (error) {
+    console.warn(
+      `Failed to delete CMS cache entry ${key}: ${formatError(error)}`,
+    );
+  }
+}
+
+async function getCachedData<T>(key: string): Promise<CacheEntry<T> | null> {
+  try {
+    const value = await runRedisCommand((redis) => redis.get(key));
+    if (!value) return null;
+    const entry = JSON.parse(value) as Partial<CacheEntry<T>> | null;
+    if (
+      entry?.version === 1 &&
+      entry.data != null &&
+      typeof entry.cachedAt === "number" &&
+      Number.isFinite(entry.cachedAt) &&
+      entry.cachedAt <= Date.now() &&
+      Date.now() - entry.cachedAt < CACHE_MAX_AGE_IN_MS
+    ) {
+      return entry as CacheEntry<T>;
+    }
+  } catch (error) {
+    console.warn(
+      `Failed to read CMS cache entry ${key}: ${formatError(error)}`,
+    );
+  }
+  await deleteCachedData(key);
+  return null;
+}
+
+async function cacheResult<T>(key: string, result: T | null, cachedAt: number) {
+  if (result === null) {
+    await deleteCachedData(key);
+  } else {
+    const remainingLifetime = CACHE_MAX_AGE_IN_MS - (Date.now() - cachedAt);
+    if (remainingLifetime > 0) {
+      try {
+        await runRedisCommand((redis) =>
+          redis.set(
+            key,
+            JSON.stringify({
+              version: 1,
+              data: result,
+              cachedAt,
+            } satisfies CacheEntry<T>),
+            { PX: remainingLifetime },
+          ),
+        );
+      } catch (error) {
+        console.warn(
+          `Failed to write CMS cache entry ${key}: ${formatError(error)}`,
+        );
+      }
+    }
+  }
+}
 
 async function getData<TData, TResult>(
   req: Request,
@@ -87,63 +100,42 @@ async function getData<TData, TResult>(
   getResultFn: (data: TData | null) => TResult | null = (data: TData | null) =>
     data as TResult,
 ) {
-  const cacheKeyWithLocale = `${cacheKey}${locale ? `:${locale}` : ""}`;
-
   if (new URL(req.url).searchParams.get("skipcache") === "true") {
-    console.log(
-      `Skipping cache for ${cacheKeyWithLocale} (?skipcache=true was specified)`,
-    );
     return getResultFn(await loadData(pathname, locale, depth, queryParams));
   }
 
-  const cacheEntryString = await getCachedData(cacheKeyWithLocale);
-  const cacheEntry = cacheEntryString
-    ? (JSON.parse(cacheEntryString) as CacheEntry<TResult>)
+  // Capture the generation before loading. A save can rotate it while this
+  // request is in flight; any late write remains in the old namespace.
+  const prefix = await getCmsCachePrefix();
+  const key = prefix
+    ? `${prefix}:${cacheKey}${locale ? `:${locale}` : ""}`
     : null;
+  const entry = key ? await getCachedData<TResult>(key) : null;
+  if (entry && Date.now() - entry.cachedAt < CACHE_FRESH_IN_MS)
+    return entry.data;
 
-  if (cacheEntry) {
-    queueMicrotask(async () => {
-      try {
-        const cacheLastModified = cacheEntry.cachedAt;
-
-        const cacheExpired =
-          new Date(cacheLastModified).getTime() + CACHE_EXPIRY_IN_MS <
-          Date.now();
-        if (!cacheExpired) {
-          console.log(`Cache not expired for ${cacheKeyWithLocale}`);
-          return;
-        }
-
-        console.log(`Cache expired for ${cacheKeyWithLocale}`);
-        await loadAndCacheData(
-          pathname,
-          locale,
-          cacheKeyWithLocale,
-          depth,
-          queryParams,
-          getResultFn,
-        );
-      } catch (e) {
-        // As this runs in the background, just log the error
-        console.warn(
-          `Failed to refresh cache in microtask for ${cacheKeyWithLocale} (expected if data was deleted): ${e}`,
-        );
-      }
-    });
-
-    console.log(`Cache hit for ${cacheKeyWithLocale}`);
-    return cacheEntry.data;
+  const cachedAt = Date.now();
+  let result: TResult | null;
+  try {
+    result = getResultFn(await loadData(pathname, locale, depth, queryParams));
+  } catch (error) {
+    if (
+      error instanceof CmsLoadError &&
+      error.transient &&
+      entry &&
+      Date.now() - entry.cachedAt < CACHE_MAX_AGE_IN_MS
+    ) {
+      console.warn(
+        `CMS refresh failed for ${key}; using bounded stale data: ${formatError(error)}`,
+      );
+      return entry.data;
+    }
+    if (key && entry) await deleteCachedData(key);
+    throw error;
   }
 
-  console.log(`Cache miss for ${cacheKeyWithLocale}`);
-  return await loadAndCacheData(
-    pathname,
-    locale,
-    cacheKeyWithLocale,
-    depth,
-    queryParams,
-    getResultFn,
-  );
+  if (key) await cacheResult(key, result, cachedAt);
+  return result;
 }
 
 export async function loadData(
@@ -170,19 +162,50 @@ export async function loadData(
   });
 
   console.log(`Loading data from CMS for ${url.toString()} in ${locale}`);
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `api-keys API-Key ${process.env.PAYLOAD_CMS_API_KEY}`,
-    },
-  });
+  return await readCmsResponse(await fetchCmsResponse(url));
+}
 
+async function fetchCmsResponse(url: URL) {
+  try {
+    return await fetch(url, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(5000),
+      headers: {
+        Authorization: `api-keys API-Key ${process.env.PAYLOAD_CMS_API_KEY}`,
+      },
+    });
+  } catch (error) {
+    throw new CmsLoadError("Failed to reach CMS", true, { cause: error });
+  }
+}
+
+async function readCmsResponse(response: Response) {
   if (!response.ok) {
+    // Release unread error bodies without masking the authoritative HTTP status.
+    await response.body?.cancel().catch(() => undefined);
     if (response.status === 404) return null;
 
-    throw new Error(`Failed to load data from CMS: ${response.status}`);
+    throw new CmsLoadError(
+      `Failed to load data from CMS: ${response.status}`,
+      response.status >= 500,
+    );
   }
 
-  return await response.json();
+  try {
+    return await response.json();
+  } catch (error) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "name" in error &&
+      ["AbortError", "TimeoutError", "TypeError"].includes(String(error.name))
+    ) {
+      throw new CmsLoadError("Failed to read CMS response", true, {
+        cause: error,
+      });
+    }
+    throw error;
+  }
 }
 
 export async function tryGetLocalizedPathname(
@@ -297,7 +320,7 @@ export async function getBrands(request: Request, locale: string) {
 }
 
 export async function purgeCache() {
-  await runRedisCommand((redis) => redis.flushDb());
+  await invalidateCmsCache();
 }
 
 function formatError(error: unknown) {

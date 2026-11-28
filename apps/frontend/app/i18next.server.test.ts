@@ -22,6 +22,27 @@ beforeEach(() => {
   getCommon.mockResolvedValue({ uiLabels: {} });
 });
 
+describe("server translation freshness", () => {
+  test.each([undefined, "Original footer"])(
+    "loads updated CMS labels after an earlier request with heading %s",
+    async (heading) => {
+      const request = new Request("https://example.com/en/about");
+      getCommon.mockResolvedValue({
+        uiLabels: heading ? { footer: { heading } } : {},
+      });
+      const original = (await createI18next(request)).instance;
+      expect(original.t("footer.heading")).toBe(heading ?? "footer.heading");
+
+      getCommon.mockResolvedValue({
+        uiLabels: { footer: { heading: "Updated footer" } },
+      });
+      const updated = (await createI18next(request)).instance;
+      expect(updated.t("footer.heading")).toBe("Updated footer");
+      expect(original.t("footer.heading")).toBe(heading ?? "footer.heading");
+    },
+  );
+});
+
 describe("server locale detection", () => {
   test("uses a localized pathname before a locale cookie or request header", async () => {
     const cookie = await localeCookie.serialize("en");

@@ -74,10 +74,13 @@ The original image stays uncropped. Payload stores the point and retains the
 existing admin-thumbnail configuration; ImageKit handles frontend resizing and
 cropping. The metadata migration `20261124_000000_media_display_dimensions`
 backfills existing JPEG display dimensions; no bulk image regeneration is
-needed. The website caches CMS data for one minute and refreshes stale entries
-in the background, so a focal edit may require a subsequent page load after that
-interval to appear. Use `?skipcache=true` when checking a saved change
-immediately.
+needed. Saving media notifies the frontend to invalidate cached content,
+including pages with populated images. After successful invalidation, the next
+navigation or reload loads the saved focal point. If notification fails, the
+one-minute freshness check remains the fallback; requests wait for the refresh
+rather than refreshing in the background. See
+[CMS content freshness](../frontend/README.md#cms-content-freshness) for failure
+limits and configuration. `?skipcache=true` bypasses caching for diagnostics.
 
 The existing Payload UI patch also preserves zero-valued focal coordinates when
 reopening the editor and omits crop edits when cropping is disabled. These
