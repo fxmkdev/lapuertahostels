@@ -2,6 +2,7 @@ import type {
   Brand,
   Footer as FooterContent,
 } from "@lapuertahostels/payload-types";
+import { useCallback, useState } from "react";
 import { Outlet } from "react-router";
 import type { loader as rootLoader } from "~/root";
 import type { SerializeFromLoader } from "~/common/types";
@@ -11,6 +12,7 @@ import { PreviewBar } from "./preview-bar";
 import { PreviewBrandSelector } from "./preview-brand-selector";
 import { Header } from "./header";
 import { Footer } from "./footer";
+import { PreviewFrame } from "./preview-frame";
 
 type SiteLayoutProps = Pick<
   SerializeFromLoader<typeof rootLoader>,
@@ -28,7 +30,46 @@ type SiteLayoutProps = Pick<
   onHeaderHeightChanged: (height: number) => void;
 };
 
-export function SiteLayout({
+export function SiteLayout(props: SiteLayoutProps) {
+  const footerPreview = props.environment.preview === "globals/footer";
+  const [headerHeight, setHeaderHeight] = useState(0);
+  const onHeaderHeightChanged = useCallback(
+    (height: number) => {
+      if (footerPreview) setHeaderHeight(height);
+      props.onHeaderHeightChanged(height);
+    },
+    [footerPreview, props.onHeaderHeightChanged],
+  );
+  const selector = isSharedPreview(props.environment.preview) ? (
+    <PreviewBrandSelector
+      brand={props.brand}
+      allBrands={props.allBrands}
+      locale={props.locale}
+      adminLocale={props.adminLocale!}
+      footer={footerPreview}
+      headerHeight={headerHeight}
+    />
+  ) : null;
+  const content = (
+    <SiteContent {...props} onHeaderHeightChanged={onHeaderHeightChanged} />
+  );
+  return (
+    <ThemeProvider themeColor={props.brand.themeColor}>
+      {footerPreview ? (
+        <PreviewFrame toolbar={selector} headerHeight={headerHeight}>
+          {content}
+        </PreviewFrame>
+      ) : (
+        <>
+          {selector}
+          {content}
+        </>
+      )}
+    </ThemeProvider>
+  );
+}
+
+function SiteContent({
   brand,
   footer,
   previewBanner,
@@ -37,23 +78,12 @@ export function SiteLayout({
   isAuthorized,
   adminLocale,
   allBrands,
-  locale,
-  environment,
   publishedLocales,
 }: SiteLayoutProps) {
   return (
-    <ThemeProvider themeColor={brand.themeColor}>
+    <>
       {settings.maintenanceScreen?.show && isAuthorized && (
         <PreviewBar adminLocale={adminLocale!} />
-      )}
-      {isSharedPreview(environment.preview) && (
-        <PreviewBrandSelector
-          brand={brand}
-          allBrands={allBrands}
-          locale={locale}
-          adminLocale={adminLocale!}
-          footer={environment.preview === "globals/footer"}
-        />
       )}
       {isAuthorized && (
         <Header
@@ -70,6 +100,6 @@ export function SiteLayout({
       {isAuthorized && (
         <Footer brand={brand} allBrands={allBrands} content={footer} />
       )}
-    </ThemeProvider>
+    </>
   );
 }

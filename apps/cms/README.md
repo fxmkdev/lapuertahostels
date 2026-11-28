@@ -135,8 +135,15 @@ cannot choose an arbitrary endpoint or document.
 
 Set `LIVE_PREVIEW_URL` to enable preview for Banner, Footer, and Common. New
 Banners must be saved once before preview is available. Banner/Footer preview
-the selected brand's real homepage; Common has dedicated error-screen and
-UI-label scenarios. No preview Page documents are needed.
+the selected brand's real homepage; Common has dedicated Page not found and
+Server error scenarios. No preview Page documents are needed.
+
+Invisible UI components in Common's error tabs notify the active preview when a
+tab becomes active. Notifications use the existing preview channel and are
+validated against the CMS origin, source window, document, locale, and scenario.
+Synchronization is one-way: the frontend selector does not change the CMS tab.
+Selecting UI Labels leaves the last error preview visible. UI fields do not
+store content, and the UI Labels tab and its saved data remain unchanged.
 
 The bridge allows `pages/:id`, `brands/:id`, `banners/:id`, `globals/footer`,
 and `globals/common`. Globals use their active slug and existing

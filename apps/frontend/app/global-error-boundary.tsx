@@ -59,7 +59,7 @@ export function GlobalErrorBoundary() {
   );
 }
 
-export function FatalErrorScreen() {
+function FatalErrorScreen() {
   const { t } = useTranslation();
   return (
     <>

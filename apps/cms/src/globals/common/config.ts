@@ -8,7 +8,11 @@ import { optionalTextareaField } from "../../fields/textarea";
 import { contentGroup } from "../../groups";
 import { allTranslations, translated } from "../../translations/translations";
 
-import { livePreviewAdmin, livePreviewBridge } from "../../common/live-preview";
+import {
+  commonPreviewScenarioField,
+  livePreviewAdmin,
+  livePreviewBridge,
+} from "../../common/live-preview";
 
 type CommonOptions = {
   livePreviewBaseUrl?: string;
@@ -43,6 +47,7 @@ export function Common({
           {
             name: "pageNotFoundScreen",
             fields: [
+              commonPreviewScenarioField("notFound", livePreviewBaseUrl),
               descriptionField(
                 allTranslations(
                   (v) =>
@@ -64,6 +69,7 @@ export function Common({
           {
             name: "errorScreen",
             fields: [
+              commonPreviewScenarioField("serverError", livePreviewBaseUrl),
               descriptionField({
                 en: "This screen is shown when the server encounters an error.",
                 es: "Esta pantalla se muestra cuando el servidor encuentra un error.",

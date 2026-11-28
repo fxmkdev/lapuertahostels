@@ -3,8 +3,10 @@ import type {
   ActionFunctionArgs,
   LoaderFunctionArgs,
 } from "react-router";
-import { useActionData, data, redirect } from "react-router";
-import { LoginForm } from "~/layout/login-form";
+import { Form, useActionData, data, redirect } from "react-router";
+import { useTranslation } from "react-i18next";
+import { Button } from "~/common/button";
+import { Input } from "~/common/input";
 import { handleIncomingRequest } from "~/common/routing.server";
 import { commitSession, getSession } from "~/sessions.server";
 
@@ -76,11 +78,37 @@ export async function loader({ request, url }: LoaderFunctionArgs) {
 }
 
 export default function Route() {
+  const { t } = useTranslation();
   // This seems to return incorrect types
   // const actionData = useActionData<typeof action}>();
   const actionData = useActionData<{
     errorMessage: string;
     values: { email: string };
   }>();
-  return <LoginForm actionData={actionData} />;
+  return (
+    <Form
+      method="POST"
+      className="flex min-h-screen flex-col items-center justify-center gap-4 px-8"
+    >
+      <Input
+        placeholder={t("login.email")}
+        type="email"
+        name="email"
+        defaultValue={actionData?.values.email}
+      />
+      <Input
+        placeholder={t("login.password")}
+        type="password"
+        name="password"
+      />
+      {actionData && (
+        <p className="text-accent-negative-800 text-sm">
+          {actionData.errorMessage}
+        </p>
+      )}
+      <Button type="submit" size="small" variant="primary">
+        {t("login.submit")}
+      </Button>
+    </Form>
+  );
 }

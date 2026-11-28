@@ -9,6 +9,7 @@ import {
   verifyBrandContexts,
   verifyCommonScenarios,
   verifyPreviewPopup,
+  restoreCommonTab,
 } from "../common/live-preview";
 
 test.use({ actionTimeout: 15_000 });
@@ -195,11 +196,17 @@ for (const target of ["banner", "footer", "common"] as const) {
         await lock
           .getByRole("button", { name: "Take over", exact: true })
           .click();
+      if (target === "common") await restoreCommonTab(page);
       await page
         .getByRole("button", { name: "Live Preview", exact: true })
         .click();
       const preview = page.frameLocator("#live-preview-iframe");
       await expect(preview.getByRole("combobox")).toBeVisible();
+      if (target === "common") {
+        await expect(preview.getByRole("combobox")).toHaveValue("serverError");
+        await page.locator(".tabs-field__tab-button").first().click();
+        await expect(preview.getByRole("combobox")).toHaveValue("notFound");
+      }
       await expectDirectRequestForbidden(page, cmsOrigin, documentPath);
       populations.length = 0;
       const field =

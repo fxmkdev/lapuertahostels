@@ -12,6 +12,7 @@ export type ImageViewerProps = {
 };
 
 export function ImageViewer({ images, className }: ImageViewerProps) {
+  const { t } = useTranslation();
   const [currentImageIndex, setCurrentImageIndex] = useState<
     number | undefined
   >(undefined);
@@ -66,7 +67,7 @@ export function ImageViewer({ images, className }: ImageViewerProps) {
             {images.length > 5 && index === 3 && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/40 p-6">
                 <Heading as="h4" size="extra-small" variant="white">
-                  <MoreImagesLabel count={images.length - 4} />
+                  {t("imageViewer.seeMoreImages", { count: images.length - 4 })}
                 </Heading>
               </div>
             )}
@@ -84,9 +85,4 @@ export function ImageViewer({ images, className }: ImageViewerProps) {
       ))}
     </div>
   );
-}
-
-export function MoreImagesLabel({ count }: { count: number }) {
-  const { t } = useTranslation();
-  return <>{t("imageViewer.seeMoreImages", { count })}</>;
 }

@@ -1,4 +1,5 @@
-import type { PayloadRequest } from "payload";
+import type { CommonPreviewScenario } from "@lapuertahostels/live-preview";
+import type { PayloadRequest, UIField } from "payload";
 
 export function getLivePreviewUrl(
   baseUrl: string,
@@ -57,4 +58,25 @@ export function livePreviewBridge(baseUrl?: string) {
         },
       ]
     : [];
+}
+
+export function commonPreviewScenarioField(
+  scenario: CommonPreviewScenario,
+  baseUrl?: string,
+): UIField {
+  return {
+    name: "previewScenario",
+    type: "ui",
+    admin: {
+      components: {
+        Field: {
+          path: "/src/components/client/common-preview-scenario#CommonPreviewScenario",
+          clientProps: {
+            scenario,
+            previewOrigin: baseUrl ? new URL(baseUrl).origin : "",
+          },
+        },
+      },
+    },
+  };
 }

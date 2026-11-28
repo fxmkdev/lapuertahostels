@@ -24,6 +24,7 @@ import { DescriptionField as DescriptionField_abf5fbe5ff1fe41f9f9530c3622ddd55 }
 import { PathnameField as PathnameField_07c827ba00c5aee0468fd6a5f617dbac } from '../../../../src/components/client'
 import { ToCell as ToCell_07c827ba00c5aee0468fd6a5f617dbac } from '../../../../src/components/client'
 import { SocialPlatformRowLabel as SocialPlatformRowLabel_d7dca0d8b12acaed3ec7c89bc31f80ca } from '../../../../src/globals/footer/social-platform-row-label'
+import { CommonPreviewScenario as CommonPreviewScenario_d51ff1a0c685e7804c6364ce8b8c0df1 } from '../../../../src/components/client/common-preview-scenario'
 import { LogoSmall as LogoSmall_43487f452bb19d163e74255343d30bb9 } from '../../../../src/components/logo'
 import { Logo as Logo_43487f452bb19d163e74255343d30bb9 } from '../../../../src/components/logo'
 import { VersionInfo as VersionInfo_abf5fbe5ff1fe41f9f9530c3622ddd55 } from '../../../../src/components/rsc'
@@ -58,6 +59,7 @@ export const importMap = {
   "/src/components/client#PathnameField": PathnameField_07c827ba00c5aee0468fd6a5f617dbac,
   "/src/components/client#ToCell": ToCell_07c827ba00c5aee0468fd6a5f617dbac,
   "/src/globals/footer/social-platform-row-label#SocialPlatformRowLabel": SocialPlatformRowLabel_d7dca0d8b12acaed3ec7c89bc31f80ca,
+  "/src/components/client/common-preview-scenario#CommonPreviewScenario": CommonPreviewScenario_d51ff1a0c685e7804c6364ce8b8c0df1,
   "/src/components/logo#LogoSmall": LogoSmall_43487f452bb19d163e74255343d30bb9,
   "/src/components/logo#Logo": Logo_43487f452bb19d163e74255343d30bb9,
   "/src/components/rsc#VersionInfo": VersionInfo_abf5fbe5ff1fe41f9f9530c3622ddd55,

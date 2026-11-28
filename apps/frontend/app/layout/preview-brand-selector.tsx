@@ -10,12 +10,14 @@ export function PreviewBrandSelector({
   locale,
   adminLocale,
   footer,
+  headerHeight = 0,
 }: {
   brand: Brand;
   allBrands: Brand[];
   locale: string;
   adminLocale: string;
   footer: boolean;
+  headerHeight?: number;
 }) {
   const { t } = useTranslation("admin", { lng: adminLocale });
   const location = useLocation();
@@ -26,9 +28,15 @@ export function PreviewBrandSelector({
       document.getElementById("site-footer")?.scrollIntoView(),
     );
     return () => cancelAnimationFrame(frame);
-  }, [brand.id, footer]);
+  }, [brand.id, footer, headerHeight]);
   return (
-    <aside className="fixed bottom-3 left-3 z-50 rounded-lg border border-neutral-300 bg-white p-3 text-sm text-neutral-900 shadow-lg">
+    <aside
+      className={
+        footer
+          ? undefined
+          : "fixed bottom-3 left-3 z-50 rounded-lg border border-neutral-300 bg-white p-3 text-sm text-neutral-900 shadow-lg"
+      }
+    >
       <label className="flex items-center gap-3">
         {t("livePreview.brand")}
         <select

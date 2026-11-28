@@ -1,14 +1,9 @@
 import type { LoaderFunctionArgs, MetaFunction } from "react-router";
-import {
-  useLoaderData,
-  useRouteLoaderData,
-  useSearchParams,
-} from "react-router";
-import { useTranslation } from "react-i18next";
+import { useLoaderData, useRouteLoaderData } from "react-router";
 import { getCommon } from "~/cms-data.server";
 import { handleIncomingRequest } from "~/common/routing.server";
 import { OptInLivePreview } from "~/common/live-preview";
-import { PreviewTranslations } from "~/common/preview-translations";
+import { useCommonPreviewScenario } from "~/common/use-common-preview-scenario";
 import { CommonPreview } from "~/layout/common-preview";
 import type { loader as rootLoader } from "~/root";
 
@@ -30,32 +25,16 @@ export async function loader({ request, url }: LoaderFunctionArgs) {
 export default function Route() {
   const { common } = useLoaderData<typeof loader>();
   const root = useRouteLoaderData<typeof rootLoader>("root")!;
-  const { i18n } = useTranslation();
-  const [params, setParams] = useSearchParams();
-  const scenario = ["notFound", "serverError", "labels"].includes(
-    params.get("scenario") ?? "",
-  )
-    ? params.get("scenario")!
-    : "notFound";
+  const { scenario, setScenario } = useCommonPreviewScenario();
   return (
     <OptInLivePreview path="globals/common" data={common} depth={2}>
       {(liveCommon) => (
-        <PreviewTranslations key={i18n.language} common={liveCommon}>
-          <CommonPreview
-            common={liveCommon}
-            root={root}
-            scenario={scenario}
-            onScenarioChange={(value) => {
-              setParams(
-                (current) => {
-                  current.set("scenario", value);
-                  return current;
-                },
-                { preventScrollReset: true },
-              );
-            }}
-          />
-        </PreviewTranslations>
+        <CommonPreview
+          common={liveCommon}
+          root={root}
+          scenario={scenario}
+          onScenarioChange={setScenario}
+        />
       )}
     </OptInLivePreview>
   );

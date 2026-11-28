@@ -88,3 +88,45 @@ export function isPreviewDocument(document: unknown, expectedId?: unknown) {
     !("errors" in document)
   );
 }
+
+export const COMMON_PREVIEW_SCENARIOS = ["notFound", "serverError"] as const;
+export type CommonPreviewScenario = (typeof COMMON_PREVIEW_SCENARIOS)[number];
+
+export function isCommonPreviewScenario(
+  value: unknown,
+): value is CommonPreviewScenario {
+  return value === "notFound" || value === "serverError";
+}
+
+export type CommonPreviewScenarioMessage = {
+  channel: typeof PREVIEW_CHANNEL;
+  version: typeof PREVIEW_VERSION;
+  type: "scenario";
+  documentPath: "globals/common";
+  locale: string;
+  scenario: CommonPreviewScenario;
+};
+
+export function isCommonPreviewScenarioMessage(
+  value: unknown,
+): value is CommonPreviewScenarioMessage {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    !Array.isArray(value) &&
+    "channel" in value &&
+    value.channel === PREVIEW_CHANNEL &&
+    "version" in value &&
+    value.version === PREVIEW_VERSION &&
+    "type" in value &&
+    value.type === "scenario" &&
+    "documentPath" in value &&
+    value.documentPath === "globals/common" &&
+    "locale" in value &&
+    typeof value.locale === "string" &&
+    value.locale.length > 0 &&
+    value.locale.length <= 32 &&
+    "scenario" in value &&
+    isCommonPreviewScenario(value.scenario)
+  );
+}
