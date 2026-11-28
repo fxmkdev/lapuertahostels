@@ -1,4 +1,5 @@
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
+import { once } from "node:events";
 import { appendFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { output } from "./inputs.mjs";
@@ -81,27 +82,51 @@ async function waitForImage(image, options, expected) {
   throw new Error(`Image is unavailable: ${image}`);
 }
 function flyBuild({ app, imageApp, imageTag, buildTag, appVersion }) {
-  const result = spawnSync(
-    "flyctl",
-    [
-      "deploy",
-      "--app",
-      imageApp,
-      "--config",
-      `apps/${app}/fly.build.toml`,
-      "--build-only",
-      "--build-arg",
-      `APP_VERSION=${appVersion}`,
-      "--image-label",
-      buildTag,
-      "--label",
-      `org.opencontainers.image.version=${imageTag}`,
-      "--push",
-    ],
-    { stdio: "inherit", timeout: 3_600_000 },
-  );
-  if (result.error || result.status !== 0)
-    throw result.error ?? new Error(`Fly build failed: ${result.status}`);
+  return runBuild("flyctl", [
+    "deploy",
+    "--app",
+    imageApp,
+    "--config",
+    `apps/${app}/fly.build.toml`,
+    "--build-only",
+    "--depot-scope",
+    "app",
+    "--build-arg",
+    `APP_VERSION=${appVersion}`,
+    "--image-label",
+    buildTag,
+    "--label",
+    `org.opencontainers.image.version=${imageTag}`,
+    "--push",
+  ]);
+}
+async function runBuild(command, args) {
+  const child = spawn(command, args, { stdio: "inherit" });
+  // Let flyctl cancel its BuildKit session and release the remote builder
+  // before the runner resorts to killing orphan processes.
+  let interrupted;
+  let forceKill;
+  const stop = (signal, reason = signal) => {
+    interrupted ??= reason;
+    child.kill(signal);
+    // Bound cleanup even when the CLI ignores cancellation or its deadline.
+    forceKill ??= setTimeout(() => child.kill("SIGKILL"), 5_000);
+  };
+  const onInterrupt = () => stop("SIGINT");
+  const onTerminate = () => stop("SIGTERM");
+  process.once("SIGINT", onInterrupt);
+  process.once("SIGTERM", onTerminate);
+  const timeout = setTimeout(() => stop("SIGTERM", "timeout"), 3_600_000);
+  try {
+    const [code, signal] = await once(child, "exit");
+    if (interrupted || code !== 0)
+      throw new Error(`Fly build failed: ${interrupted || signal || code}`);
+  } finally {
+    clearTimeout(timeout);
+    clearTimeout(forceKill);
+    process.removeListener("SIGINT", onInterrupt);
+    process.removeListener("SIGTERM", onTerminate);
+  }
 }
 export async function prepareImage(
   inputs,
