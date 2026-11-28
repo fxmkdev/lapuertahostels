@@ -22,6 +22,8 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1147.0",
+    "@lapuertahostels/live-preview": "workspace:../../libs/live-preview",
+    "@lapuertahostels/payload-types": "workspace:../../libs/payload-types",
     "@payloadcms/db-mongodb": "^3.94.1",
     "@payloadcms/email-resend": "^3.94.1",
     "@payloadcms/next": "^3.94.1",

@@ -1,5 +1,5 @@
 import { APIError } from "payload";
-import { readImageManifest } from "../../../../../libs/payload-types/src/media";
+import { readImageManifest } from "@lapuertahostels/payload-types";
 import type {
   CollectionConfig,
   CollectionSlug,

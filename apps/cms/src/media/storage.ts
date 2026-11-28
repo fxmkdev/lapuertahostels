@@ -6,7 +6,7 @@ import {
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
-import { publicMediaUrl } from "../../../../libs/payload-types/src/media";
+import { publicMediaUrl } from "@lapuertahostels/payload-types";
 
 export type MediaStorage = {
   endpoint: string;

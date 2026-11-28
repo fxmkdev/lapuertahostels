@@ -29,6 +29,7 @@ RUN apt-get update -qq && \
 COPY --link package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY --link patches patches
 COPY --link apps/frontend/package.json apps/frontend/
+COPY --link libs/live-preview/package.json libs/live-preview/
 COPY --link libs/payload-types/package.json libs/payload-types/
 COPY --link libs/rich-text/package.json libs/rich-text/
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store,sharing=locked \
@@ -36,6 +37,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store,sharing=locked \
 
 # Copy application code
 COPY apps/frontend apps/frontend
+COPY libs/live-preview libs/live-preview
 COPY libs/payload-types libs/payload-types
 COPY libs/rich-text libs/rich-text
 

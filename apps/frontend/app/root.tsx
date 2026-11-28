@@ -145,9 +145,11 @@ export async function loader({ request, url }: LoaderFunctionArgs) {
     environment: {
       googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY!,
       version: getVersion(),
-      payloadCmsBaseUrl: process.env.PAYLOAD_CMS_BASE_URL,
+      payloadCmsBaseUrl:
+        process.env.PAYLOAD_CMS_PUBLIC_URL ?? process.env.PAYLOAD_CMS_BASE_URL,
       mediaBaseUrl: process.env.MEDIA_PUBLIC_BASE_URL,
       mediaUseDerivatives: process.env.MEDIA_USE_DERIVATIVES !== "false",
+
       preview: requestUrl.searchParams.get("preview") || undefined,
       useImageCacheBuster: false, // Cache busting is only used in Storybook for Chromatic
     },

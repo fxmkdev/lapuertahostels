@@ -1,7 +1,7 @@
 import {
   publicMediaUrl,
   readImageManifest,
-} from "../../../../../libs/payload-types/src/media";
+} from "@lapuertahostels/payload-types";
 import { getOriginalObjectKey } from "./migrate-display-dimensions";
 import { addLocalesToRequestFromData, type Endpoint } from "payload";
 

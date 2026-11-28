@@ -3,7 +3,7 @@ import sharp from "sharp";
 import type {
   ImageManifest,
   ImageVariant,
-} from "../../../../libs/payload-types/src/media";
+} from "@lapuertahostels/payload-types";
 
 export const IMAGE_RECIPE_VERSION = 1;
 export const checksum = (data: Buffer) =>

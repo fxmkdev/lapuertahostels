@@ -1,6 +1,6 @@
 import sharp from "sharp";
 import type { Payload } from "payload";
-import { readImageManifest } from "../../../../libs/payload-types/src/media";
+import { readImageManifest } from "@lapuertahostels/payload-types";
 import { getOriginalObjectKey } from "../collections/media/migrate-display-dimensions";
 import { IMAGE_RECIPE_VERSION, checksum, normalizePoint } from "./optimize";
 import type { MediaStore } from "./storage";

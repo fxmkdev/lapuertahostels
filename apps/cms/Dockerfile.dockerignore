@@ -9,6 +9,7 @@
 !/patches
 !/apps/cms
 !/libs/payload-types
+!/libs/live-preview
 
 # These should be ignored, though
 **/.next

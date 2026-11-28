@@ -34,6 +34,20 @@ export function Pages({
       update: canManageContent,
     },
     admin: {
+      components: {
+        edit: {
+          beforeDocumentControls: [
+            {
+              path: "/src/components/client/live-preview-bridge#LivePreviewBridge",
+              clientProps: {
+                previewOrigin: livePreviewBaseUrl
+                  ? new URL(livePreviewBaseUrl).origin
+                  : "",
+              },
+            },
+          ],
+        },
+      },
       defaultColumns: ["pathname", "title", "brand", "updatedAt"],
       group: contentGroup,
       listSearchableFields: ["id", "pathname", "title", "brand.name"],

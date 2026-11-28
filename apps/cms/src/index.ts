@@ -2,7 +2,7 @@ import type { Block, CollectionConfig, Config, Field, Plugin } from "payload";
 
 import { s3Storage } from "@payloadcms/storage-s3";
 import { createMediaStore, type MediaStorage } from "./media/storage";
-import { publicMediaUrl } from "../../../libs/payload-types/src/media";
+import { publicMediaUrl } from "@lapuertahostels/payload-types";
 
 import { ApiKeys } from "./collections/api-keys/config";
 import { Banners } from "./collections/banners/config";

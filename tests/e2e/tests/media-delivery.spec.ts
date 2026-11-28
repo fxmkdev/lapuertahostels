@@ -38,6 +38,12 @@ test("uploads and replacements preserve originals and publish immutable WebP fil
       await request.get(media.url!, { headers: { Authorization: "" } })
     ).body(),
   ).toEqual(uploaded);
+  expect(media.thumbnailURL).toContain("/optimized/");
+  const thumbnail = await request.get(media.thumbnailURL!, {
+    headers: { Authorization: "" },
+  });
+  expect(thumbnail.ok()).toBeTruthy();
+  expect(thumbnail.headers()["content-type"]).toContain("image/webp");
   const originalManifest = readImageManifest(media.imageVariants)!;
   expect(originalManifest).toBeDefined();
   const content = await createPage({
