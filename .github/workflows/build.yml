@@ -608,6 +608,10 @@ jobs:
   clean-preview:
     name: Clean Preview Apps
     if: ${{ !cancelled() && needs.deploy-preview.result == 'success' }}
+    permissions:
+      contents: read
+      pull-requests: read
+      deployments: read
     uses: ./.github/workflows/clean-preview-reusable.yml
     secrets: inherit
     needs: deploy-preview
