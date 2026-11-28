@@ -166,21 +166,21 @@ See Plausible's
 ## Navbar scrolling
 
 The sticky navbar hides when scrolling down past 100px and reappears when
-scrolling up or navigating to another page. While hidden, its booking CTA is
-available as a floating button at the bottom right. At widths below 640px, the
-floating booking button is always available. Both versions use the brand's CMS
-booking configuration.
+scrolling up or navigating to another page. At widths of 640px and above, the
+desktop booking button stays in its top-right position while the navbar
+background and other controls slide away over 500ms. The same button remains
+mounted, with its size and shape unchanged; its shadow strengthens over 200ms
+when the navbar is hidden. The transparent header area lets clicks reach the
+page underneath.
 
-The floating CTA fades in and slides upward 8px over 200ms. When the navbar
-returns, the CTA waits 500ms before fading out and sliding downward over 150ms,
-keeping booking available throughout the handoff. Scroll reversals immediately
-reverse the transition.
+At widths below 640px, the floating booking button is always available at the
+bottom right. Both versions use the brand's CMS booking configuration.
 
-Keyboard focus reveals the navbar and keeps it visible while focus is inside. A
-focused floating booking button stays available until focus leaves it. The
-navbar and CTA transitions respect reduced-motion preferences, with animation
-and delays disabled. Try this behavior in Storybook under
-`layout/Navbar → Scrollable`, which also includes a dismissible banner.
+Keyboard focus on other navbar controls reveals the navbar and keeps it visible
+while those controls are focused. Focusing the stationary desktop booking button
+preserves the collapsed state. All transitions respect reduced-motion
+preferences. Try this behavior in Storybook under `layout/Navbar → Scrollable`,
+which also includes a dismissible banner.
 
 ## Deployment
 

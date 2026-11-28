@@ -42,9 +42,8 @@ export function Navbar({
   const { i18n } = useTranslation();
   const [localeSwitcherOpen, setLocaleSwitcherOpen] = useState(false);
   const [navbarFocused, setNavbarFocused] = useState(false);
-  const [floatingCtaFocused, setFloatingCtaFocused] = useState(false);
-
   const navbarRef = useRef<HTMLDivElement>(null);
+  const desktopBookingRef = useRef<HTMLDivElement>(null);
   const scrollDirection = useScrollDirection();
   const scrollY = useScrollY();
   const isScrolled = useIsScrolled(navbarRef);
@@ -55,7 +54,16 @@ export function Navbar({
     !navbarFocused &&
     !localeSwitcherOpen;
 
-  useElementHeightObserver(navbarRef, onHeightChanged || (() => {}));
+  useNavbarHeightObserver(navbarRef, onHeightChanged);
+
+  const slideClassName = cn(
+    // Reveal the focused control before the browser scrolls it into view;
+    // React state then reveals the rest of the navbar in the same frame.
+    "transition-transform ease-in-out focus-within:translate-y-0 focus-within:duration-0 motion-reduce:transition-none",
+    navbarFocused ? "duration-0" : "duration-500",
+    navbarHidden ? "-translate-y-[var(--navbar-height)]" : "translate-y-0",
+    !navbarHidden && "pointer-events-auto",
+  );
 
   const navLinks = allBrands.find((b) => b.id === brand.id)?.navLinks;
 
@@ -69,32 +77,40 @@ export function Navbar({
     <>
       <Menu
         as="nav"
-        className={cn(
-          "sticky inset-0 z-40 bg-white focus-within:duration-0 motion-reduce:transition-none",
-          isScrolled
-            ? cn(
-                "shadow-md transition-transform duration-500 ease-in-out",
-                navbarHidden ? "-translate-y-full" : "translate-y-0",
-              )
-            : "shadow-none transition-shadow duration-1000 ease-in-out",
-        )}
+        className="pointer-events-none sticky inset-0 z-40"
         ref={mergeRefs(navbarRef, ref)}
-        onFocusCapture={() => setNavbarFocused(true)}
+        onFocusCapture={(event) => {
+          setNavbarFocused(!desktopBookingRef.current?.contains(event.target));
+        }}
         onBlurCapture={(event) => {
-          if (!event.currentTarget.contains(event.relatedTarget)) {
-            setNavbarFocused(false);
-          }
+          setNavbarFocused(
+            event.currentTarget.contains(event.relatedTarget) &&
+              !desktopBookingRef.current?.contains(event.relatedTarget),
+          );
         }}
       >
         {({ open }) => (
           <>
-            <div className="flex items-center justify-between gap-4 px-4 py-4 xl:grid xl:grid-cols-3">
+            <div
+              aria-hidden="true"
+              className={cn(
+                "absolute inset-0 bg-white",
+                slideClassName,
+                isScrolled ? "shadow-md" : "shadow-none",
+              )}
+            />
+            <div className="relative z-10 flex items-center justify-between gap-4 px-4 py-4 xl:grid xl:grid-cols-3">
               <NavbarBrandLogo
-                className="shrink-0"
+                className={cn("shrink-0", slideClassName)}
                 brand={brand}
                 allBrands={allBrands}
               />
-              <div className="z-50 hidden max-w-[40rem] space-x-12 justify-self-center overflow-hidden text-sm font-bold text-nowrap text-neutral-500 xl:block">
+              <div
+                className={cn(
+                  "z-50 hidden max-w-[40rem] space-x-12 justify-self-center overflow-hidden text-sm font-bold text-nowrap text-neutral-500 xl:block",
+                  slideClassName,
+                )}
+              >
                 {navLinks?.map((navLink) => {
                   return (
                     <NavLink key={navLink.id} link={navLink.link}>
@@ -104,26 +120,31 @@ export function Navbar({
                 })}
               </div>
               <div className="flex shrink-0 items-center justify-end gap-4">
-                <div className="hidden items-center justify-center gap-4 sm:flex xl:gap-8">
-                  {showLocaleSwitcher && (
-                    <div className="hidden leading-none sm:inline-block">
+                {showLocaleSwitcher && (
+                  <div
+                    className={cn(
+                      "hidden items-center justify-center gap-4 sm:flex xl:gap-8",
+                      slideClassName,
+                    )}
+                  >
+                    <div className="leading-none">
                       <LocaleSwitcher
                         currentLocale={i18n.language}
                         redirectTo={localeSwitcherRedirectTo}
                         publishedLocales={publishedLocales}
                       />
                     </div>
+                    {brand.bookCta?.show && (
+                      <div className="h-8 border-l border-l-neutral-300" />
+                    )}
+                  </div>
+                )}
+                <div
+                  className={cn(
+                    "-mr-2 flex items-center sm:mr-0 xl:hidden",
+                    slideClassName,
                   )}
-                  {brand.bookCta?.show ? (
-                    <>
-                      {showLocaleSwitcher && (
-                        <div className="h-8 border-l border-l-neutral-300" />
-                      )}
-                      <BookButton cta={brand.bookCta} size="medium" />
-                    </>
-                  ) : null}
-                </div>
-                <div className="-mr-2 flex items-center xl:hidden">
+                >
                   <MenuButton className="relative inline-flex items-center justify-center rounded-md p-2 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-500 focus:ring-2 focus:ring-neutral-500 focus:outline-hidden focus:ring-inset">
                     <span className="absolute -inset-0.5" />
                     <span className="sr-only">Open main menu</span>
@@ -134,10 +155,22 @@ export function Navbar({
                     )}
                   </MenuButton>
                 </div>
+                {brand.bookCta?.show ? (
+                  <div ref={desktopBookingRef} className="hidden sm:block">
+                    <BookButton
+                      cta={brand.bookCta}
+                      size="medium"
+                      className={cn(
+                        "pointer-events-auto transition-shadow duration-200 motion-reduce:transition-none",
+                        navbarHidden && "sm:shadow-lg sm:shadow-black/20",
+                      )}
+                    />
+                  </div>
+                ) : null}
               </div>
             </div>
 
-            <MenuItems className="absolute z-10 w-full bg-white shadow-md xl:hidden">
+            <MenuItems className="pointer-events-auto absolute z-10 w-full bg-white shadow-md xl:hidden">
               <div className="space-y-1 pt-2 pb-3">
                 {navLinks?.map((navLink) => {
                   return (
@@ -186,16 +219,7 @@ export function Navbar({
         <BookButton
           cta={brand.bookCta}
           size="floating-action-button"
-          className={cn(
-            "visible fixed right-6 bottom-6 z-50 translate-y-0 opacity-100 transition-[opacity,translate,visibility] delay-0 duration-200 ease-out motion-reduce:transition-none",
-            // Wait for the navbar to return before fading out. Visibility keeps
-            // the CTA interactive until the exit finishes.
-            !navbarHidden &&
-              !floatingCtaFocused &&
-              "sm:invisible sm:translate-y-2 sm:opacity-0 sm:delay-500 sm:duration-150 sm:ease-in sm:motion-reduce:delay-0",
-          )}
-          onFocus={() => setFloatingCtaFocused(true)}
-          onBlur={() => setFloatingCtaFocused(false)}
+          className="fixed right-6 bottom-6 z-50 sm:hidden"
         />
       ) : null}
     </>
@@ -210,16 +234,19 @@ function NavLink({ className, ...props }: NavLinkProps) {
   );
 }
 
-function useElementHeightObserver(
+function useNavbarHeightObserver(
   ref: RefObject<HTMLElement | null>,
-  onHeightChanged: (height: number) => void,
+  onHeightChanged?: (height: number) => void,
 ) {
   useEffect(() => {
     if (!ref.current) return;
+    const element = ref.current;
 
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        onHeightChanged(entry.borderBoxSize[0].blockSize);
+        const height = entry.borderBoxSize[0].blockSize;
+        element.style.setProperty("--navbar-height", `${height}px`);
+        onHeightChanged?.(height);
       }
     });
     observer.observe(ref.current, { box: "border-box" });

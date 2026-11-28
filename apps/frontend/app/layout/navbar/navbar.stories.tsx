@@ -91,8 +91,9 @@ export const Scrollable: Story = {
         <h2 className="text-2xl font-bold">Scroll to try the navbar</h2>
         <p className="mt-4">
           Scroll down past 100px to hide the navbar, then scroll up to reveal
-          it. Booking stays available at the bottom right while the navbar is
-          hidden. On mobile, the floating booking button is always available.
+          it. On desktop, the booking button stays in place at the top right as
+          the rest of the navbar slides away. On mobile, booking is always
+          available at the bottom right.
         </p>
         <button className="mt-8 rounded-md border p-3" type="button">
           Focus outside the navbar
