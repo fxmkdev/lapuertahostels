@@ -97,3 +97,7 @@ actionlint .github/workflows/build.yml
 The tests use isolated Git fixtures and simulated registries; they do not need
 Fly credentials. Full workflow validation additionally requires a GitHub Actions
 run with the existing Fly, Chromatic, and E2E secrets.
+
+Fly builds use an app-scoped Depot cache. This isolates CMS and frontend build
+state and avoids waiting on a stalled organization-wide deduplication step.
+Image reuse still uses the validated input fingerprints and digest checks.

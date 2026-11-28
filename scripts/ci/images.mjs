@@ -90,6 +90,8 @@ function flyBuild({ app, imageApp, imageTag, buildTag, appVersion }) {
       "--config",
       `apps/${app}/fly.build.toml`,
       "--build-only",
+      "--depot-scope",
+      "app",
       "--build-arg",
       `APP_VERSION=${appVersion}`,
       "--image-label",

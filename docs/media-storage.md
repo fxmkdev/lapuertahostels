@@ -149,6 +149,24 @@ restoration in a separate bucket and database before production cutover.
    `MEDIA_OPTIMIZATION_ENABLED=false` on the CMS and
    `MEDIA_USE_DERIVATIVES=false` on the frontend.
 
+## Fly benchmark (2026-11-28)
+
+Recipe 1 was measured on the existing staging machine in `cdg`: one shared CPU,
+2048 MiB RAM, Sharp 0.35.5. These are the three largest staging JPEGs. Encoding
+excludes object downloads and uploads. Peak process RSS, including Payload
+initialization, was 453,688 KiB (443 MiB); VM sizing stays unchanged.
+
+| Photo                                                     | Original bytes | Derivative bytes | Encoding time | Outputs |
+| --------------------------------------------------------- | -------------: | ---------------: | ------------: | ------: |
+| Piscina.jpg                                               |     20,352,272 |       14,509,339 |        28.2 s |      27 |
+| mesmerizing-scenery-seascape-with-lush-nature-daytime.jpg |     15,138,691 |        6,929,616 |        14.6 s |      27 |
+| Twin room.jpg                                             |     14,837,563 |        4,671,835 |        24.9 s |      27 |
+
+The derivatives add 26,110,790 bytes alongside 50,328,526 original bytes for
+this sample (52% additional storage). Full-bucket growth depends on image sizes,
+videos, and focal-edit history; retain the final migration inventory with the
+cutover report. Metadata-only edits reuse these outputs.
+
 ## Final retirement checklist
 
 After the rollback window, verify the final release, backups/restores, media
