@@ -152,50 +152,29 @@ jobs:
 
   frontend-build-push:
     name: "Build / Frontend: Build and Push"
-    runs-on: ubuntu-latest
     needs: [detect-changes, verify-cms-types, version]
     if: >-
       !cancelled() && needs.detect-changes.result == 'success' &&
       needs.version.result == 'success' && (needs.verify-cms-types.result ==
       'success' || (needs.detect-changes.outputs.types_changed == 'false' &&
       needs.verify-cms-types.result == 'skipped'))
-    outputs:
-      image: ${{ steps.prepare.outputs.image }}
-      checks: ${{ steps.prepare.outputs.checks }}
-      built: ${{ steps.prepare.outputs.built }}
-      digest: ${{ steps.prepare.outputs.digest }}
-      cache_image: ${{ steps.prepare.outputs.cache_image }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-      - name: Set up flyctl
-        uses: superfly/flyctl-actions/setup-flyctl@v1
-        with:
-          version: ${{ env.FLYCTL_VERSION }}
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-      - name: Authenticate Fly registry
-        uses: docker/login-action@v4
-        with:
-          registry: registry.fly.io
-          username: x
-          password: ${{ secrets.FLY_API_TOKEN }}
-      - name: Build or reuse frontend image
-        id: prepare
-        run: node scripts/ci/images.mjs
-        env:
-          APP: frontend
-          IMAGE_APP: ${{ vars.FLY_STAGING_FRONTEND_APP }}
-          IMAGE_KEY: ${{ needs.detect-changes.outputs.frontend_key }}
-          IMAGE_TAG: v${{ needs.version.outputs.version_with_sha }}
-          BUILD_TAG: ci-build-${{ github.run_id }}-${{ github.run_attempt }}
-          APP_VERSION: ${{ needs.version.outputs.version }}
-          CHANGED: ${{ needs.detect-changes.outputs.frontend_changed }}
-          FORCE_REBUILD: ${{ needs.detect-changes.outputs.force }}
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+    # Replace only this PR's image work; deployments are outside this group.
+    concurrency:
+      group:
+        ci-image-request-frontend-${{ github.event.pull_request.number ||
+        github.run_id }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+    uses: ./.github/workflows/prepare-image.yml
+    with:
+      app: frontend
+      image_app: ${{ vars.FLY_STAGING_FRONTEND_APP }}
+      image_key: ${{ needs.detect-changes.outputs.frontend_key }}
+      image_tag: v${{ needs.version.outputs.version_with_sha }}
+      app_version: ${{ needs.version.outputs.version }}
+      changed: ${{ needs.detect-changes.outputs.frontend_changed == 'true' }}
+      force_rebuild: ${{ needs.detect-changes.outputs.force == 'true' }}
+    secrets:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
   frontend-publish-chromatic:
     name: "Build / Frontend: Publish to Chromatic"
@@ -298,50 +277,29 @@ jobs:
 
   cms-build-push:
     name: "Build / CMS: Build and Push"
-    runs-on: ubuntu-latest
     needs: [detect-changes, verify-cms-types, version]
     if: >-
       !cancelled() && needs.detect-changes.result == 'success' &&
       needs.version.result == 'success' && (needs.verify-cms-types.result ==
       'success' || (needs.detect-changes.outputs.types_changed == 'false' &&
       needs.verify-cms-types.result == 'skipped'))
-    outputs:
-      image: ${{ steps.prepare.outputs.image }}
-      checks: ${{ steps.prepare.outputs.checks }}
-      built: ${{ steps.prepare.outputs.built }}
-      digest: ${{ steps.prepare.outputs.digest }}
-      cache_image: ${{ steps.prepare.outputs.cache_image }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-      - name: Set up flyctl
-        uses: superfly/flyctl-actions/setup-flyctl@v1
-        with:
-          version: ${{ env.FLYCTL_VERSION }}
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-      - name: Authenticate Fly registry
-        uses: docker/login-action@v4
-        with:
-          registry: registry.fly.io
-          username: x
-          password: ${{ secrets.FLY_API_TOKEN }}
-      - name: Build or reuse cms image
-        id: prepare
-        run: node scripts/ci/images.mjs
-        env:
-          APP: cms
-          IMAGE_APP: ${{ vars.FLY_STAGING_CMS_APP }}
-          IMAGE_KEY: ${{ needs.detect-changes.outputs.cms_key }}
-          IMAGE_TAG: v${{ needs.version.outputs.version_with_sha }}
-          BUILD_TAG: ci-build-${{ github.run_id }}-${{ github.run_attempt }}
-          APP_VERSION: ${{ needs.version.outputs.version }}
-          CHANGED: ${{ needs.detect-changes.outputs.cms_changed }}
-          FORCE_REBUILD: ${{ needs.detect-changes.outputs.force }}
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+    # Replace only this PR's image work; deployments are outside this group.
+    concurrency:
+      group:
+        ci-image-request-cms-${{ github.event.pull_request.number ||
+        github.run_id }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+    uses: ./.github/workflows/prepare-image.yml
+    with:
+      app: cms
+      image_app: ${{ vars.FLY_STAGING_CMS_APP }}
+      image_key: ${{ needs.detect-changes.outputs.cms_key }}
+      image_tag: v${{ needs.version.outputs.version_with_sha }}
+      app_version: ${{ needs.version.outputs.version }}
+      changed: ${{ needs.detect-changes.outputs.cms_changed == 'true' }}
+      force_rebuild: ${{ needs.detect-changes.outputs.force == 'true' }}
+    secrets:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
   e2e-tests:
     name: Build / End-to-End Tests

@@ -1,0 +1,94 @@
+name: Prepare Image
+
+on:
+  workflow_call:
+    inputs:
+      app:
+        type: string
+        required: true
+      image_app:
+        description:
+          "Staging Fly app whose registry and builder prepare this image"
+        type: string
+        required: true
+      image_key:
+        type: string
+        required: true
+      image_tag:
+        type: string
+        required: true
+      app_version:
+        type: string
+        required: true
+      changed:
+        type: boolean
+        required: true
+      force_rebuild:
+        type: boolean
+        required: true
+    secrets:
+      FLY_API_TOKEN:
+        required: true
+    outputs:
+      image:
+        value: ${{ jobs.prepare.outputs.image }}
+      digest:
+        value: ${{ jobs.prepare.outputs.digest }}
+      cache_image:
+        value: ${{ jobs.prepare.outputs.cache_image }}
+      checks:
+        value: ${{ jobs.prepare.outputs.checks }}
+      built:
+        value: ${{ jobs.prepare.outputs.built }}
+
+env:
+  NODE_VERSION: 26
+  FLYCTL_VERSION: 0.5.11
+
+jobs:
+  prepare:
+    name: Prepare image
+    runs-on: ubuntu-latest
+    # This lock spans registry inspection, build, and alias publication. Its
+    # group must differ from the caller's per-PR cancellation group.
+    concurrency:
+      group: ci-image-builder-${{ inputs.image_app }}
+      queue: max
+      cancel-in-progress: false
+    outputs:
+      image: ${{ steps.prepare.outputs.image }}
+      digest: ${{ steps.prepare.outputs.digest }}
+      cache_image: ${{ steps.prepare.outputs.cache_image }}
+      checks: ${{ steps.prepare.outputs.checks }}
+      built: ${{ steps.prepare.outputs.built }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Set up flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@v1
+        with:
+          version: ${{ env.FLYCTL_VERSION }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+      - name: Authenticate Fly registry
+        uses: docker/login-action@v4
+        with:
+          registry: registry.fly.io
+          username: x
+          password: ${{ secrets.FLY_API_TOKEN }}
+      - name: Build or reuse ${{ inputs.app }} image
+        id: prepare
+        run: node scripts/ci/images.mjs
+        env:
+          APP: ${{ inputs.app }}
+          IMAGE_APP: ${{ inputs.image_app }}
+          IMAGE_KEY: ${{ inputs.image_key }}
+          IMAGE_TAG: ${{ inputs.image_tag }}
+          BUILD_TAG: ci-build-${{ github.run_id }}-${{ github.run_attempt }}
+          APP_VERSION: ${{ inputs.app_version }}
+          CHANGED: ${{ inputs.changed }}
+          FORCE_REBUILD: ${{ inputs.force_rebuild }}
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

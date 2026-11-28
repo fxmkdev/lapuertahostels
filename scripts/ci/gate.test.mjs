@@ -64,6 +64,14 @@ test("core jobs cannot be skipped", () => {
   needs["detect-changes"].result = "skipped";
   assert.throws(() => validate(needs), /detect-changes/);
 });
+for (const app of ["frontend", "cms"]) {
+  test(`superseded ${app} image preparation blocks E2E and promotion`, () => {
+    const needs = fixture(true, true);
+    needs[`${app}-build-push`] = { result: "cancelled", outputs: {} };
+    assert.throws(() => validatePrerequisites(needs), /Required job/);
+    assert.throws(() => validate(needs), /Required job/);
+  });
+}
 test("unexpected failures and cancellations block the gate", () => {
   for (const result of ["failure", "cancelled"]) {
     const needs = fixture();
