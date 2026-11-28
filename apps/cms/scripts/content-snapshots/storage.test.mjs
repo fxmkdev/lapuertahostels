@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, rm, writeFile, readdir } from "node:fs/promises";
+import { dirname } from "node:path";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { cleanup, verifySnapshot } from "./snapshot.mjs";
@@ -79,4 +80,78 @@ test("retention keeps five complete snapshots and recent unfinished uploads", as
       "snapshots/old-incomplete/database",
     ].sort(),
   );
+});
+
+function verificationFixture() {
+  const hash = "a".repeat(64);
+  const artifacts = Array.from({ length: 40 }, (_, index) => ({
+    kind: index === 0 ? "database" : "media",
+    key: `snapshots/test/${index}`,
+    mediaKey: `media-${index}`,
+    size: 1,
+    sha256: hash,
+  }));
+  const manifest = {
+    formatVersion: 1,
+    id: "test",
+    createdAt: new Date().toISOString(),
+    sourceDatabase: "source",
+    collections: ["pages"],
+    migrations: [],
+    artifacts,
+  };
+  let peakFiles = 0;
+  const store = {
+    json: async () => manifest,
+    download: async (_key, file) => {
+      await writeFile(file, "x");
+      peakFiles = Math.max(peakFiles, (await readdir(dirname(file))).length);
+      return { size: 1, sha256: hash };
+    },
+  };
+  return { manifest, store, peakFiles: () => peakFiles };
+}
+test("verification discards media while retaining only the database when requested", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "bounded-snapshot-test-"));
+  try {
+    const data = verificationFixture();
+    await verifySnapshot(data.store, "test", [], dir);
+    assert.deepEqual(await readdir(dir), []);
+    assert.equal(data.peakFiles(), 1);
+    const verified = await verifySnapshot(data.store, "test", [], dir, {
+      keepDatabase: true,
+    });
+    assert.deepEqual(await readdir(dir), ["database.archive.gz"]);
+    assert.equal(verified.files.length, 1);
+    assert.equal(verified.files[0].artifact.kind, "database");
+    assert.equal(data.peakFiles(), 2);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+test("completion manifest is published only after every uploaded artifact verifies", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "complete-snapshot-test-"));
+  try {
+    const { completeSnapshot } = await import("./artifacts.mjs");
+    const data = verificationFixture();
+    const writes = [];
+    data.store.putJson = async (key) => {
+      writes.push(key);
+    };
+    const download = data.store.download;
+    data.store.download = async (...args) => ({
+      ...(await download(...args)),
+      sha256: "0".repeat(64),
+    });
+    await assert.rejects(
+      completeSnapshot(data.store, data.manifest, [], dir),
+      /Checksum mismatch/,
+    );
+    assert.deepEqual(writes, []);
+    data.store.download = download;
+    await completeSnapshot(data.store, data.manifest, [], dir);
+    assert.deepEqual(writes, ["snapshots/test/manifest.json", "latest.json"]);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
 });

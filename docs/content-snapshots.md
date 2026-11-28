@@ -64,10 +64,15 @@ sessions, document locks, jobs, and unknown future collections. Add new content
 collections to that allowlist deliberately when changing the schema.
 
 The publisher reads artifacts back and verifies them before updating
-`latest.json`. Publication failure leaves the previous latest snapshot
-available; the workflow fails without rolling back production. The latest five
-completed snapshots are retained. Successful publications also clean incomplete
-uploads older than 24 hours. Individual objects must be smaller than 5 GB.
+`latest.json`. Export, upload or verification failure leaves the previous latest
+snapshot available; the workflow fails without rolling back production.
+Retention cleanup runs afterward: a cleanup failure fails the job while keeping
+the newly verified snapshot available. The latest five completed snapshots are
+retained. Successful publications also clean incomplete uploads older than 24
+hours. Individual objects must be smaller than 5 GB. Verification discards each
+object after checking it. Restoration retains only the database archive and one
+media object at a time; scratch space must accommodate that archive plus the
+largest media object, rather than the entire media bucket.
 
 These exports are for content refreshes, not point-in-time disaster recovery.
 Production editing remains available during export, so concurrent edits can span
@@ -102,6 +107,8 @@ database are accepted. Production's release command runs migrations without a
 restore. After successful deployment, paused Machines resume and each affected
 frontend invalidates its cache through its existing authenticated endpoint. The
 invalidation secret is evaluated within each frontend Machine and never printed.
+Connection failures and warming HTTP responses are retried; authentication
+failures stop immediately.
 
 ## Failure and recovery
 
@@ -126,10 +133,18 @@ restoration to bypass an incomplete restore. The restore is repeatable and
 preserves target users/keys even if a previous attempt dropped content before
 failing.
 
+Recover before five newer publications retire the pinned snapshot. Retention
+does not lease snapshots for failed deployments. If the pinned artifacts have
+expired, ordinary reruns fail preflight and keep CMS apps offline; an operator
+must arrange a replacement snapshot and explicitly reconcile the recovery pin
+before retrying. Long-lived recovery leases are outside this retention policy.
+
 If a publisher fails, inspect its Fly logs. The orchestration waits for the
 actual process exit code, fails on a nonzero/missing exit status or a 30-minute
-timeout, and removes the temporary Machine afterward. A launch/start event alone
-never counts as a successful publication.
+timeout, and removes the temporary Machine afterward. An unconditional workflow
+cleanup step also removes the worker after cancellation, identified by that
+workflow run and attempt, before the production lifecycle lock is released. A
+launch/start event alone never counts as a successful publication.
 
 ## Initial rollout and validation
 

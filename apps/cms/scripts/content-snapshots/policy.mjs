@@ -62,7 +62,7 @@ export function assertTarget(env) {
     "Cannot restore production",
   );
 }
-export function validateManifest(value, id, availableMigrations) {
+function validateIdentity(value, id) {
   assert(
     value?.formatVersion === 1 && value.id === snapshotId(id),
     "Unsupported snapshot manifest",
@@ -77,6 +77,8 @@ export function validateManifest(value, id, availableMigrations) {
       Number.isFinite(Date.parse(value.createdAt)),
     "Invalid snapshot timestamp",
   );
+}
+function validateCollections(value, availableMigrations) {
   assert(
     Array.isArray(value.collections) &&
       value.collections.length &&
@@ -95,6 +97,8 @@ export function validateManifest(value, id, availableMigrations) {
       ),
     "Snapshot migrations are incompatible with this image",
   );
+}
+function validateArtifacts(value, id) {
   assert(
     Array.isArray(value.artifacts) && value.artifacts.length > 0,
     "Empty snapshot",
@@ -133,5 +137,10 @@ export function validateManifest(value, id, availableMigrations) {
     new Set(media.map((item) => item.mediaKey)).size === media.length,
     "Duplicate media keys",
   );
+}
+export function validateManifest(value, id, availableMigrations) {
+  validateIdentity(value, id);
+  validateCollections(value, availableMigrations);
+  validateArtifacts(value, id);
   return value;
 }

@@ -1,89 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { mkdtemp, rm, readFile } from "node:fs/promises";
-import { copyFileSync, writeFileSync, readFileSync, existsSync } from "node:fs";
+import { copyFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { Fly, allowedApp, immutableImage } from "./content-snapshots.mjs";
+import { Fly, allowedApp } from "./content-snapshots.mjs";
+import { env, fixture } from "./snapshot-test-fixture.mjs";
 import { recoverWorkflowPin } from "./snapshot-pin.mjs";
-
-const env = {
-  FLY_API_TOKEN: "test-token",
-  FLY_ORG: "test-org",
-  SNAPSHOT_ID: "snapshot-one",
-  DEPLOYMENT_ENVIRONMENT: "preview",
-  SNAPSHOT_PRODUCTION_APP: "production",
-  SNAPSHOT_STAGING_APP: "staging",
-  SNAPSHOT_PREVIEW_APP_PREFIX: "preview",
-  CMS_APP: "preview-abc",
-  FRONTEND_PREVIEW_APP_PREFIX: "web",
-};
-function fixture() {
-  const machines = new Map(
-    [
-      "preview-abc",
-      "preview-def",
-      "production",
-      "staging",
-      "web-abc",
-      "web-def",
-    ].map((app, index) => [
-      app,
-      [
-        {
-          id: `id-${index}`,
-          name: `machine-${index}`,
-          state: "started",
-          config: {
-            image: "image",
-            env: {},
-            metadata: { fly_process_group: "app" },
-            services: [{ autostart: true }],
-            restart: { policy: "on-failure" },
-          },
-        },
-      ],
-    ]),
-  );
-  const calls = [];
-  const commands = [];
-  const fly = new Fly(env, {
-    wait: async () => {},
-    run: (command, args) => {
-      commands.push([command, args]);
-      if (args[0] === "apps")
-        return JSON.stringify([...machines.keys()].map((Name) => ({ Name })));
-    },
-    fetcher: async (url, options) => {
-      assert.equal(options.headers.Authorization, "Bearer test-token");
-      const [, app, , id, action] = new URL(url).pathname.slice(4).split("/");
-      calls.push({
-        app,
-        id,
-        action,
-        method: options.method,
-        body: options.body && JSON.parse(options.body),
-      });
-      const list = machines.get(app);
-      let result = list;
-      if (id) {
-        const machine = list.find((machine) => machine.id === id);
-        if (options.method === "POST") {
-          if (action === "stop") machine.state = "stopped";
-          else if (action === "start") machine.state = "started";
-          else machine.config = JSON.parse(options.body).config;
-        }
-        result = machine;
-      }
-      return {
-        ok: true,
-        status: 200,
-        json: async () => structuredClone(result),
-      };
-    },
-  });
-  return { fly, machines, calls, commands };
-}
 test("app allowlists exclude production and unrelated previews", () => {
   assert(allowedApp("preview-abc", env));
   assert(!allowedApp("production", env));
@@ -91,6 +14,7 @@ test("app allowlists exclude production and unrelated previews", () => {
   assert(!allowedApp("staging", env));
   assert(allowedApp("staging", { ...env, DEPLOYMENT_ENVIRONMENT: "staging" }));
 });
+
 test("maintenance disables autostart before stopping all shared CMS Machines, persists recovery, and resumes", async () => {
   const dir = await mkdtemp(join(tmpdir(), "snapshot-maintenance-test-"));
   const cwd = process.cwd();
@@ -131,6 +55,7 @@ test("maintenance disables autostart before stopping all shared CMS Machines, pe
     await rm(dir, { recursive: true, force: true });
   }
 });
+
 test("recovery refuses a different snapshot and leaves Machines stopped", async () => {
   const dir = await mkdtemp(join(tmpdir(), "snapshot-recovery-test-"));
   const cwd = process.cwd();
@@ -149,31 +74,7 @@ test("recovery refuses a different snapshot and leaves Machines stopped", async 
     await rm(dir, { recursive: true, force: true });
   }
 });
-test("publisher completion checks exit status rather than Machine startup", async () => {
-  for (const exitCode of [0, 1, undefined]) {
-    const fly = new Fly(env, { wait: async () => {} });
-    let polls = 0;
-    fly.machine = async () =>
-      ++polls === 1
-        ? { state: "started" }
-        : {
-            state: "stopped",
-            events: [
-              {
-                type: "exit",
-                request: { exit_event: { exit_code: exitCode } },
-              },
-            ],
-          };
-    if (exitCode === 0) await fly.completed("production", "publisher");
-    else
-      await assert.rejects(
-        fly.completed("production", "publisher"),
-        /Publisher failed/,
-      );
-    assert.equal(polls, 2);
-  }
-});
+
 test("frontend invalidation covers every shared preview and evaluates secrets remotely", async () => {
   const { fly, commands } = fixture();
   await fly.invalidate();
@@ -185,72 +86,6 @@ test("frontend invalidation covers every shared preview and evaluates secrets re
     ),
   );
   assert(ssh.every(([, args]) => !args.includes("production")));
-});
-test("publisher uses an immutable deployed digest", () => {
-  assert.equal(
-    immutableImage({
-      image_ref: {
-        registry: "registry.fly.io",
-        repository: "cms",
-        digest: "sha256:abc",
-      },
-    }),
-    "registry.fly.io/cms@sha256:abc",
-  );
-  assert.throws(() => immutableImage({ config: { image: "cms:latest" } }));
-});
-
-test("publisher always destroys its isolated worker after observing success or failure", async () => {
-  for (const exitCode of [0, 1]) {
-    let worker;
-    let configFile;
-    let destroyed = false;
-    const source = {
-      region: "cdg",
-      image_ref: {
-        registry: "registry.fly.io",
-        repository: "cms",
-        digest: "sha256:abc",
-      },
-      config: {
-        metadata: { fly_process_group: "app" },
-        env: {},
-        guest: { cpus: 1, memory_mb: 256 },
-      },
-    };
-    const fly = new Fly(env, {
-      run: (_command, args) => {
-        configFile = args[args.indexOf("--machine-config") + 1];
-        const config = JSON.parse(readFileSync(configFile, "utf8"));
-        assert.deepEqual(config.services, []);
-        assert.equal(config.restart.policy, "no");
-        assert.equal(
-          config.env.SNAPSHOT_SOURCE_IMAGE,
-          "registry.fly.io/cms@sha256:abc",
-        );
-        assert.equal(config.env.DEPLOYMENT_ENVIRONMENT, "production");
-        worker = {
-          id: "worker",
-          name: args[args.indexOf("--name") + 1],
-          state: "stopped",
-          events: [
-            { type: "exit", request: { exit_event: { exit_code: exitCode } } },
-          ],
-        };
-      },
-    });
-    fly.machines = async () => [source, ...(worker ? [worker] : [])];
-    fly.machine = async () => worker;
-    fly.request = async (path, method) => {
-      assert(path.endsWith("/worker?force=true"));
-      assert.equal(method, "DELETE");
-      destroyed = true;
-    };
-    if (exitCode === 0) await fly.publish();
-    else await assert.rejects(fly.publish(), /Publisher failed/);
-    assert(destroyed);
-    assert(!existsSync(configFile));
-  }
 });
 
 test("workflow retries recover their original pin even when no CMS Machine survived", async () => {

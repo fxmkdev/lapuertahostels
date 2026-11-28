@@ -472,7 +472,15 @@ jobs:
         with:
           version: ${{ env.FLYCTL_VERSION }}
       - name: Publish using the deployed production image
+        id: publish
         if: vars.SNAPSHOT_PUBLISH_ENABLED == 'true'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: node scripts/ci/content-snapshots.mjs publish
+      - name: Clean up the publisher after cancellation or failure
+        if:
+          ${{ always() && steps.publish.outcome != 'skipped' &&
+          steps.publish.outcome != '' }}
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: node scripts/ci/content-snapshots.mjs cleanup-publisher
