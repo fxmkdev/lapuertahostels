@@ -12,9 +12,7 @@ import {
 } from "~/common/routing";
 import type { SerializeFromLoader } from "~/common/types";
 import { type loader as rootLoader } from "~/root";
-import { toImagekitTransformationString } from "~/common/image";
-import { getAltFromMedia, getFocalPropsFromMedia } from "~/common/media";
-import { resolveFocalCrop } from "~/common/image-focal-point";
+import { getAltFromMedia, getSocialImage } from "~/common/media";
 import { PAGE_DEPTH } from "~/cms-data";
 import { getSettings, tryGetLocalizedPathname } from "~/cms-data.server";
 import type { LocaleConfig } from "@lapuertahostels/payload-types";
@@ -110,7 +108,12 @@ function getTwitterCardImageMeta(
   return [
     {
       name: "twitter:image",
-      content: getSocialImageUrl(data, rootLoaderData, 2400, 1200),
+      content: getSocialImage(
+        image,
+        rootLoaderData.environment.mediaBaseUrl,
+        "twitter",
+        rootLoaderData.environment.mediaUseDerivatives,
+      ).url,
     },
     {
       name: "twitter:image:alt",
@@ -132,44 +135,26 @@ function getOpenGraphImageMeta(
     throw new Error("Invalid image");
   }
 
-  const width = 1200;
-  const height = 630;
+  const social = getSocialImage(
+    image,
+    rootLoaderData.environment.mediaBaseUrl,
+    "opengraph",
+    rootLoaderData.environment.mediaUseDerivatives,
+  );
 
   return [
     {
       name: "og:image",
-      content: getSocialImageUrl(data, rootLoaderData, width, height),
+      content: social.url,
     },
     {
       name: "og:image:alt",
       content: getAltFromMedia(image) ?? "",
     },
-    { name: "og:image:type", content: image.mimeType ?? "" },
-    { name: "og:image:width", content: width.toString() },
-    { name: "og:image:height", content: height.toString() },
+    { name: "og:image:type", content: social.mimeType ?? "" },
+    { name: "og:image:width", content: social.width?.toString() ?? "" },
+    { name: "og:image:height", content: social.height?.toString() ?? "" },
   ];
-}
-
-function getSocialImageUrl(
-  data: SerializeFromLoader<typeof loader>,
-  rootLoaderData: SerializeFromLoader<typeof rootLoader>,
-  width: number,
-  height: number,
-) {
-  const image = data.content.seo?.image;
-  if (typeof image !== "object") {
-    throw new Error("Invalid image");
-  }
-
-  if (!image) return "";
-
-  const { focalPoint, sourceAspectRatio } = getFocalPropsFromMedia(image);
-  const { transformation } = resolveFocalCrop(
-    { width, height },
-    focalPoint,
-    sourceAspectRatio,
-  );
-  return `${rootLoaderData.environment.imagekitBaseUrl.toString()}/${toImagekitTransformationString(transformation!)}/${image.filename}`;
 }
 
 export async function loader({ request, url }: LoaderFunctionArgs) {

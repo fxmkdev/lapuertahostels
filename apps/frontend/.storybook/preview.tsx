@@ -24,7 +24,7 @@ const withReactRouter: Decorator = (Story) => {
             environment: {
               version: "0.0.0-storybook",
               // @ts-expect-error env exists
-              imagekitBaseUrl: import.meta.env.STORYBOOK_IMAGEKIT_BASE_URL,
+              mediaBaseUrl: import.meta.env.STORYBOOK_MEDIA_PUBLIC_BASE_URL,
               payloadCmsBaseUrl: "http://wwww.example.com",
               useImageCacheBuster:
                 // @ts-expect-error env exists

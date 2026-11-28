@@ -123,7 +123,9 @@ export function HeroSlidesBlock({
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
+            {/* A 4:3 source must cover the 30rem / 40rem hero height too. */}
             <SlideImage
+              sizes="(min-width: 48rem) max(100vw, 53.334rem), max(100vw, 40rem)"
               media={slide.image}
               withPreview={i === 0}
               alignment={slide.imageAlignment ?? "center"}

@@ -595,6 +595,25 @@ export interface ApiKeyAuthOperations {
  */
 export interface Media {
   id: string;
+  sizes?: {
+    thumbnail?: {
+      filename?: string | null;
+      url?: string | null;
+      mimeType?: string | null;
+      width?: number | null;
+      height?: number | null;
+      filesize?: number | null;
+    };
+  };
+  imageVariants?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   displayWidth?: number | null;
   displayHeight?: number | null;
   category?: (string | null) | MediaCategory;
@@ -612,16 +631,6 @@ export interface Media {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
-  sizes?: {
-    thumbnail?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1805,6 +1814,21 @@ export interface PayloadMigration {
  * via the `definition` "media_select".
  */
 export interface MediaSelect<T extends boolean = true> {
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              filename?: T;
+              url?: T;
+              mimeType?: T;
+              width?: T;
+              height?: T;
+              filesize?: T;
+            };
+      };
+  imageVariants?: T;
   displayWidth?: T;
   displayHeight?: T;
   category?: T;
@@ -1822,20 +1846,6 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
-  sizes?:
-    | T
-    | {
-        thumbnail?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

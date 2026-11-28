@@ -1,3 +1,7 @@
+import {
+  readImageManifest,
+  publicMediaUrl,
+} from "@lapuertahostels/payload-types";
 import type { Media } from "@lapuertahostels/payload-types";
 import type { ImageProps } from "./image";
 import { Image } from "./image";
@@ -8,7 +12,11 @@ import { gracefully, isObject } from "./utils";
 
 export function getSrcFromMedia(media: Media | string | undefined | null) {
   const filename = gracefully(media, "filename");
-  return filename ? `/${encodeURIComponent(filename)}` : "";
+  if (!filename) return "";
+  const key = [gracefully(media, "_objectKey"), filename]
+    .filter(Boolean)
+    .join("/");
+  return `/${key}`;
 }
 
 export function getAltFromMedia(media: Media | string | undefined | null) {
@@ -43,14 +51,10 @@ export function getFocalPropsFromMedia(
   if (!isValidFocalPoint(focalPoint)) return {};
   return {
     focalPoint,
-    sourceAspectRatio: dimensions.width / dimensions.height,
   };
 }
 
-export type MediaImageProps = Omit<
-  ImageProps,
-  "src" | "alt" | "focalPoint" | "sourceAspectRatio"
-> & {
+export type MediaImageProps = Omit<ImageProps, "src" | "alt" | "focalPoint"> & {
   media?: string | Media; // matching generated Payload type to make usage simpler – check at runtime
 };
 
@@ -71,6 +75,8 @@ export function MediaImage({
     <Image
       className={className}
       src={getSrcFromMedia(media)}
+      variants={readImageManifest(media.imageVariants)}
+      originalVersion={media.updatedAt}
       alt={getAltFromMedia(media)}
       onLoadingFinished={onLoadingFinished}
       {...props}
@@ -90,4 +96,27 @@ export function MediaPlaceholder({
   return (
     <PhotoIcon className="h-full w-full bg-neutral-100 text-neutral-300" />
   );
+}
+
+export function getSocialImage(
+  media: Media,
+  baseUrl: string,
+  preset: "opengraph" | "twitter",
+  useDerivatives = true,
+) {
+  const variant = useDerivatives
+    ? readImageManifest(media.imageVariants)?.variants.find(
+        (v) => v.preset === preset,
+      )
+    : undefined;
+  const dimensions = getDisplayDimensionsFromMedia(media);
+  return {
+    url: publicMediaUrl(
+      baseUrl,
+      variant?.key ?? getSrcFromMedia(media).replace(/^\//, ""),
+    ),
+    width: variant?.width ?? dimensions?.width,
+    height: variant?.height ?? dimensions?.height,
+    mimeType: variant?.mimeType ?? media.mimeType,
+  };
 }

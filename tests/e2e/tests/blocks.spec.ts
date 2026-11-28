@@ -1,3 +1,4 @@
+import { readImageManifest } from "@lapuertahostels/payload-types";
 import test, { expect } from "@playwright/test";
 import { getOrCreateMedia, createPage } from "../common/cms";
 import { paragraph, richTextRoot, text } from "@lapuertahostels/rich-text";
@@ -31,7 +32,7 @@ test("hero heading block", async ({ page }) => {
       .and(page.getByTestId("full-image")),
   ).toHaveAttribute(
     "srcset",
-    /mesmerizing-scenery-seascape-with-lush-nature-daytime\.jpg/,
+    new RegExp(readImageManifest(media.imageVariants)!.sourceHash),
   );
 });
 
@@ -102,7 +103,7 @@ test("hero slides block", async ({ page }) => {
       .and(page.getByTestId("full-image")),
   ).toHaveAttribute(
     "srcset",
-    /mesmerizing-scenery-seascape-with-lush-nature-daytime\.jpg/,
+    new RegExp(readImageManifest(media1.imageVariants)!.sourceHash),
   );
 
   // The button is server-rendered before idle hydration attaches its handler.

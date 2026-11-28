@@ -29,12 +29,9 @@ export function ImageWithFloatingTextBlock({
           transformation={{
             width: 900,
             aspectRatio: { width: 1, height: 1 },
-            cropStrategy: "maintain_ratio",
-            focus: "auto",
           }}
           loading="lazy"
           layout="responsive"
-          srcMultiplier={4}
           sizes="(min-width: 1024px) 896px, 100vw"
         />
         <div

@@ -56,7 +56,6 @@ export function Feature({
           loading="lazy"
           layout="responsive"
           sizes="(min-width: 640px) 448px, 100vw"
-          srcMultiplier={4}
         />
       </div>
     </div>

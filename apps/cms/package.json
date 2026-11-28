@@ -5,21 +5,25 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "build": "pnpm generate:importmap && cross-env NODE_OPTIONS=--no-deprecation next build",
+    "build": "node scripts/with-build-env.mjs pnpm run build:configured",
     "prod-preview": "pnpm build && mv .next/static .next/standalone/.next/static && cross-env PORT=3001 node .next/standalone/server.js",
     "dev": "cross-env NODE_OPTIONS=--no-deprecation PORT=3001 next dev --turbopack",
     "devsafe": "rm -rf .next && cross-env NODE_OPTIONS=--no-deprecation next dev",
-    "generate:importmap": "touch \"src/app/(payload)/admin/importMap.js\" && cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
-    "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
+    "generate:importmap": "touch \"src/app/(payload)/admin/importMap.js\" && node scripts/with-build-env.mjs pnpm exec cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
+    "generate:types": "node scripts/with-build-env.mjs pnpm exec cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
     "lint": "cross-env NODE_OPTIONS=--no-deprecation eslint .",
     "test": "vitest run",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "start": "cross-env NODE_OPTIONS=--no-deprecation PORT=3001 next start",
     "check-format": "prettier --check .",
-    "typecheck": "next typegen && tsc --noEmit"
+    "typecheck": "next typegen && tsc --noEmit",
+    "build:configured": "pnpm generate:importmap && cross-env NODE_OPTIONS=--no-deprecation next build",
+    "media": "payload run src/media/cli.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1147.0",
+    "@lapuertahostels/live-preview": "workspace:../../libs/live-preview",
+    "@lapuertahostels/payload-types": "workspace:../../libs/payload-types",
     "@payloadcms/db-mongodb": "^3.94.1",
     "@payloadcms/email-resend": "^3.94.1",
     "@payloadcms/next": "^3.94.1",
@@ -37,8 +41,7 @@
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "sharp": "0.35.5",
-    "zod": "^4.4.3",
-    "@lapuertahostels/live-preview": "workspace:../../libs/live-preview"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@testing-library/react": "^16.3.2",

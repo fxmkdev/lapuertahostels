@@ -62,7 +62,6 @@ export function StoryBlock({
               enhancement: grayscaleImage ? "grayscale" : undefined,
             }}
             layout="responsive"
-            srcMultiplier={5}
             sizes="(min-width: 640px) 320px, (min-width: 896px) 448px, 100vw"
             loading="lazy"
           />

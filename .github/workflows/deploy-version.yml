@@ -132,8 +132,8 @@ jobs:
           flyctl secrets set \
             DATABASE_URI="$PREVIEW_DATABASE_URI" \
             PAYLOAD_SECRET="$PREVIEW_PAYLOAD_SECRET" \
-            MEDIA_S3_ACCESS_KEY_ID="$PREVIEW_MEDIA_S3_ACCESS_KEY_ID" \
-            MEDIA_S3_SECRET_ACCESS_KEY="$PREVIEW_MEDIA_S3_SECRET_ACCESS_KEY" \
+            MEDIA_STORAGE_ACCESS_KEY_ID="$PREVIEW_MEDIA_STORAGE_ACCESS_KEY_ID" \
+            MEDIA_STORAGE_SECRET_ACCESS_KEY="$PREVIEW_MEDIA_STORAGE_SECRET_ACCESS_KEY" \
             DEEPL_API_AUTH_KEY="$PREVIEW_DEEPL_API_AUTH_KEY" \
             OPENAI_API_KEY="$PREVIEW_OPENAI_API_KEY" \
             RESEND_API_KEY="$PREVIEW_RESEND_API_KEY" \
@@ -155,10 +155,10 @@ jobs:
           PREVIEW_REDIS_URL: ${{ secrets.PREVIEW_REDIS_URL }}
           PREVIEW_DATABASE_URI: ${{ secrets.PREVIEW_DATABASE_URI }}
           PREVIEW_PAYLOAD_SECRET: ${{ secrets.PREVIEW_PAYLOAD_SECRET }}
-          PREVIEW_MEDIA_S3_ACCESS_KEY_ID:
-            ${{ secrets.PREVIEW_MEDIA_S3_ACCESS_KEY_ID }}
-          PREVIEW_MEDIA_S3_SECRET_ACCESS_KEY:
-            ${{ secrets.PREVIEW_MEDIA_S3_SECRET_ACCESS_KEY }}
+          PREVIEW_MEDIA_STORAGE_ACCESS_KEY_ID:
+            ${{ secrets.PREVIEW_MEDIA_STORAGE_ACCESS_KEY_ID }}
+          PREVIEW_MEDIA_STORAGE_SECRET_ACCESS_KEY:
+            ${{ secrets.PREVIEW_MEDIA_STORAGE_SECRET_ACCESS_KEY }}
           PREVIEW_DEEPL_API_AUTH_KEY: ${{ secrets.PREVIEW_DEEPL_API_AUTH_KEY }}
           PREVIEW_OPENAI_API_KEY: ${{ secrets.PREVIEW_OPENAI_API_KEY }}
           PREVIEW_RESEND_API_KEY: ${{ secrets.PREVIEW_RESEND_API_KEY }}
@@ -210,7 +210,7 @@ jobs:
             ${{ inputs.environment == 'preview' && format('https://{0}.fly.dev',
             needs.preview-provision.outputs.cms_app_name) ||
             vars.PAYLOAD_CMS_BASE_URL}}
-          IMAGEKIT_BASE_URL: ${{ vars.IMAGEKIT_BASE_URL }}
+          MEDIA_PUBLIC_BASE_URL: ${{ vars.MEDIA_PUBLIC_BASE_URL }}
           ANALYTICS_SCRIPT_URL: ${{ vars.ANALYTICS_SCRIPT_URL }}
       - name: Deploy frontend
         run: |
@@ -258,8 +258,9 @@ jobs:
           FLY_MEMORY: ${{ vars.FLY_MEMORY }}
           FLY_CPU_KIND: ${{ vars.FLY_CPU_KIND }}
           FLY_CPUS: ${{ vars.FLY_CPUS }}
-          MEDIA_S3_REGION: ${{ vars.MEDIA_S3_REGION }}
-          MEDIA_S3_BUCKET: ${{ vars.MEDIA_S3_BUCKET }}
+          MEDIA_STORAGE_ENDPOINT: ${{ vars.MEDIA_STORAGE_ENDPOINT }}
+          MEDIA_STORAGE_REGION: ${{ vars.MEDIA_STORAGE_REGION }}
+          MEDIA_STORAGE_BUCKET: ${{ vars.MEDIA_STORAGE_BUCKET }}
           FRONTEND_CACHE_INVALIDATION_URL:
             ${{ inputs.environment == 'preview' &&
             format('https://{0}.fly.dev/api/invalidate-cms-cache',
@@ -269,7 +270,7 @@ jobs:
             ${{ inputs.environment == 'preview' && format('https://{0}.fly.dev',
             needs.preview-provision.outputs.frontend_app_name) ||
             vars.LIVE_PREVIEW_URL }}
-          IMAGEKIT_BASE_URL: ${{ vars.IMAGEKIT_BASE_URL }}
+          MEDIA_PUBLIC_BASE_URL: ${{ vars.MEDIA_PUBLIC_BASE_URL }}
           SERVER_URL:
             ${{ inputs.environment == 'preview' && format('https://{0}.fly.dev',
             needs.preview-provision.outputs.cms_app_name) || vars.SERVER_URL }}

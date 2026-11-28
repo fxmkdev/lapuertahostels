@@ -103,8 +103,8 @@ export async function loader({ request, url }: LoaderFunctionArgs) {
   if (!process.env.PAYLOAD_CMS_BASE_URL) {
     throw new Error("PAYLOAD_CMS_BASE_URL is not set");
   }
-  if (!process.env.IMAGEKIT_BASE_URL) {
-    throw new Error("IMAGEKIT_BASE_URL is not set");
+  if (!process.env.MEDIA_PUBLIC_BASE_URL) {
+    throw new Error("MEDIA_PUBLIC_BASE_URL is not set");
   }
 
   const requestUrl = getRequestUrl(request, url);
@@ -147,7 +147,9 @@ export async function loader({ request, url }: LoaderFunctionArgs) {
       version: getVersion(),
       payloadCmsBaseUrl:
         process.env.PAYLOAD_CMS_PUBLIC_URL ?? process.env.PAYLOAD_CMS_BASE_URL,
-      imagekitBaseUrl: process.env.IMAGEKIT_BASE_URL,
+      mediaBaseUrl: process.env.MEDIA_PUBLIC_BASE_URL,
+      mediaUseDerivatives: process.env.MEDIA_USE_DERIVATIVES !== "false",
+
       preview: requestUrl.searchParams.get("preview") || undefined,
       useImageCacheBuster: false, // Cache busting is only used in Storybook for Chromatic
     },

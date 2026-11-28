@@ -1,3 +1,8 @@
+import {
+  publicMediaUrl,
+  readImageManifest,
+} from "@lapuertahostels/payload-types";
+import { getOriginalObjectKey } from "./migrate-display-dimensions";
 import { addLocalesToRequestFromData, type Endpoint } from "payload";
 
 import { canManageContent } from "../../common/access-control";
@@ -49,7 +54,14 @@ export function generateAltTextEndpoint({
         throw new Error("Only images are supported");
       }
 
-      const publicImageUrl = `${publicMediaBaseUrl}/${media.filename!}`;
+      const natural = readImageManifest(media.imageVariants)?.variants.filter(
+        (v) => v.preset === "natural",
+      );
+      const variant = natural?.find((v) => v.width >= 1200) ?? natural?.at(-1);
+      const publicImageUrl = publicMediaUrl(
+        publicMediaBaseUrl,
+        variant?.key ?? getOriginalObjectKey(media),
+      );
 
       console.log(
         `Generating alt text for ${publicImageUrl} in locale ${req.locale}`,

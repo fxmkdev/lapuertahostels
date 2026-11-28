@@ -221,7 +221,8 @@ jobs:
           workingDir: apps/frontend
           storybookBaseDir: apps/frontend
         env:
-          STORYBOOK_IMAGEKIT_BASE_URL: ${{ vars.STORYBOOK_IMAGEKIT_BASE_URL }}
+          STORYBOOK_MEDIA_PUBLIC_BASE_URL:
+            ${{ vars.STORYBOOK_MEDIA_PUBLIC_BASE_URL }}
           STORYBOOK_USE_IMAGE_CACHE_BUSTER: true
           STORYBOOK_GOOGLE_MAPS_API_KEY:
             ${{ secrets.PREVIEW_GOOGLE_MAPS_API_KEY }}
@@ -437,14 +438,15 @@ jobs:
           SESSION_SECRET: $(openssl rand -hex 12)
           CMS_IMAGE: ${{ needs.cms-build-push.outputs.digest }}
           PAYLOAD_SECRET: $(openssl rand -hex 12)
-          MEDIA_S3_BUCKET: ${{ vars.E2E_TESTS_MEDIA_S3_BUCKET }}
-          MEDIA_S3_REGION: ${{ vars.E2E_TESTS_MEDIA_S3_REGION }}
-          MEDIA_S3_ACCESS_KEY_ID:
-            ${{ secrets.E2E_TESTS_MEDIA_S3_ACCESS_KEY_ID }}
-          MEDIA_S3_SECRET_ACCESS_KEY:
-            ${{ secrets.E2E_TESTS_MEDIA_S3_SECRET_ACCESS_KEY }}
+          MEDIA_STORAGE_BUCKET: ${{ vars.E2E_TESTS_MEDIA_STORAGE_BUCKET }}
+          MEDIA_STORAGE_ENDPOINT: ${{ vars.E2E_TESTS_MEDIA_STORAGE_ENDPOINT }}
+          MEDIA_STORAGE_REGION: ${{ vars.E2E_TESTS_MEDIA_STORAGE_REGION }}
+          MEDIA_STORAGE_ACCESS_KEY_ID:
+            ${{ secrets.E2E_TESTS_MEDIA_STORAGE_ACCESS_KEY_ID }}
+          MEDIA_STORAGE_SECRET_ACCESS_KEY:
+            ${{ secrets.E2E_TESTS_MEDIA_STORAGE_SECRET_ACCESS_KEY }}
           OPENAI_API_KEY: ${{ secrets.E2E_TESTS_OPENAI_API_KEY }}
-          IMAGEKIT_BASE_URL: ${{ vars.E2E_TESTS_IMAGEKIT_BASE_URL }}
+          MEDIA_PUBLIC_BASE_URL: ${{ vars.E2E_TESTS_MEDIA_PUBLIC_BASE_URL }}
         working-directory: tests/e2e
       - name: Get Playwright version
         id: playwright-version

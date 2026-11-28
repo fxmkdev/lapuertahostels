@@ -6,12 +6,15 @@ requests compare against their merge base; pushes compare against the event's
 conservatively.
 
 Each app includes its own directory and transitive workspace dependencies. The
-frontend currently consumes `libs/payload-types` and `libs/rich-text`; the CMS
-has no workspace dependencies. Root package manifests, lockfile, pnpm workspace
-configuration, `.npmrc`, patches, shared formatting/Docker configuration, CI
-helpers, and Actions configuration affect both apps. Changes inside an app's
-directory are conservatively considered app changes, including its
-documentation. Root `README.md` and `docs/` changes do not affect either app.
+frontend consumes `libs/payload-types`, `libs/rich-text`, and
+`libs/live-preview`; the CMS consumes `libs/payload-types` and
+`libs/live-preview`. Shared media helpers are exported from the payload-types
+package, so their changes invalidate both application images. Root package
+manifests, lockfile, pnpm workspace configuration, `.npmrc`, patches, shared
+formatting/Docker configuration, CI helpers, and Actions configuration affect
+both apps. Changes inside an app's directory are conservatively considered app
+changes, including its documentation. Root `README.md` and `docs/` changes do
+not affect either app.
 
 ## Generated CMS types
 
@@ -143,3 +146,8 @@ The tests use isolated Git fixtures, simulated registries, and mocked GitHub/Fly
 cleanup responses; they do not need Fly credentials. Full workflow validation
 additionally requires a GitHub Actions run with the existing Fly, Chromatic, and
 E2E secrets.
+
+The CMS uses Fly’s standard remote builder after repeated image-export failures
+with Depot. Frontend builds use an app-scoped Depot cache to isolate their build
+state. Image reuse still uses the validated input fingerprints and digest
+checks.

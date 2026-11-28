@@ -74,54 +74,12 @@ including room thumbnails and social previews. A saved point takes precedence
 over hero-slide Image Alignment; that setting remains a fallback for older
 images without focal metadata. New uploads default to a centered point.
 
-The original image stays uncropped. Payload stores the point and retains the
-existing admin-thumbnail configuration; ImageKit handles frontend resizing and
-cropping. The metadata migration `20261124_000000_media_display_dimensions`
-backfills existing JPEG display dimensions; no bulk image regeneration is
-needed. Saving media notifies the frontend to invalidate cached content,
-including pages with populated images. After successful invalidation, the next
-navigation or reload loads the saved focal point. If notification fails, the
-one-minute freshness check remains the fallback; requests wait for the refresh
-rather than refreshing in the background. See
-[CMS content freshness](../frontend/README.md#cms-content-freshness) for failure
-limits and configuration. `?skipcache=true` bypasses caching for diagnostics.
-
-The existing Payload UI patch also preserves zero-valued focal coordinates when
-reopening the editor and omits crop edits when cropping is disabled. These
-workarounds apply to both the individual modules and the bundled client export.
-
-Payload refetches the stored original when saving a focal edit. The media
-collection allows that fetch only at the configured CMS server's media-file
-endpoint (including its protocol, explicit port, and API path), so local and
-private deployments can save edits without disabling fetch protection for other
-URLs.
-
-The fetch forwards session cookies and API authorization only to the configured
-CMS origin, including protocol and port. Cookie-authenticated refetches also
-include that origin for Payload’s CSRF check. Other destinations receive no
-credentials. This works around Payload treating its absolute upload URLs as
-external URLs.
-
-The Payload server patch measures refetched files from the downloaded buffer,
-preserving their size when a storage response omits `Content-Length`. It also
-ensures an empty URL port matches only the default port, keeping private
-refetches on other ports outside the allowlist.
-
-### EXIF orientation
-
-`displayWidth` and `displayHeight` describe the image after EXIF orientation,
-matching the editor and ImageKit. Uploads, replacements and focal refetches read
-these dimensions with Sharp metadata only; no image pixels or raw width/height
-are rewritten. Sharp is not registered as Payload's image processor.
-
-The deployment's normal `payload migrate` release command backfills JPEGs
-missing valid display dimensions. It reads originals from the configured S3
-bucket, including their optional storage object folders, and updates only these
-two fields. Valid records are skipped on retries. Missing objects or invalid
-JPEG metadata fail the migration with the affected media ID; correct the source
-or storage access and rerun the migration. The migration helper also supports a
-`dryRun` option for an audit without database writes. This work may read each
-legacy JPEG once from S3. It does not rotate or regenerate originals/thumbnails.
+The original image stays uncropped and byte-identical. Sharp generates
+immutable, focal-aware image variants in Tigris. See
+[media storage and migration](../../docs/media-storage.md) for configuration,
+recipes, backfill, verification, backups, and the cutover runbook. The existing
+Payload UI and server patches remain in place for focal editing and safe
+original-file refetches.
 
 ## Live preview authentication
 
