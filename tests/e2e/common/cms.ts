@@ -37,7 +37,10 @@ type PageSeedDocument = Omit<
   updatedAt: string;
 };
 
-export async function createPage(data: Partial<Page> = {}) {
+export async function createPage(
+  data: Partial<Page> = {},
+  pathnames?: Localized<string>,
+) {
   const testPagePathname = `/e2e/${createId()}`;
   const now = new Date().toISOString();
   const pageId = new ObjectId();
@@ -69,7 +72,7 @@ export async function createPage(data: Partial<Page> = {}) {
       _id: pageId,
       ...localizedDocumentData,
       createdAt: now,
-      pathname: {
+      pathname: pathnames ?? {
         en: testPagePathname,
         es: testPagePathname,
       },
@@ -85,7 +88,7 @@ export async function createPage(data: Partial<Page> = {}) {
     ...data,
     createdAt: now,
     id: pageId.toHexString(),
-    pathname: testPagePathname,
+    pathname: pathnames?.en ?? testPagePathname,
     title,
     updatedAt: now,
   } as Page;

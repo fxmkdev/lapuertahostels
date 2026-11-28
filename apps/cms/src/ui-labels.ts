@@ -3,6 +3,43 @@ import type { Field } from "payload";
 
 export const additionalUiLabelFields: Field[] = [
   {
+    name: "languageSuggestion",
+    label: { en: "Language suggestion", es: "Sugerencia de idioma" },
+    type: "group",
+    fields: [
+      optionalTextField({
+        name: "message",
+        label: { en: "Message", es: "Mensaje" },
+        admin: {
+          description: {
+            en: "Use {{language}} for the native language name.",
+            es: "Usa {{language}} para el nombre nativo del idioma.",
+          },
+        },
+      }),
+      optionalTextField({
+        name: "switch",
+        label: { en: "Switch language", es: "Cambiar idioma" },
+        admin: {
+          description: {
+            en: "Use {{language}} for the suggested language.",
+            es: "Usa {{language}} para el idioma sugerido.",
+          },
+        },
+      }),
+      optionalTextField({
+        name: "keep",
+        label: { en: "Keep language", es: "Mantener idioma" },
+        admin: {
+          description: {
+            en: "Use {{language}} for the current page language.",
+            es: "Usa {{language}} para el idioma actual de la página.",
+          },
+        },
+      }),
+    ],
+  },
+  {
     name: "footer",
     label: { en: "Footer", es: "Pie de página" },
     type: "group",

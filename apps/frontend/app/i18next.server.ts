@@ -156,7 +156,7 @@ function getAcceptedLanguages(header: string | null) {
     .map((value) => value.language);
 }
 
-function matchSupportedLocale(
+export function matchSupportedLocale(
   requestedLocale: unknown,
   supportedLanguages: string[],
 ) {
@@ -170,4 +170,18 @@ function matchSupportedLocale(
   return supportedLanguages.find((locale) =>
     normalizedLocale.startsWith(`${locale.toLowerCase()}-`),
   );
+}
+
+// A default is useful for routing, but is not evidence of visitor preference.
+export async function getPreferredLocale(
+  request: Request,
+  supportedLanguages: string[],
+) {
+  const requestedLocales = [
+    await localeCookie.parse(request.headers.get("Cookie")),
+    ...getAcceptedLanguages(request.headers.get("Accept-Language")),
+  ];
+  return requestedLocales
+    .map((locale) => matchSupportedLocale(locale, supportedLanguages))
+    .find((locale) => locale !== undefined);
 }

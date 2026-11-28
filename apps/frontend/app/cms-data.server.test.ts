@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { getBrands, purgeCache, tryGetPage } from "./cms-data.server";
+import {
+  getBrands,
+  getCommon,
+  purgeCache,
+  tryGetPage,
+} from "./cms-data.server";
 import { getCmsCachePrefix } from "./cms-cache.server";
 
 const runRedisCommand = vi.hoisted(() => vi.fn());
@@ -58,6 +63,31 @@ const contentKey = () =>
   [...values.keys()].find((key) => key.endsWith(":pages:about:en"))!;
 
 describe("CMS data cache", () => {
+  test("keeps untranslated notice labels separate from normal CMS locale fallback", async () => {
+    const request = new Request("https://www.example.com/en/about");
+    fetchMock.mockResolvedValueOnce(
+      json({
+        uiLabels: { languageSuggestion: { message: "English fallback" } },
+      }),
+    );
+    fetchMock.mockResolvedValueOnce(
+      json({ uiLabels: { languageSuggestion: { message: null } } }),
+    );
+    expect(
+      (await getCommon(request, "es")).uiLabels?.languageSuggestion?.message,
+    ).toBe("English fallback");
+    expect(
+      (await getCommon(request, "es", "none")).uiLabels?.languageSuggestion
+        ?.message,
+    ).toBeNull();
+    expect(
+      (fetchMock.mock.calls[1][0] as URL).searchParams.get("fallback-locale"),
+    ).toBe("none");
+    await getCommon(request, "es");
+    await getCommon(request, "es", "none");
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
   test("serves fresh data without fetching and waits for a refresh at exactly one minute", async () => {
     await loadPage();
     advance(59_999);

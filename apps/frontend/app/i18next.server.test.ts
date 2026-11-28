@@ -10,6 +10,7 @@ import {
   getHeaderLocale,
   getRequestLocale,
   localeCookie,
+  getPreferredLocale,
 } from "./i18next.server";
 
 beforeEach(() => {
@@ -20,6 +21,50 @@ beforeEach(() => {
     },
   });
   getCommon.mockResolvedValue({ uiLabels: {} });
+});
+
+describe("visitor language preference", () => {
+  test("a stored deliberate choice wins over the URL and header", async () => {
+    const request = new Request("https://example.com/es/about?lng=es", {
+      headers: {
+        Cookie: await localeCookie.serialize("en"),
+        "Accept-Language": "es",
+      },
+    });
+    await expect(getPreferredLocale(request, ["en", "es"])).resolves.toBe("en");
+  });
+
+  test.each([
+    ["fr, es-MX;q=0.8, en;q=0.1", "es"],
+    ["en;q=0.2, es;q=0.9", "es"],
+    ["en;q=0, es;q=0.5", "es"],
+    ["en;q=invalid, es;q=0.5", "es"],
+    ["fr, *;q=0.5", undefined],
+    ["", undefined],
+  ])("matches supported preferences from %s", async (header, expected) => {
+    await expect(
+      getPreferredLocale(
+        new Request("https://example.com/es", {
+          headers: {
+            "Accept-Language": header,
+            Cookie: await localeCookie.serialize("fr"),
+          },
+        }),
+        ["en", "es"],
+      ),
+    ).resolves.toBe(expected);
+  });
+
+  test("prefers an exact regional locale before its parent", async () => {
+    await expect(
+      getPreferredLocale(
+        new Request("https://example.com/es", {
+          headers: { "Accept-Language": "en-US" },
+        }),
+        ["en", "en-US", "es"],
+      ),
+    ).resolves.toBe("en-US");
+  });
 });
 
 describe("server translation freshness", () => {

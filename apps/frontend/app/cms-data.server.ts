@@ -262,13 +262,18 @@ export async function tryGetRedirect(
   );
 }
 
-export async function getCommon(request: Request, locale: string) {
+export async function getCommon(
+  request: Request,
+  locale: string,
+  fallbackLocale?: "none",
+) {
   const common = (await getData(
     request,
     "globals/common",
-    "globals:common",
+    fallbackLocale ? "globals:common:no-locale-fallback" : "globals:common",
     locale,
     2,
+    fallbackLocale ? { "fallback-locale": fallbackLocale } : {},
   )) as Common | null;
   if (!common) throw new Error("Could not load Common global");
 
