@@ -238,6 +238,27 @@ test(
         assert.equal((await reader.json("latest.json")).id, id);
       });
       await t.test(
+        "collections appearing during export fail before archive upload",
+        async () => {
+          const before = (await reader.list("snapshots/")).length;
+          try {
+            await assert.rejects(
+              publish(env, async (command, args) => {
+                await mongoTool(command, args);
+                await source
+                  .collection("new-auth-collection")
+                  .insertOne({ credential: "must-never-export" });
+              }),
+              /collections changed/,
+            );
+            assert.equal((await reader.list("snapshots/")).length, before);
+            assert.equal((await reader.json("latest.json")).id, id);
+          } finally {
+            await source.collection("new-auth-collection").drop();
+          }
+        },
+      );
+      await t.test(
         "missing media or upload failure leaves latest unchanged",
         async () => {
           await assert.rejects(

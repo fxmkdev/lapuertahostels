@@ -218,6 +218,18 @@ export async function publish(env, tool = mongoTool) {
           ]),
         ].map((name) => `--excludeCollection=${name}`),
       ]);
+      // A collection created during mongodump must not bypass the exclusions
+      // derived above. Check before any database archive reaches storage.
+      const afterDumpCollections = (
+        await db.listCollections({}, { nameOnly: true }).toArray()
+      )
+        .map(({ name }) => name)
+        .sort();
+      assert.deepEqual(
+        afterDumpCollections,
+        [...allCollections].sort(),
+        "Production collections changed during snapshot export",
+      );
       const archiveInfo = await fingerprint(archive);
       await store.upload(`${prefix}/database.archive.gz`, archive);
       manifest.artifacts.push({
