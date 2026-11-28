@@ -568,6 +568,9 @@ jobs:
 
   deploy:
     name: Deploy
+    permissions:
+      contents: read
+      actions: read
     if: >-
       always() && !cancelled() && github.event_name != 'pull_request' &&
       needs.ci-result.result == 'success' && needs.ci-result.outputs.deploy ==
@@ -584,6 +587,9 @@ jobs:
 
   deploy-preview:
     name: Deploy Preview
+    permissions:
+      contents: read
+      actions: read
     # The reusable deployment holds the shared preview lifecycle lock.
     if: >-
       always() && !cancelled() && github.event_name == 'pull_request' &&

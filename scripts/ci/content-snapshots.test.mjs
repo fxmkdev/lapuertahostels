@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { mkdtemp, rm, readFile } from "node:fs/promises";
-import { copyFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Fly, allowedApp, immutableImage } from "./content-snapshots.mjs";
@@ -198,6 +198,59 @@ test("publisher uses an immutable deployed digest", () => {
     "registry.fly.io/cms@sha256:abc",
   );
   assert.throws(() => immutableImage({ config: { image: "cms:latest" } }));
+});
+
+test("publisher always destroys its isolated worker after observing success or failure", async () => {
+  for (const exitCode of [0, 1]) {
+    let worker;
+    let configFile;
+    let destroyed = false;
+    const source = {
+      region: "cdg",
+      image_ref: {
+        registry: "registry.fly.io",
+        repository: "cms",
+        digest: "sha256:abc",
+      },
+      config: {
+        metadata: { fly_process_group: "app" },
+        env: {},
+        guest: { cpus: 1, memory_mb: 256 },
+      },
+    };
+    const fly = new Fly(env, {
+      run: (_command, args) => {
+        configFile = args[args.indexOf("--machine-config") + 1];
+        const config = JSON.parse(readFileSync(configFile, "utf8"));
+        assert.deepEqual(config.services, []);
+        assert.equal(config.restart.policy, "no");
+        assert.equal(
+          config.env.SNAPSHOT_SOURCE_IMAGE,
+          "registry.fly.io/cms@sha256:abc",
+        );
+        assert.equal(config.env.DEPLOYMENT_ENVIRONMENT, "production");
+        worker = {
+          id: "worker",
+          name: args[args.indexOf("--name") + 1],
+          state: "stopped",
+          events: [
+            { type: "exit", request: { exit_event: { exit_code: exitCode } } },
+          ],
+        };
+      },
+    });
+    fly.machines = async () => [source, ...(worker ? [worker] : [])];
+    fly.machine = async () => worker;
+    fly.request = async (path, method) => {
+      assert(path.endsWith("/worker?force=true"));
+      assert.equal(method, "DELETE");
+      destroyed = true;
+    };
+    if (exitCode === 0) await fly.publish();
+    else await assert.rejects(fly.publish(), /Publisher failed/);
+    assert(destroyed);
+    assert(!existsSync(configFile));
+  }
 });
 
 test("workflow retries recover their original pin even when no CMS Machine survived", async () => {

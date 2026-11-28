@@ -21,6 +21,9 @@ jobs:
 
   deploy-version:
     name: "Deploy version"
+    permissions:
+      contents: read
+      actions: read
     needs: version
     uses: ./.github/workflows/deploy-version.yml
     with:

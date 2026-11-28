@@ -32,6 +32,10 @@ on:
         default: true
 
 # Shared with preview cleanup and the manual production snapshot workflow.
+permissions:
+  contents: read
+  actions: read
+
 concurrency:
   group: fly-${{ inputs.environment }}-lifecycle
   queue: max
