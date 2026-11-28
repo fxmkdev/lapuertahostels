@@ -9,6 +9,10 @@ on:
         options:
           - staging
           - production
+      snapshot_id:
+        description: "Optional pinned snapshot ID for staging recovery"
+        type: string
+        default: ""
 
 jobs:
   version:
@@ -23,4 +27,5 @@ jobs:
       version_with_sha: ${{ needs.version.outputs.version_with_sha }}
       sha: ${{ needs.version.outputs.sha }}
       environment: ${{ inputs.environment }}
+      snapshot_id: ${{ inputs.snapshot_id }}
     secrets: inherit

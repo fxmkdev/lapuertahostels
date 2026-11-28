@@ -22,12 +22,32 @@ on:
       environment:
         type: string
         required: true
+      snapshot_id:
+        description:
+          "Pinned snapshot for a recovery deployment; defaults to latest"
+        type: string
+        default: ""
       high_availability:
         type: boolean
         default: true
 
+# Shared with preview cleanup and the manual production snapshot workflow.
+concurrency:
+  group: fly-${{ inputs.environment }}-lifecycle
+  queue: max
+  cancel-in-progress: false
+
 env:
   FLYCTL_VERSION: 0.5.11
+  DEPLOYMENT_ENVIRONMENT: ${{ inputs.environment }}
+  DEPLOYMENT_SHA: ${{ inputs.sha }}
+  SNAPSHOT_PRODUCTION_APP:
+    ${{ vars.SNAPSHOT_PRODUCTION_APP || 'lapuertahostels-cms' }}
+  SNAPSHOT_STAGING_APP:
+    ${{ vars.SNAPSHOT_STAGING_APP || 'lapuertahostels-cms-staging' }}
+  SNAPSHOT_PREVIEW_APP_PREFIX: ${{ vars.FLY_PREVIEW_CMS_APP_PREFIX }}
+  FRONTEND_PREVIEW_APP_PREFIX: ${{ vars.FLY_PREVIEW_FRONTEND_APP_PREFIX }}
+  FLY_ORG: ${{ vars.FLY_ORG }}
   FRONTEND_INTERNAL_PORT: 3000
   FRONTEND_IMAGE:
     ${{ inputs.frontend_image || format('registry.fly.io/{0}:v{1}',
@@ -92,11 +112,97 @@ jobs:
             done
           done
 
+  snapshot-preflight:
+    name: "Snapshot: Preflight"
+    runs-on: ubuntu-latest
+    needs: images-ready
+    environment: ${{ inputs.environment }}-cms
+    outputs:
+      enabled: ${{ steps.configure.outputs.enabled }}
+      snapshot_id: ${{ steps.verify.outputs.snapshot_id }}
+    steps:
+      - name: Configure restoration
+        id: configure
+        env:
+          ENABLED:
+            ${{ inputs.environment != 'production' &&
+            vars.SNAPSHOT_RESTORE_ENABLED == 'true' }}
+        run: echo "enabled=$ENABLED" >> "$GITHUB_OUTPUT"
+      - name: Log in to Fly registry
+        if: steps.configure.outputs.enabled == 'true'
+        uses: docker/login-action@v4
+        with:
+          registry: registry.fly.io
+          username: x
+          password: ${{ secrets.FLY_API_TOKEN }}
+      - uses: actions/checkout@v6
+        if: steps.configure.outputs.enabled == 'true'
+      - uses: actions/setup-node@v6
+        if: steps.configure.outputs.enabled == 'true'
+        with:
+          node-version: 24
+      - uses: superfly/flyctl-actions/setup-flyctl@v1
+        if: steps.configure.outputs.enabled == 'true'
+        with:
+          version: ${{ env.FLYCTL_VERSION }}
+      - name: Recover an existing pinned snapshot
+        if: steps.configure.outputs.enabled == 'true'
+        id: recovery
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          CMS_APP:
+            ${{ inputs.environment == 'preview' && format('{0}-{1}',
+            vars.FLY_PREVIEW_CMS_APP_PREFIX, inputs.sha) || vars.FLY_APP }}
+          REQUESTED_SNAPSHOT: ${{ inputs.snapshot_id }}
+        run: node scripts/ci/content-snapshots.mjs pin
+      - name: Verify and pin a completed snapshot
+        if: steps.configure.outputs.enabled == 'true'
+        id: verify
+        env:
+          SNAPSHOT_ENDPOINT: ${{ vars.SNAPSHOT_ENDPOINT }}
+          SNAPSHOT_REGION: ${{ vars.SNAPSHOT_REGION }}
+          SNAPSHOT_BUCKET: ${{ vars.SNAPSHOT_BUCKET }}
+          SNAPSHOT_ACCESS_KEY_ID: ${{ secrets.SNAPSHOT_READ_ACCESS_KEY_ID }}
+          SNAPSHOT_SECRET_ACCESS_KEY:
+            ${{ secrets.SNAPSHOT_READ_SECRET_ACCESS_KEY }}
+          REQUESTED_SNAPSHOT: ${{ steps.recovery.outputs.snapshot_id }}
+        run: |
+          set -euo pipefail
+          OUTPUT_FILE="$RUNNER_TEMP/snapshot-output"
+          touch "$OUTPUT_FILE"
+          chmod 666 "$OUTPUT_FILE"
+          docker run --rm \
+            --env SNAPSHOT_ENDPOINT --env SNAPSHOT_REGION --env SNAPSHOT_BUCKET \
+            --env SNAPSHOT_ACCESS_KEY_ID --env SNAPSHOT_SECRET_ACCESS_KEY \
+            --env GITHUB_OUTPUT=/snapshot-output \
+            --volume "$OUTPUT_FILE:/snapshot-output" \
+            "$CMS_IMAGE" node apps/cms/scripts/content-snapshots/cli.mjs preflight \
+            ${REQUESTED_SNAPSHOT:+"$REQUESTED_SNAPSHOT"}
+          cat "$OUTPUT_FILE" >> "$GITHUB_OUTPUT"
+          cat "$OUTPUT_FILE" >> "$GITHUB_STEP_SUMMARY"
+      - name: Save the pinned snapshot for workflow retries
+        if: steps.configure.outputs.enabled == 'true'
+        env:
+          SNAPSHOT_ID: ${{ steps.verify.outputs.snapshot_id }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/snapshot-pin"
+          printf '%s\n' "$SNAPSHOT_ID" > "$RUNNER_TEMP/snapshot-pin/snapshot-id"
+      - uses: actions/upload-artifact@v7
+        if: steps.configure.outputs.enabled == 'true'
+        with:
+          name:
+            snapshot-pin-${{ inputs.environment }}-${{ inputs.sha }}-${{
+            github.run_attempt }}
+          path: ${{ runner.temp }}/snapshot-pin/snapshot-id
+          if-no-files-found: error
+
   preview-provision:
     name: "Preview: Provision Apps"
     if: inputs.environment == 'preview'
     runs-on: ubuntu-latest
-    needs: images-ready
+    needs: [images-ready, snapshot-preflight]
+    environment: preview-cms
     outputs:
       frontend_app_name: ${{ steps.provision.outputs.frontend_app_name }}
       cms_app_name: ${{ steps.provision.outputs.cms_app_name }}
@@ -140,6 +246,13 @@ jobs:
             CMS_CACHE_INVALIDATION_SECRET="$CMS_CACHE_INVALIDATION_SECRET" \
             --app "$CMS_APP_NAME" --stage
 
+          if [ "$SNAPSHOT_RESTORE_ENABLED" = "true" ]; then
+            flyctl secrets set \
+              SNAPSHOT_ACCESS_KEY_ID="$SNAPSHOT_ACCESS_KEY_ID" \
+              SNAPSHOT_SECRET_ACCESS_KEY="$SNAPSHOT_SECRET_ACCESS_KEY" \
+              --app "$CMS_APP_NAME" --stage
+          fi
+
           echo "frontend_app_name=$FRONTEND_APP_NAME" >> "$GITHUB_OUTPUT"
           echo "cms_app_name=$CMS_APP_NAME" >> "$GITHUB_OUTPUT"
         env:
@@ -148,6 +261,11 @@ jobs:
           FRONTEND_APP_NAME:
             ${{ vars.FLY_PREVIEW_FRONTEND_APP_PREFIX }}-${{ inputs.sha }}
           CMS_APP_NAME: ${{ vars.FLY_PREVIEW_CMS_APP_PREFIX }}-${{ inputs.sha }}
+          SNAPSHOT_RESTORE_ENABLED:
+            ${{ needs.snapshot-preflight.outputs.enabled }}
+          SNAPSHOT_ACCESS_KEY_ID: ${{ secrets.SNAPSHOT_READ_ACCESS_KEY_ID }}
+          SNAPSHOT_SECRET_ACCESS_KEY:
+            ${{ secrets.SNAPSHOT_READ_SECRET_ACCESS_KEY }}
           PREVIEW_PAYLOAD_CMS_API_KEY:
             ${{ secrets.PREVIEW_PAYLOAD_CMS_API_KEY }}
           PREVIEW_GOOGLE_MAPS_API_KEY:
@@ -168,10 +286,10 @@ jobs:
     # A skipped preview job must not skip staging or production deployments.
     if: >-
       ${{ !cancelled() && needs.images-ready.result == 'success' &&
-      (inputs.environment != 'preview' || needs.preview-provision.result ==
-      'success') }}
+      needs.snapshot-preflight.result == 'success' && (inputs.environment !=
+      'preview' || needs.preview-provision.result == 'success') }}
     runs-on: ubuntu-latest
-    needs: [images-ready, preview-provision]
+    needs: [images-ready, snapshot-preflight, preview-provision]
     environment:
       name: ${{ inputs.environment }}-frontend
       url:
@@ -225,10 +343,19 @@ jobs:
     name: "CMS: Deploy"
     if: >-
       ${{ !cancelled() && needs.images-ready.result == 'success' &&
+      needs.snapshot-preflight.result == 'success' &&
       needs.frontend-deploy.result == 'success' && (inputs.environment !=
       'preview' || needs.preview-provision.result == 'success') }}
     runs-on: ubuntu-latest
-    needs: [images-ready, preview-provision, frontend-deploy]
+    needs:
+      [images-ready, snapshot-preflight, preview-provision, frontend-deploy]
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      CMS_APP:
+        ${{ inputs.environment == 'preview' &&
+        needs.preview-provision.outputs.cms_app_name || vars.FLY_APP }}
+      FRONTEND_APP: ${{ vars.FLY_FRONTEND_APP }}
+      SNAPSHOT_ID: ${{ needs.snapshot-preflight.outputs.snapshot_id }}
     environment:
       name: ${{ inputs.environment }}-cms
       url:
@@ -237,6 +364,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
       - name: Set up flyctl
         uses: superfly/flyctl-actions/setup-flyctl@v1
         with:
@@ -258,6 +388,14 @@ jobs:
           FLY_MEMORY: ${{ vars.FLY_MEMORY }}
           FLY_CPU_KIND: ${{ vars.FLY_CPU_KIND }}
           FLY_CPUS: ${{ vars.FLY_CPUS }}
+          SNAPSHOT_RESTORE_ENABLED:
+            ${{ needs.snapshot-preflight.outputs.enabled }}
+          SNAPSHOT_ID: ${{ needs.snapshot-preflight.outputs.snapshot_id }}
+          SNAPSHOT_TARGET_DATABASE: ${{ vars.SNAPSHOT_TARGET_DATABASE }}
+          SNAPSHOT_ENDPOINT: ${{ vars.SNAPSHOT_ENDPOINT }}
+          SNAPSHOT_REGION: ${{ vars.SNAPSHOT_REGION }}
+          SNAPSHOT_BUCKET: ${{ vars.SNAPSHOT_BUCKET }}
+          MEDIA_S3_ENDPOINT: ${{ vars.MEDIA_S3_ENDPOINT }}
           MEDIA_S3_REGION: ${{ vars.MEDIA_S3_REGION }}
           MEDIA_S3_BUCKET: ${{ vars.MEDIA_S3_BUCKET }}
           FRONTEND_CACHE_INVALIDATION_URL:
@@ -278,6 +416,10 @@ jobs:
           NODE_OPTIONS:
             ${{ inputs.environment == 'preview' && '--enable-source-maps' || ''
             }}
+      - name: Pause affected CMS Machines
+        if: needs.snapshot-preflight.outputs.enabled == 'true'
+        id: pause
+        run: node scripts/ci/content-snapshots.mjs pause
       - name: Deploy CMS
         run: |
           flyctl deploy \
@@ -286,3 +428,47 @@ jobs:
             --image "$CMS_IMAGE" \
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      - name: Resume affected CMS Machines
+        if: needs.snapshot-preflight.outputs.enabled == 'true'
+        run: node scripts/ci/content-snapshots.mjs resume
+      - name: Invalidate affected frontend caches
+        if: needs.snapshot-preflight.outputs.enabled == 'true'
+        run: node scripts/ci/content-snapshots.mjs invalidate
+      - name: Keep failed restoration offline
+        if:
+          ${{ (failure() || cancelled()) && steps.pause.outcome != 'skipped' &&
+          steps.pause.outcome != '' }}
+        run: node scripts/ci/content-snapshots.mjs halt
+      - name: Save snapshot recovery information
+        if:
+          ${{ always() && needs.snapshot-preflight.outputs.enabled == 'true' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: snapshot-recovery-${{ inputs.environment }}-${{ inputs.sha }}
+          path: snapshot-maintenance.json
+          if-no-files-found: warn
+
+  snapshot-publish:
+    name: "Snapshot: Publish production content"
+    if: inputs.environment == 'production'
+    needs: cms-deploy
+    runs-on: ubuntu-latest
+    environment: production-cms
+    steps:
+      - uses: actions/checkout@v6
+        if: vars.SNAPSHOT_PUBLISH_ENABLED == 'true'
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+      - uses: actions/setup-node@v6
+        if: vars.SNAPSHOT_PUBLISH_ENABLED == 'true'
+        with:
+          node-version: 24
+      - uses: superfly/flyctl-actions/setup-flyctl@v1
+        if: vars.SNAPSHOT_PUBLISH_ENABLED == 'true'
+        with:
+          version: ${{ env.FLYCTL_VERSION }}
+      - name: Publish using the deployed production image
+        if: vars.SNAPSHOT_PUBLISH_ENABLED == 'true'
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: node scripts/ci/content-snapshots.mjs publish

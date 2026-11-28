@@ -1,0 +1,32 @@
+services:
+  mongo:
+    image: mongo:8.0.38
+    ports:
+      - "127.0.0.1:27141:27017"
+    tmpfs:
+      - /data/db:size=1g
+    healthcheck:
+      test:
+        ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+  storage:
+    image: lapuertahostels-snapshot-test-storage:2025-09-07
+    build:
+      context: .
+      dockerfile: Dockerfile.minio
+    command: server /data
+    tmpfs:
+      - /data:size=1g
+    environment:
+      MINIO_ROOT_USER: snapshot-test
+      MINIO_ROOT_PASSWORD: snapshot-test-password
+    ports:
+      - "127.0.0.1:9014:9000"
+    healthcheck:
+      test:
+        ["CMD", "curl", "--fail", "http://localhost:9000/minio/health/ready"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
