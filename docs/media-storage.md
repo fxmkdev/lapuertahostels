@@ -180,6 +180,28 @@ this sample (52% additional storage). Full-bucket growth depends on image sizes,
 videos, and focal-edit history; retain the final migration inventory with the
 cutover report. Metadata-only edits reuse these outputs.
 
+A real 20,352,272-byte upload through the staging CMS completed in 33.7 seconds
+on the existing shared-CPU, 2048 MiB VM, including 27 outputs and their uploads.
+The stored original checksum matched. Normal CMS/website VM sizing remains
+unchanged; temporary bulk workers are removed after their jobs.
+
+Staging verification covered all 91 media records and compared every existing
+database field against the pre-migration backup, allowing only new manifests. A
+forced manifest write preserved timestamps, and a repeat backfill generated zero
+images. Verification peaked at 471,168 KiB RSS (460 MiB). The bucket held
+394,968,174 bytes across 179 originals/legacy files and 373,580,755 bytes across
+2,300 derivative objects before upload smoke tests. The source inventory had 11
+missing legacy thumbnails still referenced by media documents; these were
+reconstructed from originals at their recorded filenames and dimensions, then
+checksum-verified, without changing the documents. Existing source objects
+remained byte-for-byte copies.
+
+Live staging checks covered uploads, replacements, admin WebP thumbnails, focal
+editing at 0/100, cache refresh, immutable previous URLs, social JPEGs, and
+desktop/mobile pages for the homepage, Aqua, Azul, and Lost City. Original
+delivery from Tigris was also rehearsed with `MEDIA_USE_DERIVATIVES=false`
+before restoring optimized delivery. CMS startup had no missing-Sharp warning.
+
 ## Final retirement checklist
 
 After the rollback window, verify the final release, backups/restores, media
