@@ -175,3 +175,26 @@ test("debounces edits, deduplicates lookups, and keeps coincident locations sele
   await load();
   expect(resolvePlace).toHaveBeenCalledTimes(1);
 });
+
+test("incomplete live-preview rows do not hide completed locations", async () => {
+  const incomplete = { id: "new-location" } as NonNullable<
+    MapBlockProps["locations"]
+  >[number];
+  const { rerender } = render(
+    <MapBlock {...props} locations={[aqua, incomplete]} />,
+    { wrapper: Wrapper },
+  );
+  await load();
+  expect(screen.getByRole("heading", { name: "Aqua" })).toBeVisible();
+  expect(resolvePlace).toHaveBeenCalledTimes(1);
+  rerender(
+    <MapBlock
+      {...props}
+      locations={[aqua, { ...incomplete, address: "Azul address" }]}
+    />,
+  );
+  await load();
+  expect(
+    screen.getByRole("button", { name: "Pin Azul address" }),
+  ).toBeVisible();
+});

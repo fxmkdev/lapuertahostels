@@ -3,19 +3,17 @@ import {
   AdvancedMarker,
   Map as GoogleMap,
   Pin,
-  useMapsLibrary,
 } from "@vis.gl/react-google-maps";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTheme } from "~/themes";
 import { cn } from "~/common/cn";
 import { Link } from "~/common/link";
 import { MapPinIcon } from "@heroicons/react/20/solid";
-import type { Place } from "~/common/google-maps";
-import { PlaceResolver } from "~/common/google-maps";
 import { OverlayTextBox } from "../common/overlay-text-box";
 import type { RichTextObject } from "@lapuertahostels/rich-text";
 import { useSettings } from "~/common/common";
 import { MapViewport } from "./map-viewport";
+import { useMapLocations } from "./use-map-locations";
 
 // Cached pages and old CMS responses can still use the single-location shape.
 export type MapBlockProps = Omit<MapType, "locations"> & {
@@ -29,7 +27,6 @@ export function MapBlock({
   zoomLevel,
   overlayTextBox,
 }: MapBlockProps) {
-  const placesLibrary = useMapsLibrary("places");
   const entries = useMemo(
     () =>
       locations?.length
@@ -39,13 +36,7 @@ export function MapBlock({
           : [],
     [locations, address, overlayTextBox],
   );
-  const addresses = JSON.stringify(
-    entries.map((entry) => entry.address.trim()),
-  );
-  const [result, setResult] = useState<{
-    addresses: string;
-    places: (Place | undefined)[];
-  }>();
+  const { addresses, ready, resolved } = useMapLocations(entries);
   const [selection, setSelection] = useState<{
     addresses: string;
     index: number;
@@ -54,48 +45,6 @@ export function MapBlock({
   const overlayRef = useRef<HTMLDivElement>(null);
   const { maps } = useSettings();
 
-  useEffect(() => {
-    if (!placesLibrary) return;
-    let cancelled = false;
-    const timeout = window.setTimeout(async () => {
-      const resolver = new PlaceResolver(placesLibrary);
-      const queries: string[] = JSON.parse(addresses);
-      // Resolve repeated addresses once without merging their individual details.
-      const requests = new Map<string, Promise<Place>>();
-      const places = await Promise.all(
-        queries.map(async (query) => {
-          if (query.length < 3) return undefined;
-          try {
-            let request = requests.get(query);
-            if (!request) {
-              request = resolver.resolvePlace(query);
-              requests.set(query, request);
-            }
-            return await request;
-          } catch {
-            return undefined;
-          }
-        }),
-      );
-      if (!cancelled) setResult({ addresses, places });
-    }, 1_000);
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timeout);
-    };
-  }, [placesLibrary, addresses]);
-
-  const ready = result?.addresses === addresses;
-  const resolved = useMemo(
-    () =>
-      ready
-        ? entries.flatMap((entry, index) => {
-            const place = result.places[index];
-            return place ? [{ ...entry, place, index }] : [];
-          })
-        : [],
-    [ready, entries, result],
-  );
   const selected =
     resolved.find(
       (entry) =>
