@@ -18,6 +18,7 @@ import { resolveFocalCrop } from "~/common/image-focal-point";
 import { PAGE_DEPTH } from "~/cms-data";
 import { getSettings, tryGetLocalizedPathname } from "~/cms-data.server";
 import type { LocaleConfig } from "@lapuertahostels/payload-types";
+import { getLanguageSuggestion } from "~/language-suggestion.server";
 
 export const meta: MetaFunction<typeof loader> = ({ loaderData, matches }) => {
   if (!loaderData) throw new Error("No loader data");
@@ -209,6 +210,13 @@ export async function loader({ request, url }: LoaderFunctionArgs) {
     content,
     publishedLocaleCodes,
     fallbackLocaleCode,
+    languageSuggestion: await getLanguageSuggestion(
+      request,
+      requestUrl,
+      locale,
+      content.pathname,
+      settings,
+    ),
     alternateUrls: [
       ...Object.entries(alternateUrlsByLocale).map(([locale, href]) => ({
         href,

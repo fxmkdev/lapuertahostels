@@ -10,13 +10,14 @@ type HeaderProps = {
   brand: Brand;
   allBrands: Brand[];
   publishedLocales: Pick<LocaleConfig, "id" | "displayLabel">[];
-} & Pick<NavbarProps, "onHeightChanged">;
+} & Pick<NavbarProps, "onHeightChanged" | "notice">;
 
 export function Header({
   brand,
   allBrands,
   publishedLocales,
   onHeightChanged,
+  notice,
 }: HeaderProps) {
   return (
     <header className="contents">
@@ -28,6 +29,7 @@ export function Header({
         allBrands={allBrands}
         publishedLocales={publishedLocales}
         onHeightChanged={onHeightChanged}
+        notice={notice}
       />
       <LoadingBar />
     </header>

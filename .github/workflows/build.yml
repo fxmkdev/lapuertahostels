@@ -470,7 +470,7 @@ jobs:
         run: pnpm playwright test
         working-directory: tests/e2e
         env:
-          FRONTEND_BASE_URL: http://localhost:${{ env.FRONTEND_INTERNAL_PORT }}
+          FRONTEND_BASE_URL: http://127.0.0.1:${{ env.FRONTEND_INTERNAL_PORT }}
           CMS_BASE_URL: http://localhost:${{ env.CMS_INTERNAL_PORT }}
           CMS_API_KEY: ${{ env.CMS_API_KEY }}
       - name: Upload Playwright report

@@ -2523,6 +2523,20 @@ export interface Common {
       password?: string | null;
       submit?: string | null;
     };
+    languageSuggestion?: {
+      /**
+       * Use {{language}} for the native language name.
+       */
+      message?: string | null;
+      /**
+       * Use {{language}} for the suggested language.
+       */
+      switch?: string | null;
+      /**
+       * Use {{language}} for the current page language.
+       */
+      keep?: string | null;
+    };
     footer?: {
       heading?: string | null;
       newsletter?: {
@@ -2649,6 +2663,13 @@ export interface CommonSelect<T extends boolean = true> {
               email?: T;
               password?: T;
               submit?: T;
+            };
+        languageSuggestion?:
+          | T
+          | {
+              message?: T;
+              switch?: T;
+              keep?: T;
             };
         footer?:
           | T

@@ -40,6 +40,34 @@ maintenance, and error screens. Keep document metadata and framework scripts in
 data in `Layout` with `useRouteLoaderData("root")` and handle missing data so
 root loader failures can still render the fatal error screen.
 
+## Incoming language offers
+
+Localized URLs always serve their requested language. After hydration, a compact
+notice below the navbar can offer the equivalent page in the visitor's preferred
+published language: an explicit `locale` cookie takes precedence over supported
+`Accept-Language` entries. The site's fallback language alone is not a
+preference.
+
+The notice appears only on direct or external document arrivals. Same-origin
+arrivals, reloads, history restores, client navigation, valid explicit `lng`
+parameters, live preview, maintenance, login, and error screens do not prompt.
+Navigating clears the notice for the rest of the document's lifetime.
+
+“Switch” and “Keep” both save an explicit choice through the existing `/locale`
+form and session cookie. Merely opening a localized URL does not save a
+preference. Switching maps the same CMS page to its translated pathname,
+preserving the brand, query parameters, and browser fragment. Keeping retains
+the current destination.
+
+Editors can customize `Common → UI Labels → Language suggestion` in each
+language with `{{language}}` placeholders for native language names. Copy is
+requested in the preferred language without changing the page language. Missing
+labels use English/Spanish defaults, with English as the final fallback. Missing
+destinations or failed suggestion lookups omit the optional notice without
+failing the page. Destination availability is checked without CMS locale
+fallback; an English-only pathname does not trigger a Spanish offer. Normal
+routing and alternate-language links retain their existing fallback behavior.
+
 ## Banner dismissal
 
 Banner dismissals are stored in `localStorage` under
@@ -222,10 +250,13 @@ navigation, browser history, and mobile locale switching against the production
 applications. Run it headlessly with
 `pnpm --filter @lapuertahostels/e2e exec playwright test` after starting the
 [disposable test services](../../tests/e2e/docker-compose.yml) and setting
-`FRONTEND_BASE_URL`, `CMS_BASE_URL`, and `CMS_API_KEY`. The fixture helpers also
-need access to that test MongoDB instance through `CMS_DATABASE_URI` (or the
-default `mongodb://localhost:27017/website-cms`). Hydration tests stub external
-font CSS so third-party availability cannot fail the interaction checks.
+`FRONTEND_BASE_URL`, `CMS_BASE_URL`, and `CMS_API_KEY`. Set `FRONTEND_BASE_URL`
+to the frontend's canonical origin (`http://127.0.0.1:3000` for the disposable
+services), so URL assertions and same-origin referrers are checked against the
+origin the browser actually uses. The fixture helpers also need access to that
+test MongoDB instance through `CMS_DATABASE_URI` (or the default
+`mongodb://localhost:27017/website-cms`). Hydration tests stub external font CSS
+so third-party availability cannot fail the interaction checks.
 
 ## Image focal points
 

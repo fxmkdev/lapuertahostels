@@ -44,6 +44,11 @@ import { isAuthenticated } from "./common/auth";
 import { getVersion } from "./common/version.server";
 import { APIProvider as GoogleMapsAPIProvider } from "@vis.gl/react-google-maps";
 import { BRANDS_DEPTH } from "./cms-data";
+import type { loader as pageLoader } from "./routes/$";
+import {
+  LanguageOfferArrivalProvider,
+  LanguageSuggestion,
+} from "./layout/language-suggestion";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: styles },
@@ -196,7 +201,9 @@ export function Layout({ children }: { children: ReactNode }) {
       </head>
       <body className="bg-white text-neutral-900 antialiased">
         <HeaderHeightContext value={setHeaderHeight}>
-          {children}
+          <LanguageOfferArrivalProvider>
+            {children}
+          </LanguageOfferArrivalProvider>
         </HeaderHeightContext>
         {!error && <ScrollRestoration />}
         <Scripts />
@@ -218,6 +225,7 @@ export default function App() {
   } = useLoaderData<typeof loader>();
   const { i18n } = useTranslation();
   const setHeaderHeight = useContext(HeaderHeightContext);
+  const pageData = useRouteLoaderData<typeof pageLoader>("routes/$");
 
   return (
     <GoogleMapsAPIProvider
@@ -245,6 +253,11 @@ export default function App() {
                   allBrands={allBrands}
                   publishedLocales={publishedLocales}
                   onHeightChanged={setHeaderHeight}
+                  notice={
+                    <LanguageSuggestion
+                      suggestion={pageData?.languageSuggestion}
+                    />
+                  }
                 />
               )}
               <main>

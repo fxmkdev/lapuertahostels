@@ -5,7 +5,7 @@ import { LocaleSwitcher } from "./locale-switcher";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { XMarkIcon, Bars3Icon } from "@heroicons/react/24/outline";
 import { CalendarDateRangeIcon, LanguageIcon } from "@heroicons/react/20/solid";
-import type { Ref, RefObject } from "react";
+import type { ReactNode, Ref, RefObject } from "react";
 import { useEffect, useRef, useState } from "react";
 import type { Brand, LocaleConfig } from "@lapuertahostels/payload-types";
 import { MobileLocaleSwitcher } from "./mobile-locale-switcher";
@@ -28,6 +28,7 @@ export type NavbarProps = {
   publishedLocales: Pick<LocaleConfig, "id" | "displayLabel">[];
   onHeightChanged?: (height: number) => void;
   ref?: Ref<HTMLDivElement>;
+  notice?: ReactNode;
 };
 
 const HIDE_NAVBAR_THRESHOLD = 100;
@@ -38,6 +39,7 @@ export function Navbar({
   publishedLocales,
   onHeightChanged,
   ref,
+  notice,
 }: NavbarProps) {
   const { i18n } = useTranslation();
   const [localeSwitcherOpen, setLocaleSwitcherOpen] = useState(false);
@@ -170,6 +172,7 @@ export function Navbar({
               </div>
             </div>
 
+            <div className={cn("relative", slideClassName)}>{notice}</div>
             <MenuItems className="pointer-events-auto absolute z-10 w-full bg-white shadow-md xl:hidden">
               <div className="space-y-1 pt-2 pb-3">
                 {navLinks?.map((navLink) => {
