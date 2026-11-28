@@ -20,3 +20,27 @@ export const Default: Story = {
     media: media("azzedine-rouichi-gc5OYAll-rc-unsplash.jpg", "Example image"),
   },
 };
+
+export const FocalPoint: Story = {
+  args: {
+    media: {
+      ...media(
+        "david-hertle-3YCkAhD--Ic-unsplash.jpg",
+        "Courtyard framed toward the left",
+      ),
+      width: 1280,
+      height: 854,
+      focalX: 20,
+      focalY: 70,
+    },
+    alignment: "bottom",
+    withPreview: true,
+  },
+  decorators: [
+    (Story) => (
+      <div style={{ height: "40rem" }}>
+        <Story />
+      </div>
+    ),
+  ],
+};

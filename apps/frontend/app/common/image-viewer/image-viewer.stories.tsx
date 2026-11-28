@@ -124,3 +124,22 @@ export const LessSlotsFilled: Story = {
     ],
   },
 };
+
+export const FocalPoints: Story = {
+  args: {
+    images: [
+      {
+        src: "/david-hertle-3YCkAhD--Ic-unsplash.jpg",
+        alt: "Courtyard framed toward the left",
+        aspectRatio: 1280 / 854,
+        focalPoint: { x: 20, y: 70 },
+      },
+      {
+        src: "/datingjungle-Vv4JB0SMfZ4-unsplash.jpg",
+        alt: "Landscape framed toward the right",
+        aspectRatio: 1280 / 853,
+        focalPoint: { x: 90, y: 20 },
+      },
+    ],
+  },
+};

@@ -19,6 +19,7 @@
     "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "3.1147.0",
     "@payloadcms/db-mongodb": "^3.94.1",
     "@payloadcms/email-resend": "^3.94.1",
     "@payloadcms/next": "^3.94.1",
@@ -35,6 +36,7 @@
     "payload": "^3.94.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "sharp": "0.35.5",
     "zod": "^4.4.3"
   },
   "devDependencies": {

@@ -595,6 +595,8 @@ export interface ApiKeyAuthOperations {
  */
 export interface Media {
   id: string;
+  displayWidth?: number | null;
+  displayHeight?: number | null;
   category?: (string | null) | MediaCategory;
   comment?: string | null;
   alt?: string | null;
@@ -1076,7 +1078,7 @@ export interface HeroSlides {
   slides: {
     image: string | Media;
     /**
-     * Depending on the user’s device or window size, the slide often has a different aspect ratio than the image. This setting defines how the image is aligned within the slide area.
+     * Depending on the user’s device or window size, the slide often has a different aspect ratio than the image. This setting defines how the image is aligned within the slide area when the media image has no saved focal point. A saved focal point takes precedence.
      */
     imageAlignment?: ('center' | 'bottom') | null;
     overlayTitle?: {
@@ -1803,6 +1805,8 @@ export interface PayloadMigration {
  * via the `definition` "media_select".
  */
 export interface MediaSelect<T extends boolean = true> {
+  displayWidth?: T;
+  displayHeight?: T;
   category?: T;
   comment?: T;
   alt?: T;

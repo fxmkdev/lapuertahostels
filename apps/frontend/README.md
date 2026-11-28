@@ -102,3 +102,19 @@ applications. Run it headlessly with
 need access to that test MongoDB instance through `CMS_DATABASE_URI` (or the
 default `mongodb://localhost:27017/website-cms`). Hydration tests stub external
 font CSS so third-party availability cannot fail the interaction checks.
+
+## Image focal points
+
+`MediaImage` reads Payload's `focalX`/`focalY` percentages and orientation-aware
+display dimensions (falling back to raw dimensions for legacy records). The
+shared image layer maps them to ImageKit `xc`/`yc` coordinates after scaling and
+clamps the crop within the image. Each responsive/DPR URL gets its own crop
+coordinates. Any CSS `object-fit: cover` crop uses the focal point remapped into
+the ImageKit output, keeping the subject visible through both crop stages.
+Room-gallery thumbnails and social preview URLs use the same geometry.
+
+Missing, incomplete, or invalid metadata preserves the existing cropping and
+hero alignment. A valid saved point overrides automatic/custom ImageKit focus
+and hero alignment. Full-image lightboxes, uncropped logos, and videos retain
+their existing presentation. See the CMS README for the editor workflow and
+cache-refresh timing.

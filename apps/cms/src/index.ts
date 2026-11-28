@@ -127,6 +127,8 @@ export const cmsPlugin =
           : undefined,
         organization: mediaOrganization,
         retainLegacyCategories,
+        serverUrl,
+        apiRoute: config.routes?.api,
       }),
     );
     if (mediaOrganization === "categories" || retainLegacyCategories) {

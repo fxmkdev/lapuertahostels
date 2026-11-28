@@ -46,13 +46,12 @@ export const HeroSlidesBlock: Block = {
       fields: [
         imageField(),
         {
-          // TODO consider to support this in other blocks/groups as well and add more values (together with imageField?)
           name: "imageAlignment",
           type: "radio",
           admin: {
             description: {
-              en: "Depending on the user’s device or window size, the slide often has a different aspect ratio than the image. This setting defines how the image is aligned within the slide area.",
-              es: "Dependiendo del dispositivo del usuario o del tamaño de la ventana, la diapositiva a menudo tiene una relación de aspecto diferente a la de la imagen. Este ajuste define cómo se alinea la imagen dentro del área de la diapositiva.",
+              en: "Depending on the user’s device or window size, the slide often has a different aspect ratio than the image. This setting defines how the image is aligned within the slide area when the media image has no saved focal point. A saved focal point takes precedence.",
+              es: "Dependiendo del dispositivo del usuario o del tamaño de la ventana, la diapositiva a menudo tiene una relación de aspecto diferente a la de la imagen. Este ajuste define cómo se alinea la imagen dentro del área de la diapositiva cuando la imagen no tiene un punto focal guardado. Un punto focal guardado tiene prioridad.",
             },
           },
           defaultValue: "center",
