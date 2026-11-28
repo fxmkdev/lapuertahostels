@@ -79,6 +79,10 @@ reusing a group would make the nested workflow contend with or cancel itself. A
 canceled image job fails the result gate and cannot promote an image into the
 validated reuse cache or start deployment.
 
+Cancellation may leave a unique `ci-build-<run>-<attempt>` image tag in the
+registry. These unvalidated tags are not fingerprint-cache entries and are never
+selected for reuse by another run.
+
 ## Checks and deployments
 
 Lint, formatting, typechecks, unit tests, and frontend Chromatic run only for
