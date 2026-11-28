@@ -100,6 +100,24 @@ preview from the CMS; there is no direct cross-site request fallback. Deploy the
 CMS and website together; mixed versions retain content and show a connection
 alert.
 
+Banner and Footer previews open real brand homepages with a fixed brand
+selector. The selector uses the CMS editor's language, independently of the
+content locale. Banner defaults to the first brand using it (Puerta, Aqua, then
+Azul), or Puerta when unassigned. The preview injects the edited banner even
+when it is not assigned to that brand, and ignores stored banner dismissal. Save
+a new Banner once before opening live preview. Footer defaults to Puerta and
+scrolls into view on opening and brand changes. Brand selection preserves the
+active document and locale.
+
+Common opens `/:locale/preview/common?preview=globals/common` with Page not
+found, Server error, and UI labels scenarios. The scenario selector is preserved
+in the URL. Error scenarios render the production presentation without throwing
+an application error. UI labels use production controls, show accessible labels
+beside the examples, and prevent form submissions. Preview translations replace
+an isolated resource bundle, including cleared values, without changing normal
+browsing. The preview-only route has no navigation or sitemap entry. These
+content previews are marked `noindex, nofollow` and suppress analytics.
+
 `PAYLOAD_CMS_BASE_URL` is used for server-to-server requests. Set optional
 `PAYLOAD_CMS_PUBLIC_URL` when the browser must use a different address;
 otherwise it defaults to `PAYLOAD_CMS_BASE_URL`. The public URL must match the

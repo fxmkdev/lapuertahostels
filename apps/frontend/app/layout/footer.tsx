@@ -37,6 +37,7 @@ export function Footer({ content, brand, allBrands }: FooterProps) {
   }
   return (
     <footer
+      id="site-footer"
       className={`mt-40 ${theme.lightBackgroundColor}`}
       aria-labelledby="footer-heading"
     >

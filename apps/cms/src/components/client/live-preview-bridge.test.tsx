@@ -3,7 +3,11 @@ import { afterEach, expect, test, vi } from "vitest";
 import { LivePreviewBridge } from "./live-preview-bridge";
 
 const state = vi.hoisted(() => ({
-  document: { id: "page-one", collectionSlug: "pages" },
+  document: {
+    id: "page-one" as string | undefined,
+    collectionSlug: "pages" as string | undefined,
+    globalSlug: undefined as string | undefined,
+  },
   locale: { code: "en" },
   preview: {
     isLivePreviewing: true,
@@ -31,6 +35,11 @@ afterEach(() => {
   cleanup();
   vi.clearAllMocks();
   state.preview.previewWindowType = "iframe";
+  state.document = {
+    id: "page-one",
+    collectionSlug: "pages",
+    globalSlug: undefined,
+  };
 });
 
 test.each(["iframe", "popup"])(
@@ -65,5 +74,47 @@ test.each(["iframe", "popup"])(
 
 test("does not install a bridge for an unconfigured preview origin", () => {
   render(<LivePreviewBridge previewOrigin="https://other.example.com" />);
+  expect(state.listen).not.toHaveBeenCalled();
+});
+
+test.each(["footer", "common"])(
+  "connects the %s global without a collection ID",
+  (slug) => {
+    state.listen.mockReturnValue(state.stop);
+    state.document = {
+      id: undefined,
+      collectionSlug: undefined,
+      globalSlug: slug,
+    };
+    render(<LivePreviewBridge previewOrigin="https://preview.example.com" />);
+    expect(state.listen.mock.lastCall?.[1]()).toMatchObject({
+      documentPath: `globals/${slug}`,
+      id: undefined,
+    });
+  },
+);
+
+test("connects banners and rejects globals outside the preview allowlist", () => {
+  state.listen.mockReturnValue(state.stop);
+  state.document = {
+    id: "banner-one",
+    collectionSlug: "banners",
+    globalSlug: undefined,
+  };
+  const view = render(
+    <LivePreviewBridge previewOrigin="https://preview.example.com" />,
+  );
+  expect(state.listen.mock.lastCall?.[1]().documentPath).toBe(
+    "banners/banner-one",
+  );
+  state.listen.mockClear();
+  state.document = {
+    id: undefined,
+    collectionSlug: undefined,
+    globalSlug: "settings",
+  };
+  view.rerender(
+    <LivePreviewBridge previewOrigin="https://preview.example.com" />,
+  );
   expect(state.listen).not.toHaveBeenCalled();
 });

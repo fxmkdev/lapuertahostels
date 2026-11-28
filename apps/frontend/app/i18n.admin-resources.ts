@@ -4,6 +4,19 @@ export const adminResources: Resource = {
   en: {
     admin: {
       livePreview: {
+        brand: "Preview brand",
+        scenario: "Preview scenario",
+        notFound: "Page not found",
+        serverError: "Server error",
+        labels: "UI labels",
+        accessibleLabels: "Accessible labels",
+        bannerExample: "Banner preview",
+        slidesExample: "Slide navigation",
+        viewerExample: "Image viewer",
+        loginExample: "Login",
+        maintenanceExample: "Maintenance login",
+        newsletterExample: "Newsletter",
+        fatalExample: "Fatal error",
         connection:
           "Could not connect to the CMS for live preview. Showing the last loaded content. Reopen live preview from the CMS.",
         authentication:
@@ -23,6 +36,19 @@ export const adminResources: Resource = {
   es: {
     admin: {
       livePreview: {
+        brand: "Marca de vista previa",
+        scenario: "Escenario de vista previa",
+        notFound: "Página no encontrada",
+        serverError: "Error del servidor",
+        labels: "Etiquetas de interfaz",
+        accessibleLabels: "Etiquetas accesibles",
+        bannerExample: "Vista previa del banner",
+        slidesExample: "Navegación de diapositivas",
+        viewerExample: "Visor de imágenes",
+        loginExample: "Inicio de sesión",
+        maintenanceExample: "Acceso de mantenimiento",
+        newsletterExample: "Boletín",
+        fatalExample: "Error fatal",
         connection:
           "No se pudo conectar con el CMS para la vista previa en vivo. Se muestra el último contenido cargado. Abre de nuevo la vista previa en vivo desde el CMS.",
         authentication:

@@ -8,11 +8,15 @@ import { optionalTextareaField } from "../../fields/textarea";
 import { contentGroup } from "../../groups";
 import { allTranslations, translated } from "../../translations/translations";
 
+import { livePreviewAdmin, livePreviewBridge } from "../../common/live-preview";
+
 type CommonOptions = {
+  livePreviewBaseUrl?: string;
   additionalUiLabelFields?: Field[];
 };
 
 export function Common({
+  livePreviewBaseUrl,
   additionalUiLabelFields,
 }: CommonOptions): GlobalConfig {
   return {
@@ -21,6 +25,15 @@ export function Common({
       update: canManageContent,
     },
     admin: {
+      components: {
+        elements: {
+          beforeDocumentControls: livePreviewBridge(livePreviewBaseUrl),
+        },
+      },
+      ...livePreviewAdmin(livePreviewBaseUrl, () => ({
+        pathname: "/preview/common",
+        documentPath: "globals/common",
+      })),
       group: contentGroup,
     },
     fields: [

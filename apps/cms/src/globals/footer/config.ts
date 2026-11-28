@@ -11,7 +11,9 @@ import type { GlobalConfig } from "payload";
 import { socialPlatformOptions } from "./social-platforms";
 import type { SocialPlatformRowLabelProps } from "./social-platform-row-label";
 
-export function footer(): GlobalConfig {
+import { livePreviewAdmin, livePreviewBridge } from "../../common/live-preview";
+
+export function footer(livePreviewBaseUrl?: string): GlobalConfig {
   return {
     slug: "footer",
     label: {
@@ -22,6 +24,15 @@ export function footer(): GlobalConfig {
       update: canManageContent,
     },
     admin: {
+      components: {
+        elements: {
+          beforeDocumentControls: livePreviewBridge(livePreviewBaseUrl),
+        },
+      },
+      ...livePreviewAdmin(livePreviewBaseUrl, () => ({
+        pathname: "/",
+        documentPath: "globals/footer",
+      })),
       group: contentGroup,
     },
     fields: [

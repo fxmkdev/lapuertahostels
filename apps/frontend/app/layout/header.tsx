@@ -7,12 +7,14 @@ import { LoadingBar } from "./loading-bar";
 
 type HeaderProps = {
   hasSession?: boolean;
+  previewBanner?: boolean;
   brand: Brand;
   allBrands: Brand[];
   publishedLocales: Pick<LocaleConfig, "id" | "displayLabel">[];
 } & Pick<NavbarProps, "onHeightChanged">;
 
 export function Header({
+  previewBanner = false,
   brand,
   allBrands,
   publishedLocales,
@@ -21,7 +23,11 @@ export function Header({
   return (
     <header className="contents">
       {isObject(brand.banner) && (
-        <Banner key={brand.banner.id} {...brand.banner} />
+        <Banner
+          key={brand.banner.id}
+          {...brand.banner}
+          id={previewBanner ? undefined : brand.banner.id}
+        />
       )}
       <Navbar
         brand={brand}

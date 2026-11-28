@@ -80,7 +80,7 @@ export default buildConfig({
   db: mongooseAdapter({
     url: process.env.DATABASE_URI!,
   }),
-  globals: [footer()],
+  globals: [footer(process.env.LIVE_PREVIEW_URL)],
   i18n: { supportedLanguages: { en, es }, translations },
   email: resendAdapter({
     defaultFromAddress: "no-reply@admin.lapuertahostels.co",

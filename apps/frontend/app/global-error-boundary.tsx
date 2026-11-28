@@ -12,7 +12,7 @@ import { HeroHeadingBlock } from "./blocks/hero-heading-block";
 import { StoryBlock } from "./blocks/story-block";
 import { Footer } from "./layout/footer";
 import { MaintenanceScreen } from "./layout/maintenance-screen";
-import type { Settings } from "@lapuertahostels/payload-types";
+import type { Settings, Common } from "@lapuertahostels/payload-types";
 import { richTextRoot } from "@lapuertahostels/rich-text";
 
 export function GlobalErrorBoundary() {
@@ -48,32 +48,18 @@ export function GlobalErrorBoundary() {
           allBrands={allBrands}
           publishedLocales={publishedLocales}
         />
-        <main>
-          <HeroHeadingBlock
-            blockType="HeroHeading"
-            heading={
-              (isPageNotFound
-                ? common.pageNotFoundScreen?.heading
-                : common.errorScreen?.heading) || ""
-            }
-          />
-
-          <StoryBlock
-            blockType="Story"
-            text={
-              (isPageNotFound
-                ? common.pageNotFoundScreen?.text
-                : common.errorScreen?.text) || richTextRoot()
-            }
-          />
-        </main>
+        <ErrorScreen
+          content={
+            isPageNotFound ? common.pageNotFoundScreen : common.errorScreen
+          }
+        />
         <Footer allBrands={allBrands} brand={brand} content={footer} />
       </ThemeProvider>
     </>
   );
 }
 
-function FatalErrorScreen() {
+export function FatalErrorScreen() {
   const { t } = useTranslation();
   return (
     <>
@@ -99,5 +85,17 @@ function MaintenanceErrorScreen({ settings }: { settings: Settings }) {
         <MaintenanceScreen {...settings.maintenanceScreen!} />
       </ThemeProvider>
     </>
+  );
+}
+
+export function ErrorScreen({ content }: { content: Common["errorScreen"] }) {
+  return (
+    <main>
+      <HeroHeadingBlock
+        blockType="HeroHeading"
+        heading={content?.heading || ""}
+      />
+      <StoryBlock blockType="Story" text={content?.text || richTextRoot()} />
+    </main>
   );
 }

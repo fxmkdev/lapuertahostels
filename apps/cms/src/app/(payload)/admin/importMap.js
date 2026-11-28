@@ -3,6 +3,7 @@ import { GenerateAltTextButton as GenerateAltTextButton_07c827ba00c5aee0468fd6a5
 import { UsagesField as UsagesField_abf5fbe5ff1fe41f9f9530c3622ddd55 } from '../../../../src/components/rsc'
 import { QueryStringLabel as QueryStringLabel_07c827ba00c5aee0468fd6a5f617dbac } from '../../../../src/components/client'
 import { FragmentField as FragmentField_07c827ba00c5aee0468fd6a5f617dbac } from '../../../../src/components/client'
+import { LivePreviewBridge as LivePreviewBridge_402f30a2396d7e85364af8d9010433d6 } from '../../../../src/components/client/live-preview-bridge'
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { LexicalDiffComponent as LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
@@ -21,7 +22,6 @@ import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0
 import { RowLabel as RowLabel_07c827ba00c5aee0468fd6a5f617dbac } from '../../../../src/components/client'
 import { DescriptionField as DescriptionField_abf5fbe5ff1fe41f9f9530c3622ddd55 } from '../../../../src/components/rsc'
 import { PathnameField as PathnameField_07c827ba00c5aee0468fd6a5f617dbac } from '../../../../src/components/client'
-import { LivePreviewBridge as LivePreviewBridge_402f30a2396d7e85364af8d9010433d6 } from '../../../../src/components/client/live-preview-bridge'
 import { ToCell as ToCell_07c827ba00c5aee0468fd6a5f617dbac } from '../../../../src/components/client'
 import { SocialPlatformRowLabel as SocialPlatformRowLabel_d7dca0d8b12acaed3ec7c89bc31f80ca } from '../../../../src/globals/footer/social-platform-row-label'
 import { LogoSmall as LogoSmall_43487f452bb19d163e74255343d30bb9 } from '../../../../src/components/logo'
@@ -37,6 +37,7 @@ export const importMap = {
   "/src/components/rsc#UsagesField": UsagesField_abf5fbe5ff1fe41f9f9530c3622ddd55,
   "/src/components/client#QueryStringLabel": QueryStringLabel_07c827ba00c5aee0468fd6a5f617dbac,
   "/src/components/client#FragmentField": FragmentField_07c827ba00c5aee0468fd6a5f617dbac,
+  "/src/components/client/live-preview-bridge#LivePreviewBridge": LivePreviewBridge_402f30a2396d7e85364af8d9010433d6,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#LexicalDiffComponent": LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e,
@@ -55,7 +56,6 @@ export const importMap = {
   "/src/components/client#RowLabel": RowLabel_07c827ba00c5aee0468fd6a5f617dbac,
   "/src/components/rsc#DescriptionField": DescriptionField_abf5fbe5ff1fe41f9f9530c3622ddd55,
   "/src/components/client#PathnameField": PathnameField_07c827ba00c5aee0468fd6a5f617dbac,
-  "/src/components/client/live-preview-bridge#LivePreviewBridge": LivePreviewBridge_402f30a2396d7e85364af8d9010433d6,
   "/src/components/client#ToCell": ToCell_07c827ba00c5aee0468fd6a5f617dbac,
   "/src/globals/footer/social-platform-row-label#SocialPlatformRowLabel": SocialPlatformRowLabel_d7dca0d8b12acaed3ec7c89bc31f80ca,
   "/src/components/logo#LogoSmall": LogoSmall_43487f452bb19d163e74255343d30bb9,

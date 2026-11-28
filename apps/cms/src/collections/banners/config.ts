@@ -7,7 +7,9 @@ import { contentGroup } from "../../groups";
 import { translated } from "../../translations/translations";
 import { bannerUsagesField } from "./usages";
 
-export const Banners: CollectionConfig = {
+import { livePreviewAdmin, livePreviewBridge } from "../../common/live-preview";
+
+export const Banners = (livePreviewBaseUrl?: string): CollectionConfig => ({
   slug: "banners",
   access: {
     create: canManageContent,
@@ -15,6 +17,17 @@ export const Banners: CollectionConfig = {
     update: canManageContent,
   },
   admin: {
+    components: {
+      edit: { beforeDocumentControls: livePreviewBridge(livePreviewBaseUrl) },
+    },
+    ...livePreviewAdmin(livePreviewBaseUrl, (data) =>
+      data.id
+        ? {
+            pathname: "/",
+            documentPath: `banners/${data.id as string}`,
+          }
+        : null,
+    ),
     defaultColumns: ["message", "createdAt", "updatedAt"],
     description: translated("cmsPlugin:banners:admin:description"),
     group: contentGroup,
@@ -52,4 +65,4 @@ export const Banners: CollectionConfig = {
     plural: translated("cmsPlugin:banners:labels:plural"),
     singular: translated("cmsPlugin:banners:labels:singular"),
   },
-};
+});

@@ -43,7 +43,7 @@ export function isPreviewRequest(value: unknown): value is PreviewRequest {
     isMessage(value) &&
     value.type === "populate" &&
     typeof value.documentPath === "string" &&
-    /^(pages|brands)\/[^/?#]+$/.test(value.documentPath) &&
+    isPreviewPath(value.documentPath) &&
     typeof value.locale === "string" &&
     value.locale.length > 0 &&
     value.locale.length <= 32 &&
@@ -64,14 +64,27 @@ export function isPreviewResult(value: unknown): value is PreviewResult {
   );
 }
 
-export function isPreviewDocument(document: unknown, expectedId: unknown) {
+export function isPreviewPath(path: string): boolean {
+  return (
+    /^(pages|brands|banners)\/[^/?#]+$/.test(path) ||
+    path === "globals/footer" ||
+    path === "globals/common"
+  );
+}
+
+export function isGlobalPreviewPath(path: string): boolean {
+  return path === "globals/footer" || path === "globals/common";
+}
+
+export function isPreviewDocument(document: unknown, expectedId?: unknown) {
   return (
     document !== null &&
     typeof document === "object" &&
     !Array.isArray(document) &&
-    "id" in document &&
-    (typeof document.id === "string" || typeof document.id === "number") &&
-    document.id === expectedId &&
+    (expectedId === undefined ||
+      ("id" in document &&
+        (typeof document.id === "string" || typeof document.id === "number") &&
+        document.id === expectedId)) &&
     !("errors" in document)
   );
 }
