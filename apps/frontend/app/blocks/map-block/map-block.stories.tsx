@@ -5,6 +5,7 @@ import { paragraph, richTextRoot, text } from "@lapuertahostels/rich-text";
 import { APIProvider } from "@vis.gl/react-google-maps";
 import { useEnvironment } from "~/common/environment";
 import { useSettings } from "~/common/common";
+import { allModes } from "../../../.storybook/modes";
 
 const meta = {
   title: "blocks/Map Block",
@@ -12,7 +13,15 @@ const meta = {
   parameters: {
     layout: "fullscreen",
     // give Map some time to load
-    chromatic: { delay: 1_000 },
+    chromatic: {
+      delay: 1_000,
+      modes: {
+        "brand-puerta": { brand: "puerta", viewport: "desktop" },
+        "brand-aqua": allModes["brand-aqua"],
+        "brand-azul": allModes["brand-azul"],
+        mobile: allModes["viewport-small-mobile"],
+      },
+    },
   },
   decorators: [
     (Story) => {
@@ -48,8 +57,52 @@ export const Default: Story = {
           ),
         ),
         paragraph(text("We're looking forward to meeting you!")),
-      ) as unknown as MapBlockProps["overlayTextBox"]["text"],
+      ) as unknown as NonNullable<MapBlockProps["overlayTextBox"]>["text"],
       callToActionLabel: "Get Directions",
     },
   },
+};
+
+export const LegacySingleLocation: Story = Default;
+
+export const SingleLocation: Story = {
+  args: {
+    blockType: "Map",
+    heading: "Visit Us",
+    zoomLevel: 14.5,
+    locations: [
+      {
+        name: "Aqua Hostel",
+        address: Default.args!.address!,
+        overlayTextBox: {
+          text: Default.args!.overlayTextBox!.text!,
+          callToActionLabel: "Get Directions",
+        },
+      },
+    ],
+  },
+};
+
+export const MultipleLocations: Story = {
+  args: {
+    ...SingleLocation.args,
+    locations: [
+      ...SingleLocation.args!.locations!,
+      {
+        name: "Parque de los Novios",
+        address: "Parque de los Novios, Santa Marta, Colombia",
+        overlayTextBox: {
+          text: richTextRoot(
+            paragraph(text("Explore the heart of Santa Marta.")),
+          ),
+          callToActionLabel: "Get Directions",
+          position: "top-right",
+        },
+      },
+    ],
+  },
+};
+
+export const WithoutHeading: Story = {
+  args: { ...MultipleLocations.args, heading: null },
 };

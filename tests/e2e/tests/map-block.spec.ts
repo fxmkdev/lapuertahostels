@@ -1,0 +1,162 @@
+import { expect, test } from "@playwright/test";
+import { paragraph, richTextRoot, text } from "@lapuertahostels/rich-text";
+import { createPage } from "../common/cms";
+import { mockGoogleMaps } from "../common/google-maps";
+
+for (const width of [1280, 390]) {
+  test(`map location selection and directions at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await mockGoogleMaps(page);
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    const testPage = await createPage({
+      content: [
+        {
+          blockType: "Map",
+          elementId: "locations",
+          heading: "Visit our locations",
+          zoomLevel: 14.5,
+          locations: ["Aqua", "Azul"].map((name) => ({
+            id: `location-${name}`,
+            name: `${name} Hostel`,
+            address: `${name} test address`,
+            overlayTextBox: {
+              text: richTextRoot(paragraph(text(`${name} location details`))),
+              callToActionLabel: `Directions to ${name}`,
+            },
+          })),
+        },
+      ],
+    });
+    await page.goto(`/en${testPage.pathname}`);
+    const block = page.locator("#locations");
+    await expect(
+      block.getByRole("heading", { name: "Visit our locations", exact: true }),
+    ).toBeVisible();
+    expect(
+      await block
+        .getByRole("heading", { name: "Visit our locations" })
+        .evaluate((heading) =>
+          Boolean(
+            heading.compareDocumentPosition(
+              heading.parentElement!.querySelector('[role="tablist"]')!,
+            ) & Node.DOCUMENT_POSITION_FOLLOWING,
+          ),
+        ),
+    ).toBe(true);
+    await expect(block.getByTestId("google-map")).toHaveAttribute(
+      "data-bounds",
+      /11.24.*11.25/,
+    );
+    await block
+      .getByRole("button", { name: "Pin Azul Hostel", exact: true })
+      .click();
+    await expect(
+      block.getByRole("heading", { name: "Visit our locations", exact: true }),
+    ).toBeVisible();
+    await expect(block.getByText("Azul location details")).toBeVisible();
+    await expect(
+      block.getByRole("link", { name: "Directions to Azul" }),
+    ).toHaveAttribute("href", "https://maps.example.com/Azul%20test%20address");
+    const azul = block.getByRole("tab", { name: "Azul Hostel", exact: true });
+    await expect(azul).toHaveAttribute("aria-selected", "true");
+    await expect(block.getByRole("tabpanel")).toHaveAttribute(
+      "aria-labelledby",
+      (await azul.getAttribute("id"))!,
+    );
+    const aqua = block.getByRole("tab", { name: "Aqua Hostel", exact: true });
+    await azul.focus();
+    await page.keyboard.press("ArrowLeft");
+    await expect(aqua).toBeFocused();
+    await expect(aqua).toHaveAttribute("aria-selected", "true");
+    await expect(
+      block.getByRole("heading", { name: "Visit our locations", exact: true }),
+    ).toBeVisible();
+    await page.keyboard.press("End");
+    await expect(azul).toHaveAttribute("aria-selected", "true");
+    await page.keyboard.press("Home");
+    await expect(aqua).toHaveAttribute("aria-selected", "true");
+    expect(errors).toEqual([]);
+  });
+}
+
+test("legacy CMS maps become editable locations and retain translations on save", async ({
+  request,
+}) => {
+  const legacyBlock = {
+    blockType: "Map",
+    address: "Aqua test address",
+    zoomLevel: 14.5,
+    overlayTextBox: {
+      heading: { en: "Aqua", es: "Visítanos" },
+      text: richTextRoot(paragraph(text("Original location details"))),
+      callToActionLabel: { en: "Directions", es: "Indicaciones" },
+    },
+  };
+  const testPage = await createPage({
+    // Seed the historical database shape, which predates required locations.
+    content: [
+      legacyBlock as unknown as import("@lapuertahostels/payload-types").Map,
+    ],
+  });
+  const url = new URL(`/api/pages/${testPage.id}`, process.env.CMS_BASE_URL);
+  const originalResponse = await request.get(`${url}?locale=en&depth=0`);
+  expect(originalResponse.ok()).toBe(true);
+  const original = await originalResponse.json();
+  const map = original.content[0];
+  expect(map.heading).toBe("Aqua");
+  expect(map.locations).toHaveLength(1);
+  expect(map.locations[0].address).toBe(legacyBlock.address);
+  expect(map.locations[0].overlayTextBox.text).toEqual(
+    legacyBlock.overlayTextBox.text,
+  );
+  const saved = await request.patch(`${url}?locale=en`, {
+    data: {
+      content: [
+        {
+          ...map,
+          heading: "Updated shared heading",
+          locations: [
+            {
+              ...map.locations[0],
+              overlayTextBox: {
+                ...map.locations[0].overlayTextBox,
+                heading: "Updated Aqua",
+              },
+            },
+            {
+              address: "Azul test address",
+              overlayTextBox: {
+                text: richTextRoot(paragraph(text("Second location"))),
+              },
+            },
+          ],
+        },
+      ],
+    },
+  });
+  expect(saved.ok(), await saved.text()).toBe(true);
+  const spanishResponse = await request.get(`${url}?locale=es&depth=0`);
+  expect(spanishResponse.ok()).toBe(true);
+  const spanish = await spanishResponse.json();
+  expect(spanish.content[0].heading).toBe("Visítanos");
+  expect(spanish.content[0].locations).toHaveLength(2);
+  expect(spanish.content[0].locations[0].overlayTextBox.text).toEqual(
+    legacyBlock.overlayTextBox.text,
+  );
+  expect(spanish.content[0].locations[0].overlayTextBox.heading).toBe(
+    "Visítanos",
+  );
+  expect(spanish.content[0].locations[0].overlayTextBox.callToActionLabel).toBe(
+    "Indicaciones",
+  );
+  const savedDoc = (await saved.json()).doc;
+  const cleared = await request.patch(`${url}?locale=en`, {
+    data: { content: [{ ...savedDoc.content[0], heading: null }] },
+  });
+  expect(cleared.ok(), await cleared.text()).toBe(true);
+  const reloaded = await request.get(`${url}?locale=en&depth=0`);
+  expect((await reloaded.json()).content[0].heading).toBeNull();
+});

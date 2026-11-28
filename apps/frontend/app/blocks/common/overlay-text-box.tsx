@@ -2,6 +2,8 @@ import type {
   ComponentPropsWithoutRef,
   ComponentType,
   ElementType,
+  ReactNode,
+  Ref,
 } from "react";
 import { Button } from "~/common/button";
 import { cn } from "~/common/cn";
@@ -9,9 +11,15 @@ import { Heading } from "~/common/heading";
 import { RichTextParagraph } from "~/common/paragraph";
 import type { RichTextObject } from "@lapuertahostels/rich-text";
 
-type OverlayTextBoxProps<TCta extends ElementType = ElementType> = {
+type OverlayTextBoxShellProps = {
+  ref?: Ref<HTMLDivElement>;
+  children?: ReactNode;
   position?: "top-left" | "top-right" | "bottom-left" | "bottom-right" | null;
-  heading: string | undefined | null;
+};
+
+type OverlayTextBoxContentProps<TCta extends ElementType = ElementType> = {
+  children?: ReactNode;
+  heading?: string | null;
   text: RichTextObject | undefined | null;
   cta?: {
     as: TCta;
@@ -21,16 +29,31 @@ type OverlayTextBoxProps<TCta extends ElementType = ElementType> = {
   } & Omit<ComponentPropsWithoutRef<TCta>, "as">;
 };
 
+type OverlayTextBoxProps<TCta extends ElementType = ElementType> =
+  OverlayTextBoxShellProps & OverlayTextBoxContentProps<TCta>;
+
 export function OverlayTextBox({
+  ref,
   position,
-  cta,
-  heading,
-  text,
+  ...content
 }: OverlayTextBoxProps) {
+  return (
+    <OverlayTextBoxShell ref={ref} position={position}>
+      <OverlayTextBoxContent {...content} />
+    </OverlayTextBoxShell>
+  );
+}
+
+export function OverlayTextBoxShell({
+  ref,
+  position,
+  children,
+}: OverlayTextBoxShellProps) {
   const overlayTextBoxPosition = position || "top-left";
 
   return (
     <div
+      ref={ref}
       className={cn(
         "w-full bg-white px-6 pt-3 pb-6 text-center lg:absolute lg:w-auto lg:max-w-xs lg:rounded-md lg:px-8 lg:pt-5 lg:pb-8 lg:text-left lg:shadow-lg xl:max-w-sm 2xl:max-w-md",
         {
@@ -45,15 +68,35 @@ export function OverlayTextBox({
         },
       )}
     >
-      <Heading as="h3" size="small">
-        {heading}
-      </Heading>
-      {text && <RichTextParagraph className="mt-2">{text}</RichTextParagraph>}
+      {children}
+    </div>
+  );
+}
+
+export function OverlayTextBoxContent({
+  heading,
+  text,
+  children,
+  cta,
+}: OverlayTextBoxContentProps) {
+  return (
+    <>
+      {heading?.trim() && (
+        <Heading as="h3" size="small">
+          {heading}
+        </Heading>
+      )}
+      {text && (
+        <RichTextParagraph className={heading?.trim() ? "mt-2" : undefined}>
+          {text}
+        </RichTextParagraph>
+      )}
+      {children}
       {cta && (
         <Button {...cta} className="mt-4">
           {cta.label}
         </Button>
       )}
-    </div>
+    </>
   );
 }

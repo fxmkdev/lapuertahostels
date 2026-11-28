@@ -1,114 +1,122 @@
 import type { Map as MapType } from "@lapuertahostels/payload-types";
 import {
   AdvancedMarker,
-  Map,
+  Map as GoogleMap,
   Pin,
-  useMapsLibrary,
 } from "@vis.gl/react-google-maps";
-import { useEffect, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTheme } from "~/themes";
 import { cn } from "~/common/cn";
-import { Link } from "~/common/link";
-import { MapPinIcon } from "@heroicons/react/20/solid";
-import type { Place } from "~/common/google-maps";
-import { PlaceResolver } from "~/common/google-maps";
-import { OverlayTextBox } from "../common/overlay-text-box";
-import type { RichTextObject } from "@lapuertahostels/rich-text";
 import { useSettings } from "~/common/common";
+import { MapViewport } from "./map-viewport";
+import { useMapLocations } from "./use-map-locations";
+import { MapLocationDetails } from "./map-location-details";
 
-type MapBlockType = MapType;
-
-export type MapBlockProps = MapBlockType;
+// Cached pages and old CMS responses can still use the single-location shape.
+export type MapBlockProps = Omit<MapType, "locations"> & {
+  locations?: MapType["locations"] | null;
+};
 
 export function MapBlock({
   elementId,
+  heading,
   address,
+  locations,
   zoomLevel,
   overlayTextBox,
 }: MapBlockProps) {
-  const placesLibrary = useMapsLibrary("places");
-  const [place, setPlace] = useState<Place>();
-  const [isLoading, setIsLoading] = useState(false);
-  const [requestedAddress, setRequestedAddress] = useState<string>();
-
+  const entries = useMemo(
+    () =>
+      locations?.length
+        ? locations
+        : address
+          ? [{ address, overlayTextBox }]
+          : [],
+    [locations, address, overlayTextBox],
+  );
+  const sharedHeading =
+    heading === undefined
+      ? entries.find((entry) => entry.overlayTextBox?.heading?.trim())
+          ?.overlayTextBox?.heading || overlayTextBox?.heading
+      : heading;
+  const { addresses, ready, resolved } = useMapLocations(entries);
+  const [selection, setSelection] = useState<{
+    addresses: string;
+    index: number;
+  }>();
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
   const { maps } = useSettings();
 
-  useEffect(() => {
-    if (
-      !placesLibrary ||
-      !address ||
-      address.length < 3 ||
-      isLoading ||
-      requestedAddress === address
-    ) {
-      return;
-    }
+  const selected =
+    resolved.find(
+      (entry) =>
+        selection?.addresses === addresses && entry.index === selection.index,
+    ) ?? resolved[0];
+  const points = useMemo(
+    () => resolved.map(({ place }) => place.location),
+    [resolved],
+  );
+  const details = selected?.overlayTextBox;
 
-    const debounceTimeoutId = window.setTimeout(async () => {
-      setIsLoading(true);
-      setRequestedAddress(address);
-      try {
-        setPlace(await new PlaceResolver(placesLibrary).resolvePlace(address));
-      } finally {
-        setIsLoading(false);
-      }
-    }, 1_000);
-
-    return () => {
-      if (debounceTimeoutId != null) {
-        window.clearTimeout(debounceTimeoutId);
-      }
-    };
-  }, [placesLibrary, isLoading, place, address, requestedAddress]);
+  if (ready && !selected) return null;
 
   return (
     <div
       id={elementId || undefined}
       className={cn(
         "my-44 overflow-hidden",
-        !place && "animate-pulse bg-neutral-100",
+        !selected && "animate-pulse bg-neutral-100",
       )}
     >
       <div
         className={cn(
           "flex flex-col-reverse gap-4 transition duration-1000 ease-in-out lg:relative lg:h-[35rem]",
-          place ? "scale-100 opacity-100" : "scale-105 opacity-0",
+          selected ? "scale-100 opacity-100" : "scale-105 opacity-0",
         )}
       >
-        <div className={cn("h-[35rem] lg:h-full")}>
-          {place && (
-            <Map
-              disableDefaultUI={true}
+        <div ref={mapContainerRef} className="h-[35rem] lg:h-full">
+          {selected && (
+            <GoogleMap
+              disableDefaultUI
               keyboardShortcuts={false}
               gestureHandling="none"
               clickableIcons={false}
               mapId={maps?.mapId}
               colorScheme="LIGHT"
-              zoom={zoomLevel}
-              center={place.location}
-              controlled={true}
+              defaultZoom={zoomLevel}
+              defaultCenter={selected.place.location}
+              maxZoom={zoomLevel}
             >
-              <LocationMarker location={place.location} />
-            </Map>
+              <MapViewport
+                points={points}
+                zoomLevel={zoomLevel}
+                mapContainerRef={mapContainerRef}
+                overlayRef={overlayRef}
+                overlayPosition={details?.position}
+              />
+              {resolved.map((entry) => (
+                <LocationMarker
+                  key={entry.index}
+                  location={entry.place.location}
+                  title={entry.label}
+                  selected={entry.index === selected.index}
+                  onClick={() =>
+                    setSelection({ addresses, index: entry.index })
+                  }
+                />
+              ))}
+            </GoogleMap>
           )}
         </div>
 
-        {overlayTextBox && place && (
-          <OverlayTextBox
-            position={overlayTextBox.position}
-            heading={overlayTextBox.heading}
-            text={overlayTextBox.text as unknown as RichTextObject}
-            cta={
-              overlayTextBox.callToActionLabel
-                ? {
-                    icon: MapPinIcon,
-                    label: overlayTextBox.callToActionLabel,
-                    as: Link,
-                    variant: "secondary",
-                    to: place.url,
-                  }
-                : undefined
-            }
+        {selected && (
+          <MapLocationDetails
+            heading={sharedHeading}
+            overlayRef={overlayRef}
+            locations={resolved}
+            selected={selected}
+            onSelect={(index) => setSelection({ addresses, index })}
           />
         )}
       </div>
@@ -116,14 +124,30 @@ export function MapBlock({
   );
 }
 
-function LocationMarker({ location }: { location: google.maps.LatLngLiteral }) {
+function LocationMarker({
+  location,
+  title,
+  selected,
+  onClick,
+}: {
+  location: google.maps.LatLngLiteral;
+  title: string;
+  selected: boolean;
+  onClick: () => void;
+}) {
   const theme = useTheme();
   return (
-    <AdvancedMarker position={location}>
+    <AdvancedMarker
+      position={location}
+      title={title}
+      onClick={onClick}
+      zIndex={selected ? 1 : 0}
+    >
       <Pin
         background={theme.mapPinCssColors.background}
         glyphColor={theme.mapPinCssColors.glyph}
         borderColor={theme.mapPinCssColors.border}
+        scale={selected ? 1.15 : 1}
       />
     </AdvancedMarker>
   );

@@ -145,3 +145,38 @@ uses a fresh cookie-authenticated editor context without the suite's API-key
 headers. With the CMS on `localhost` and the website on `127.0.0.1`, it verifies
 that a direct cross-site request fails while unsaved edits appear in both
 preview modes through same-origin CMS requests.
+
+## Map locations
+
+A Map block has an optional, translated **Heading** above its ordered
+**Locations** list. The heading appears once above the frontend tabs and remains
+the same when selecting another location. Clear it to omit the heading entirely.
+Add an address (including the business name) and an overlay with text, optional
+directions label, and position for each location. Addresses must identify a
+place on Google Maps. The first available location is selected initially.
+Selecting a pin or a location tab switches its details and directions
+destination.
+
+Each location also has an optional, translated **Name** for its tab and pin.
+This is independent of the shared heading. Empty or whitespace-only names fall
+back to the address for new content. Existing unnamed locations can still use
+their old location headings as labels.
+
+The frontend shows themed tabs above the details when multiple locations
+resolve. The Google Maps directions link remains a separate action button. The
+tab list screen-reader label can be translated under **UI Labels → Map →
+Locations**.
+
+Single-location maps retain their configured zoom. Maps with multiple locations
+fit all available pins, reserving room for the desktop overlay; **Zoom Level**
+limits how closely they zoom in. Failed lookups are omitted, and a map with no
+resolved locations is hidden.
+
+Existing single-address blocks and historical versions remain compatible. Field
+hooks present their address and overlay as the first editable location. When the
+shared heading is absent, the first nonblank old location heading (or the
+original single-address heading) initializes it, preserving translations.
+Explicitly cleared headings stay cleared. Saving persists the location list and
+shared heading. Explicit location lists take precedence over legacy fields. No
+bulk migration is needed. Deploy the updated frontend before the CMS (or deploy
+both together), since older frontends cannot render the new list.

@@ -41,7 +41,7 @@ export class PlaceResolver {
           query: query,
         },
         (results) => {
-          if (!results) {
+          if (!results?.length) {
             reject(new Error("No results found"));
           } else {
             resolve(results[0]);

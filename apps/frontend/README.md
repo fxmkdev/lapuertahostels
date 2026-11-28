@@ -318,3 +318,30 @@ After rollout, warm a page, save a related banner, reload once, and confirm the
 new content. Check CMS logs for invalidation warnings and frontend logs for
 Redis failures. No Payload schema migration is required. Legacy cache keys are
 ignored; they had no Redis TTL and can be removed separately during maintenance.
+
+## Maps with multiple locations
+
+Map blocks render each configured location as a selectable pin, with a location
+tab alternative for keyboard users and coincident pins. Selecting a location
+switches its overlay and directions link while retaining an overview of all
+resolved locations. Bounds refit when the map or desktop overlay changes size;
+the configured zoom is the maximum for an overview and the exact zoom for one
+resolved location. Old single-address responses remain supported.
+
+Address lookups are debounced, repeated addresses share one lookup, failed
+locations are omitted, and stale responses after edits are ignored. When every
+lookup fails, the block is hidden. Map unit tests use mocked Google Maps APIs;
+Storybook includes legacy, single-location, and multiple-location examples for
+checking real Maps rendering with `STORYBOOK_GOOGLE_MAPS_API_KEY` configured.
+
+An optional shared heading appears once above the tabs and remains unchanged
+when selecting a pin or tab. Blank headings render no heading element or heading
+spacing. Location names label the tabs and map pins independently of the shared
+heading; new content falls back to the address. Cached legacy location headings
+remain compatible as location-label fallbacks and initialize a missing shared
+heading from the first configured nonblank location heading. Explicitly clearing
+the shared heading suppresses that fallback. The shared `Tabs` component uses
+the current brand theme and Headless UI keyboard navigation (Left/Right,
+Home/End, and one tab stop in the tab list). Pin selection and tab selection
+stay in sync. Single-location maps omit the selector. The directions link
+retains the shared secondary action button style below the detail panel.
