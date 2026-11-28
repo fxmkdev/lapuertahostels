@@ -172,7 +172,7 @@ Consumers:
 Remove when every matching consumer requires `1.8.2` or a verified secure
 successor.
 
-### `esbuild` → `0.28.1`
+### `esbuild` → `0.28.2`
 
 Latest stable: `0.28.2`.
 
@@ -206,7 +206,7 @@ Consumers: [ajv@8.18.0](https://registry.npmjs.org/ajv/8.18.0) `^3.0.1`.
 Remove when every matching consumer requires `3.1.9 on the 3.x line` or a
 verified secure successor.
 
-### `flatted` → `3.4.2`
+### `flatted` → `3.4.4`
 
 Latest stable: `3.4.4`.
 
@@ -352,7 +352,7 @@ Consumers:
 Remove when every matching consumer requires `1.12.1` or a verified secure
 successor.
 
-### `nanoid@3` → `3.3.18`
+### `nanoid@3` → `3.3.20`
 
 Latest stable: `6.0.2`.
 
@@ -375,7 +375,7 @@ Consumers: [anymatch@3.1.3](https://registry.npmjs.org/anymatch/3.1.3) `^2.0.4`;
 Remove when every matching consumer requires `2.3.2 on the 2.x line` or a
 verified secure successor.
 
-### `picomatch@4` → `4.0.5`
+### `picomatch@4` → `4.0.7`
 
 Latest stable: `4.0.7`.
 
@@ -450,7 +450,7 @@ Consumers:
 Remove when every matching consumer requires `1.11.0` or a verified secure
 successor.
 
-### `source-map-js` → `1.2.2`
+### `source-map-js` → `1.2.4`
 
 Latest stable: `1.2.4`.
 
@@ -638,7 +638,72 @@ withdrawn on 2026-10-23. Braces remains 3.0.3; no suppression, alert dismissal,
 or custom security patch is introduced. Withdrawal of this advisory does not
 establish that every dependency or future use is safe.
 
-## Validation
+## Focused patch batch, 2026-11-28
+
+Reviewed
+[Dependency Dashboard #381](https://github.com/fxmkdev/lapuertahostels/issues/381)
+against `origin/main` commit `7d34ce4b3`, using Node **26.13.1** and pnpm
+**12.21.0**. The dashboard predates main's React Router 8, Payload 3.94.1,
+TypeScript 7, pnpm 12, and Node 26 upgrades. This batch retains the runtime,
+matching Node typings, compiler/API compatibility aliases, every override, and
+all three local patches.
+
+| Retained selector | Previous pin | New pin  | Published changes                                                                                                                                                                                                          |
+| ----------------- | ------------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `nanoid@3`        | `3.3.18`     | `3.3.20` | [3.3.19](https://github.com/ai/nanoid/releases/tag/3.3.19) aligns ESM with the oversized-ID allocation guard already present in CommonJS; [3.3.20](https://github.com/ai/nanoid/releases/tag/3.3.20) corrects async types. |
+| `esbuild`         | `0.28.1`     | `0.28.2` | [Patch release](https://github.com/evanw/esbuild/releases/tag/v0.28.2) fixes emitted JavaScript/CSS, input overwrite protection, and API edge cases.                                                                       |
+| `flatted`         | `3.4.2`      | `3.4.4`  | Published npm tarball comparison shows unchanged JavaScript implementations and a broader `stringify` replacer type accepting `null`/`undefined`; other changes affect the Go implementation and development metadata.     |
+| `picomatch@4`     | `4.0.5`      | `4.0.7`  | [4.0.6](https://github.com/micromatch/picomatch/releases/tag/4.0.6) fixes pattern scanning; [4.0.7](https://github.com/micromatch/picomatch/releases/tag/4.0.7) fixes terminal globstars in parenthesized patterns.        |
+| `source-map-js`   | `1.2.2`      | `1.2.4`  | [Patch release](https://github.com/7rulnik/source-map-js/releases/tag/v1.2.4) fixes indexed-map offsets/lookups, large-map stack exhaustion, and non-breaking type declarations.                                           |
+
+The security floors and removal conditions above are unchanged: newer pins do
+not establish that upstream consumer constraints exclude vulnerable versions.
+The lockfile retains both YAML documents; its package-manager document is
+unchanged. Package identity changes are limited to these five packages and
+esbuild's corresponding platform binaries, with necessary peer/reference
+updates. Framework, major-version, workflow, and general lockfile updates are
+deferred.
+
+Verification on the updated graph:
+
+- Baseline and final online frozen-lockfile installations passed. Full and
+  production pnpm audits returned **zero advisories** before and after.
+- All five installed versions match the new pins. The three patch hashes are
+  unchanged. Peer diagnostics contain the same existing Vite 6.4.5 expectations
+  against Vite 8.1.6, with ordering differences only and no suppression.
+- Frontend and CMS typechecks, lint, formatting, **240 frontend tests**, and
+  **112 CMS tests** passed. E2E typechecking and committed Payload type
+  freshness passed; generated tracked files are unchanged.
+- Both production builds and the frontend Storybook build passed. The complete
+  frontend build output is byte-for-byte identical to an unchanged-main build
+  installed from its original lockfile.
+- A direct Nano ID ESM smoke check accepted default and 1,024-character IDs and
+  rejected negative and 1,025-character allocations with `RangeError`.
+- The final full Playwright run passed **all 22 tests without retries** in
+  **54.8 seconds**, using the existing `CI=true` configuration (one worker and
+  two available retries). Assertions, timeouts, and retry settings are
+  unchanged.
+
+Browser verification used both production builds, disposable MongoDB 8.0.38,
+Redis 8.4.8, local S3-compatible storage, and a local image transformation
+substitute. A temporary transport proxy preserved the suite's expected browser
+origins while other checkouts occupied ports 3000/3001; neither the proxy nor
+its verification configuration is committed. MongoDB used temporary memory
+storage after Docker's disk-space limit blocked initial index creation.
+
+An earlier local full run passed 20 tests and timed out in two focal-point
+tests. All three focal-point cases then passed in isolation without retries,
+before the successful full CI-mode run. An earlier analytics menu wait also did
+not recur. The analytics and two hydration scenarios passed against an
+unchanged-main frontend with its original lockfile. No reproducible baseline
+application failure was established; the existing Vite peer diagnostics remain
+as documented above.
+
+An additional offline install could not complete pnpm's supply-chain policy
+check because cached registry metadata for `@babel/traverse` was unavailable.
+The online frozen installs passed; no policy check was bypassed.
+
+## Historical validation
 
 Baseline full and production pnpm audits both reported zero advisories. Final
 checks used the same Node/pnpm versions and retained the existing test
