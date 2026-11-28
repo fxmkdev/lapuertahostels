@@ -83,6 +83,11 @@ Cancellation may leave a unique `ci-build-<run>-<attempt>` image tag in the
 registry. These unvalidated tags are not fingerprint-cache entries and are never
 selected for reuse by another run.
 
+The image step replaces its shell with the Node helper, which forwards `SIGINT`
+and `SIGTERM` to Fly and waits for it to exit. This gives Fly an opportunity to
+cancel its remote build session before the runner forcibly cleans up orphan
+processes; interrupted builds never publish image outputs or aliases.
+
 ## Checks and deployments
 
 Lint, formatting, typechecks, unit tests, and frontend Chromatic run only for

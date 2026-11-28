@@ -1,5 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { spawn } from "node:child_process";
+import { once } from "node:events";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import {
   classify,
   inspect,
@@ -204,6 +209,69 @@ test("build failure never aliases or promotes an image", async () => {
   );
   assert.equal(f.images.has(`${repository}:${inputs.imageTag}`), false);
 });
+for (const signal of ["SIGINT", "SIGTERM"]) {
+  test(
+    `build cancellation forwards ${signal} and never aliases the image`,
+    { timeout: 10_000 },
+    async (t) => {
+      const directory = await mkdtemp(join(tmpdir(), "ci-cancel-"));
+      t.after(() => rm(directory, { recursive: true, force: true }));
+      const stopped = join(directory, "stopped");
+      const calls = join(directory, "registry-calls");
+      const executable = join(directory, "flyctl");
+      await writeFile(
+        executable,
+        `#!${process.execPath}
+const fs = require("node:fs");
+for (const signal of ["SIGINT", "SIGTERM"]) {
+  process.on(signal, () => {
+    fs.writeFileSync(${JSON.stringify(stopped)}, signal);
+    process.exit(0);
+  });
+}
+console.log(JSON.stringify({ pid: process.pid, args: process.argv.slice(2) }));
+setInterval(() => {}, 1000);
+`,
+        { mode: 0o755 },
+      );
+      const helper = spawn(
+        process.execPath,
+        [
+          "--input-type=module",
+          "-e",
+          `import { appendFileSync } from "node:fs";
+import { prepareImage } from ${JSON.stringify(new URL("./images.mjs", import.meta.url).href)};
+await prepareImage(${JSON.stringify(inputs)}, {
+  run() {
+    appendFileSync(${JSON.stringify(calls)}, "inspect\\n");
+    throw new Error("manifest unknown");
+  }
+});`,
+        ],
+        { env: { ...process.env, PATH: `${directory}:${process.env.PATH}` } },
+      );
+      t.after(() => helper.kill("SIGKILL"));
+      helper.stderr.resume();
+      const exit = once(helper, "exit");
+      const [ready] = await once(helper.stdout, "data");
+      const { pid, args } = JSON.parse(ready.toString());
+      t.after(() => {
+        try {
+          process.kill(pid, "SIGKILL");
+        } catch (error) {
+          if (error.code !== "ESRCH") throw error;
+        }
+      });
+      assert.equal(args[args.indexOf("--depot-scope") + 1], "app");
+      helper.kill(signal);
+      const [code] = await exit;
+      // Even a clean child exit after cancellation must not continue aliasing.
+      assert.notEqual(code, 0);
+      assert.equal(await readFile(stopped, "utf8"), signal);
+      assert.equal(await readFile(calls, "utf8"), "inspect\n");
+    },
+  );
+}
 test("alias propagation waits for the expected digest", async () => {
   const f = registry(true);
   const run = f.options.run;

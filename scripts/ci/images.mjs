@@ -1,4 +1,5 @@
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
+import { once } from "node:events";
 import { appendFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { output } from "./inputs.mjs";
@@ -80,8 +81,8 @@ async function waitForImage(image, options, expected) {
   }
   throw new Error(`Image is unavailable: ${image}`);
 }
-function flyBuild({ app, imageApp, imageTag, buildTag, appVersion }) {
-  const result = spawnSync(
+async function flyBuild({ app, imageApp, imageTag, buildTag, appVersion }) {
+  const child = spawn(
     "flyctl",
     [
       "deploy",
@@ -100,10 +101,34 @@ function flyBuild({ app, imageApp, imageTag, buildTag, appVersion }) {
       `org.opencontainers.image.version=${imageTag}`,
       "--push",
     ],
-    { stdio: "inherit", timeout: 3_600_000 },
+    { stdio: "inherit" },
   );
-  if (result.error || result.status !== 0)
-    throw result.error ?? new Error(`Fly build failed: ${result.status}`);
+  // Let flyctl cancel its BuildKit session and release the remote builder
+  // before the runner resorts to killing orphan processes.
+  let interrupted;
+  const onInterrupt = () => {
+    interrupted = "SIGINT";
+    child.kill("SIGINT");
+  };
+  const onTerminate = () => {
+    interrupted = "SIGTERM";
+    child.kill("SIGTERM");
+  };
+  process.once("SIGINT", onInterrupt);
+  process.once("SIGTERM", onTerminate);
+  const timeout = setTimeout(() => {
+    interrupted = "timeout";
+    child.kill("SIGTERM");
+  }, 3_600_000);
+  try {
+    const [code, signal] = await once(child, "exit");
+    if (interrupted || code !== 0)
+      throw new Error(`Fly build failed: ${interrupted || signal || code}`);
+  } finally {
+    clearTimeout(timeout);
+    process.removeListener("SIGINT", onInterrupt);
+    process.removeListener("SIGTERM", onTerminate);
+  }
 }
 export async function prepareImage(
   inputs,

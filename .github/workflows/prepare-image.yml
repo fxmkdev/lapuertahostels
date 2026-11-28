@@ -81,7 +81,9 @@ jobs:
           password: ${{ secrets.FLY_API_TOKEN }}
       - name: Build or reuse ${{ inputs.app }} image
         id: prepare
-        run: node scripts/ci/images.mjs
+        # Make Node the runner's entry process so it can forward cancellation
+        # signals to flyctl and let it release the remote build.
+        run: exec node scripts/ci/images.mjs
         env:
           APP: ${{ inputs.app }}
           IMAGE_APP: ${{ inputs.image_app }}
