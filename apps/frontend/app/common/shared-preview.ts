@@ -1,3 +1,13 @@
+export function isCommonPreview(
+  preview: string | null | undefined,
+  pageUrl: string,
+) {
+  return (
+    preview === "globals/common" &&
+    new URL(pageUrl, "http://preview.local").pathname === "/preview/common"
+  );
+}
+
 import type { Brand } from "@lapuertahostels/payload-types";
 import { getBrandHomeHref } from "./page-link";
 

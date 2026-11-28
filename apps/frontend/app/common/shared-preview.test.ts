@@ -3,6 +3,7 @@ import { brand, banner } from "./cms-data.builders";
 import {
   getPreviewBrandHref,
   isSharedPreview,
+  isCommonPreview,
   selectPreviewBrand,
 } from "./shared-preview";
 
@@ -41,4 +42,12 @@ test("brand navigation retains document, language, and cache bypass", () => {
   });
   expect(isSharedPreview("globals/common")).toBe(false);
   expect(isSharedPreview("banners/../users")).toBe(false);
+});
+
+test("Common's dedicated layout is limited to its reserved route", () => {
+  expect(
+    isCommonPreview("globals/common", "/preview/common?scenario=labels"),
+  ).toBe(true);
+  expect(isCommonPreview("globals/common", "/aqua")).toBe(false);
+  expect(isCommonPreview(undefined, "/preview/common")).toBe(false);
 });

@@ -214,6 +214,18 @@ describe("root document server rendering", () => {
     }
   });
 
+  test("a Common preview query on an ordinary page retains the site shell", async () => {
+    const data = makeData();
+    data.environment.preview = "globals/common";
+    const result = await fixture(data).server("/normal");
+    expect(result.document.querySelector("header")).not.toBeNull();
+    expect(result.document.querySelector("footer")).not.toBeNull();
+    expect(
+      result.document.querySelector('[data-testid="maps"]'),
+    ).not.toBeNull();
+    expectAnalytics(result.document, true);
+  });
+
   test("missing analytics configuration omits analytics", async () => {
     const data = makeData();
     data.analyticsEnabled = false;

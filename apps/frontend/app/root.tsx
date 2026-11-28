@@ -10,26 +10,21 @@ import {
   useLoaderData,
   useRouteLoaderData,
   useRouteError,
-  redirect,
 } from "react-router";
 
 import styles from "./global.css?url";
 import { useTranslation } from "react-i18next";
-import { Footer } from "./layout/footer";
 import type { BrandId } from "./brands";
 import {
   getBrands,
-  getBanner,
   getCommon,
   getFooter,
   getSettings,
   tryGetPage,
 } from "./cms-data.server";
 import { OptInLivePreview } from "./common/live-preview";
-import { ThemeProvider } from "./themes";
 import type { ReactNode } from "react";
 import { createContext, useContext, useState } from "react";
-import { Header } from "./layout/header";
 import {
   getLocaleAndPageUrl,
   getRequestUrl,
@@ -40,18 +35,17 @@ import type { Brand, LocaleConfig } from "@lapuertahostels/payload-types";
 import { GlobalErrorBoundary } from "./global-error-boundary";
 import { AnalyticsScript } from "./analytics-script";
 import { getAnalyticsScriptUrl } from "./analytics-proxy.server";
-import { PreviewBar } from "./layout/preview-bar";
-import { getHeaderLocale, i18nextMiddleware } from "./i18next.server";
+import { i18nextMiddleware } from "./i18next.server";
 import { isAuthenticated } from "./common/auth";
 import { getVersion } from "./common/version.server";
 import { APIProvider as GoogleMapsAPIProvider } from "@vis.gl/react-google-maps";
 import { BRANDS_DEPTH } from "./cms-data";
+import { isCommonPreview } from "./common/shared-preview";
 import {
-  getPreviewBrandHref,
-  isSharedPreview,
-  selectPreviewBrand,
-} from "./common/shared-preview";
-import { PreviewBrandSelector } from "./layout/preview-brand-selector";
+  getPreviewAdminLocale,
+  loadSharedPreview,
+} from "./common/shared-preview.server";
+import { SiteLayout } from "./layout/site-layout";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: styles },
@@ -140,40 +134,28 @@ export async function loader({ request, url }: LoaderFunctionArgs) {
     ? ((page.brand as Brand).id as BrandId)
     : ("puerta" as BrandId);
   const preview = requestUrl.searchParams.get("preview");
-  const sharedPreview = isSharedPreview(preview);
-  const brand = sharedPreview
-    ? selectPreviewBrand(
-        allBrands,
-        preview!,
-        requestUrl.searchParams.get("previewBrand"),
-      )
-    : allBrands.find((b) => b.id === brandId);
+  const sharedPreview = await loadSharedPreview(
+    request,
+    requestUrl,
+    locale,
+    allBrands,
+    isAuthorized,
+  );
+  const brand = sharedPreview?.brand ?? allBrands.find((b) => b.id === brandId);
   if (!brand) throw new Error("Brand not found");
-  if (sharedPreview && isAuthorized) {
-    const href = getPreviewBrandHref(brand, locale, requestUrl.search);
-    if (href && requestUrl.pathname !== new URL(href, requestUrl).pathname)
-      throw redirect(href);
-  }
-  const banner =
-    sharedPreview && preview?.startsWith("banners/")
-      ? await getBanner(request, preview.slice(8), locale)
-      : null;
-  const isContentPreview = sharedPreview || preview === "globals/common";
-
+  const banner = sharedPreview?.banner ?? null;
+  const isContentPreview = !!sharedPreview || isCommonPreview(preview, pageUrl);
   return {
     isAuthorized,
     isContentPreview,
     banner,
     locale,
-    adminLocale: isContentPreview
-      ? requestUrl.searchParams.get("adminLng") === "es"
-        ? "es"
-        : requestUrl.searchParams.get("adminLng") === "en"
-          ? "en"
-          : await getHeaderLocale(request)
-      : settings.maintenanceScreen?.show
-        ? await getHeaderLocale(request)
-        : undefined,
+    adminLocale: await getPreviewAdminLocale(
+      request,
+      requestUrl,
+      isContentPreview,
+      !!settings.maintenanceScreen?.show,
+    ),
     brand,
     allBrands,
     settings,
@@ -243,22 +225,21 @@ export function Layout({ children }: { children: ReactNode }) {
 }
 
 export default function App() {
+  const data = useLoaderData<typeof loader>();
   const {
     brand,
     settings,
     footer,
     banner,
-    locale,
-    allBrands,
-    isAuthorized,
-    adminLocale,
     environment,
     publishedLocales,
-  } = useLoaderData<typeof loader>();
+    isContentPreview,
+  } = data;
   const { i18n } = useTranslation();
   const setHeaderHeight = useContext(HeaderHeightContext);
 
-  if (environment.preview === "globals/common") return <Outlet />;
+  if (isContentPreview && environment.preview === "globals/common")
+    return <Outlet />;
 
   return (
     <GoogleMapsAPIProvider
@@ -279,39 +260,13 @@ export default function App() {
             previewBrand: Brand,
             previewFooter: typeof footer,
           ) => (
-            <ThemeProvider themeColor={previewBrand.themeColor}>
-              {settings.maintenanceScreen?.show && isAuthorized && (
-                <PreviewBar adminLocale={adminLocale!} />
-              )}
-              {isSharedPreview(environment.preview) && (
-                <PreviewBrandSelector
-                  brand={previewBrand}
-                  allBrands={allBrands}
-                  locale={locale}
-                  adminLocale={adminLocale!}
-                  footer={environment.preview === "globals/footer"}
-                />
-              )}
-              {isAuthorized && (
-                <Header
-                  brand={previewBrand}
-                  previewBanner={!!banner}
-                  allBrands={allBrands}
-                  publishedLocales={publishedLocales}
-                  onHeightChanged={setHeaderHeight}
-                />
-              )}
-              <main>
-                <Outlet />
-              </main>
-              {isAuthorized && (
-                <Footer
-                  brand={previewBrand}
-                  allBrands={allBrands}
-                  content={previewFooter}
-                />
-              )}
-            </ThemeProvider>
+            <SiteLayout
+              {...data}
+              brand={previewBrand}
+              footer={previewFooter}
+              previewBanner={!!banner}
+              onHeaderHeightChanged={setHeaderHeight}
+            />
           );
           return banner ? (
             <OptInLivePreview
