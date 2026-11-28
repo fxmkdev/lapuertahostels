@@ -117,6 +117,27 @@ async function deploymentBranches(github, repoPath, environment, apps) {
   return branches;
 }
 
+async function pullRequestsForBranch(github, repository, branch) {
+  const prs = [];
+  const owner = repository.split("/")[0];
+  for await (const page of github.pages(`/repos/${repository}/pulls`, {
+    state: "all",
+    head: `${owner}:${branch}`,
+  })) {
+    for (const pr of page) {
+      if (
+        pr.head?.repo?.full_name?.toLowerCase() !== repository.toLowerCase() ||
+        pr.head?.ref !== branch ||
+        !Number.isSafeInteger(pr.number) ||
+        !["open", "closed"].includes(pr.state)
+      )
+        throw new Error("Ambiguous PR association");
+      prs.push(pr);
+    }
+  }
+  return prs;
+}
+
 export async function closedPrCandidates(
   apps,
   { github, repository, warn = console.warn },
@@ -128,34 +149,13 @@ export async function closedPrCandidates(
     return candidates;
   }
   const repoPath = `/repos/${repository}`;
-  const owner = repository.split("/")[0];
   const pullRequests = new Map();
-  const lookup = async (branch) => {
-    if (!pullRequests.has(branch)) {
+  const lookup = (branch) => {
+    if (!pullRequests.has(branch))
       pullRequests.set(
         branch,
-        (async () => {
-          const prs = [];
-          for await (const page of github.pages(`${repoPath}/pulls`, {
-            state: "all",
-            head: `${owner}:${branch}`,
-          })) {
-            for (const pr of page) {
-              if (
-                pr.head?.repo?.full_name?.toLowerCase() !==
-                  repository.toLowerCase() ||
-                pr.head?.ref !== branch ||
-                !Number.isSafeInteger(pr.number) ||
-                !["open", "closed"].includes(pr.state)
-              )
-                throw new Error("Ambiguous PR association");
-              prs.push(pr);
-            }
-          }
-          return prs;
-        })(),
+        pullRequestsForBranch(github, repository, branch),
       );
-    }
     return pullRequests.get(branch);
   };
   for (const environment of environments) {
