@@ -359,8 +359,8 @@ jobs:
     # Keep the existing required E2E check red for failed prerequisites.
     if: >-
       !cancelled() && (contains(needs.*.result, 'failure') ||
-      needs.frontend-build-push.result != 'success' ||
-      needs.cms-build-push.result != 'success' ||
+      needs.ci-tests.result != 'success' || needs.frontend-build-push.result !=
+      'success' || needs.cms-build-push.result != 'success' ||
       needs.detect-changes.outputs.e2e_changed == 'true' ||
       needs.frontend-build-push.outputs.checks == 'true' ||
       needs.cms-build-push.outputs.checks == 'true')
@@ -427,15 +427,15 @@ jobs:
             done
           done
         env:
-          FRONTEND_IMAGE: ${{ needs.frontend-build-push.outputs.image }}
-          CMS_IMAGE: ${{ needs.cms-build-push.outputs.image }}
+          FRONTEND_IMAGE: ${{ needs.frontend-build-push.outputs.digest }}
+          CMS_IMAGE: ${{ needs.cms-build-push.outputs.digest }}
       - name: Start services
         run: docker compose up -d && sleep 3
         env:
-          FRONTEND_IMAGE: ${{ needs.frontend-build-push.outputs.image }}
+          FRONTEND_IMAGE: ${{ needs.frontend-build-push.outputs.digest }}
           CMS_API_KEY: ${{ env.CMS_API_KEY }}
           SESSION_SECRET: $(openssl rand -hex 12)
-          CMS_IMAGE: ${{ needs.cms-build-push.outputs.image }}
+          CMS_IMAGE: ${{ needs.cms-build-push.outputs.digest }}
           PAYLOAD_SECRET: $(openssl rand -hex 12)
           MEDIA_S3_BUCKET: ${{ vars.E2E_TESTS_MEDIA_S3_BUCKET }}
           MEDIA_S3_REGION: ${{ vars.E2E_TESTS_MEDIA_S3_REGION }}
@@ -549,10 +549,12 @@ jobs:
       always() && !cancelled() && github.event_name != 'pull_request' &&
       needs.ci-result.result == 'success' && needs.ci-result.outputs.deploy ==
       'true'
-    needs: [version, ci-result]
+    needs: [version, ci-result, frontend-build-push, cms-build-push]
     uses: ./.github/workflows/deploy-version.yml
     with:
       version_with_sha: ${{ needs.version.outputs.version_with_sha }}
+      frontend_image: ${{ needs.frontend-build-push.outputs.digest }}
+      cms_image: ${{ needs.cms-build-push.outputs.digest }}
       sha: ${{ needs.version.outputs.sha }}
       environment: staging
     secrets: inherit
@@ -568,10 +570,12 @@ jobs:
       always() && !cancelled() && github.event_name == 'pull_request' &&
       needs.ci-result.result == 'success' && needs.ci-result.outputs.deploy ==
       'true'
-    needs: [version, ci-result]
+    needs: [version, ci-result, frontend-build-push, cms-build-push]
     uses: ./.github/workflows/deploy-version.yml
     with:
       version_with_sha: ${{ needs.version.outputs.version_with_sha }}
+      frontend_image: ${{ needs.frontend-build-push.outputs.digest }}
+      cms_image: ${{ needs.cms-build-push.outputs.digest }}
       sha: ${{ needs.version.outputs.sha }}
       environment: preview
       high_availability: false

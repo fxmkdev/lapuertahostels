@@ -5,6 +5,17 @@ on:
       version_with_sha:
         type: string
         required: true
+      frontend_image:
+        description:
+          "Validated frontend digest; defaults to the version tag for manual
+          deploys"
+        type: string
+        default: ""
+      cms_image:
+        description:
+          "Validated CMS digest; defaults to the version tag for manual deploys"
+        type: string
+        default: ""
       sha:
         type: string
         required: true
@@ -18,6 +29,12 @@ on:
 env:
   FLYCTL_VERSION: 0.5.11
   FRONTEND_INTERNAL_PORT: 3000
+  FRONTEND_IMAGE:
+    ${{ inputs.frontend_image || format('registry.fly.io/{0}:v{1}',
+    vars.FLY_STAGING_FRONTEND_APP, inputs.version_with_sha) }}
+  CMS_IMAGE:
+    ${{ inputs.cms_image || format('registry.fly.io/{0}:v{1}',
+    vars.FLY_STAGING_CMS_APP, inputs.version_with_sha) }}
 
 jobs:
   images-ready:
@@ -35,8 +52,8 @@ jobs:
           set -euo pipefail
 
           IMAGES=(
-            "registry.fly.io/${{ vars.FLY_STAGING_FRONTEND_APP }}:v${{ inputs.version_with_sha }}"
-            "registry.fly.io/${{ vars.FLY_STAGING_CMS_APP }}:v${{ inputs.version_with_sha }}"
+            "$FRONTEND_IMAGE"
+            "$CMS_IMAGE"
           )
           MAX_ATTEMPTS=24
           SLEEP_SECONDS=15
@@ -200,7 +217,7 @@ jobs:
           flyctl deploy \
           --config apps/frontend/fly.generated.toml \
           --ha=${{ inputs.high_availability }} \
-          --image registry.fly.io/${{ vars.FLY_STAGING_FRONTEND_APP }}:v${{ inputs.version_with_sha }} \
+          --image "$FRONTEND_IMAGE" \
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
@@ -266,6 +283,6 @@ jobs:
           flyctl deploy \
             --config apps/cms/fly.generated.toml \
             --ha=${{ inputs.high_availability }} \
-            --image registry.fly.io/${{ vars.FLY_STAGING_CMS_APP }}:v${{ inputs.version_with_sha }} \
+            --image "$CMS_IMAGE" \
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

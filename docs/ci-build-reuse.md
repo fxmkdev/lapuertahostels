@@ -58,7 +58,11 @@ Content fingerprints do not independently track mutable upstream Docker tags.
 
 Lint, formatting, typechecks, unit tests, and frontend Chromatic run only for
 changed apps or required rebuilds. E2E runs for either affected app or changes
-to E2E inputs. It receives the pair selected by the image-preparation jobs.
+to E2E inputs. E2E and automatic deployments both use the immutable digests
+selected by the image-preparation jobs, so concurrent tag updates cannot change
+the tested/deployed image pair. The reusable deployment workflow accepts
+optional `frontend_image` and `cms_image` inputs; manual Deploy keeps its
+version-tag fallback and existing interface.
 
 Docs-only changes with warm caches publish per-version image aliases but skip
 app checks, E2E, previews, staging deployment, and preview cleanup. Those

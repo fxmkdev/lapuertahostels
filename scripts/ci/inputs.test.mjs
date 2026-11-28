@@ -213,3 +213,15 @@ test("type-generation wrapper changes require verification without rebuilding CM
   assert.equal(before.cms, after.cms);
   assert.equal(detect(f.cwd, f.base).frontend_changed, true);
 });
+
+test("filenames containing tabs retain their full path in fingerprints", (t) => {
+  const f = fixture(t);
+  f.put("apps/frontend/app/route\tone.tsx", "same bytes");
+  const base = f.commit();
+  renameSync(
+    join(f.cwd, "apps/frontend/app/route\tone.tsx"),
+    join(f.cwd, "apps/frontend/app/route\ttwo.tsx"),
+  );
+  f.commit();
+  assert.equal(detect(f.cwd, base).frontend_changed, true);
+});
