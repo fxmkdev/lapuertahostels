@@ -106,10 +106,12 @@ async function expectDirectRequestForbidden(
   id: string,
 ) {
   // Prove the original cookie-based cross-site request remains forbidden.
-  const frame = page
-    .frames()
-    .find((frame) => frame.url().startsWith("http://127.0.0.1:3000/"))!;
-  const directStatus = await frame.evaluate(
+  const frame = page.frame({ url: /^http:\/\/127\.0\.0\.1:3000\// });
+  expect(
+    frame,
+    "The preview must remain on its configured cross-site origin",
+  ).not.toBeNull();
+  const directStatus = await frame!.evaluate(
     async ({ cmsOrigin, id }) => {
       const response = await fetch(`${cmsOrigin}/api/pages/${id}`, {
         method: "POST",

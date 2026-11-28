@@ -8,7 +8,7 @@ services:
       PAYLOAD_CMS_API_KEY: ${CMS_API_KEY}
       PAYLOAD_CMS_BASE_URL: http://cms:3001
       PAYLOAD_CMS_PUBLIC_URL: http://localhost:3001
-      CANONICAL_HOSTNAME: canonical.localhost
+      CANONICAL_HOSTNAME: 127.0.0.1
       IMAGEKIT_BASE_URL: ${IMAGEKIT_BASE_URL}
       REDIS_URL: redis://redis:6379
       ANALYTICS_SCRIPT_URL: ${ANALYTICS_SCRIPT_URL:-}
